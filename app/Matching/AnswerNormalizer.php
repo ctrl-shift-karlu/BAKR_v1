@@ -55,6 +55,7 @@ final class AnswerNormalizer
         return $f;
     }
 
+    /** A numeric answer as a float, or null when it is empty or not a number. */
     private static function num(mixed $v): ?float
     {
         return is_numeric($v) ? (float) $v : null;

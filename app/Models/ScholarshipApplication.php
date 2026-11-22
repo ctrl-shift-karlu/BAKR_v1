@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -26,6 +27,7 @@ class ScholarshipApplication extends Model
 
     public const AI_OFF = 'off';
 
+    /** The answers are stored encrypted (APP_KEY); dates as Carbon objects. */
     protected function casts(): array
     {
         return [
@@ -37,21 +39,36 @@ class ScholarshipApplication extends Model
         ];
     }
 
+    /**
+     * Query scope: the CURRENT saved answers of one student (each student has at most one).
+     * Usage: ScholarshipApplication::currentFor($user->id)->first().
+     *
+     * @param  int  $userId  the signed-in student's users.id (never an id taken from the URL)
+     */
+    public function scopeCurrentFor(Builder $query, int $userId): Builder
+    {
+        return $query->where('user_id', $userId)->where('is_current', true);
+    }
+
+    /** True while the Gemini review of these answers has not run yet. */
     public function aiPending(): bool
     {
         return $this->ai_match_status === self::AI_PENDING;
     }
 
+    /** True once the Gemini review of these answers is saved. */
     public function aiDone(): bool
     {
         return $this->ai_match_status === self::AI_DONE;
     }
 
+    /** The student who saved these answers. */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** One match result per active scholarship for these answers. */
     public function matches(): HasMany
     {
         return $this->hasMany(ScholarshipMatch::class);

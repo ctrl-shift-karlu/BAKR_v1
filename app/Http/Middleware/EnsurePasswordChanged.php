@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class EnsurePasswordChanged
 {
+    /** Lets the request through, or sends an account that still has a temporary password to the change page (403 for JSON requests). */
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();

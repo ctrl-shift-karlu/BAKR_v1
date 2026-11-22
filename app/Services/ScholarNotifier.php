@@ -15,6 +15,17 @@ use Throwable;
  */
 class ScholarNotifier
 {
+    /**
+     * Sends one update to a scholar: an in-portal note on their account (when they have a scholar account) and,
+     * unless $mail is false, an e-mail to their contact address.
+     *
+     * @param  Scholar  $scholar  who is told
+     * @param  string  $kind  status | correction | reply | deadline
+     * @param  string  $title  the headline
+     * @param  string  $text  one or two sentences
+     * @param  string|null  $url  where "Open" leads in the portal
+     * @param  bool  $mail  false = in-portal note only
+     */
     public static function send(Scholar $scholar, string $kind, string $title, string $text, ?string $url = null, bool $mail = true): void
     {
         $scholar->loadMissing(['scholarship', 'user']);

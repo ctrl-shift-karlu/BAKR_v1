@@ -20,6 +20,7 @@ use Throwable;
  */
 class ProviderMessageController extends ProviderController
 {
+    /** Lists the correction requests from the provider's own scholars: open ones (default) or all (?show=all), 20 per page. */
     public function index(Request $request): View
     {
         $scope = $this->scope($request);

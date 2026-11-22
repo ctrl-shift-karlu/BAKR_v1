@@ -18,6 +18,10 @@ use Illuminate\View\View;
 /** The provider's scholars: list, profile, and the data the provider maintains for each. */
 class ProviderScholarController extends ProviderController
 {
+    /**
+     * Scholars list: filters by scholarship, status (Active / Inactive / Terminated), a search box (name,
+     * student number, e-mail, Scholar ID) and "Scholar ID starts with"; 25 per page with this semester's progress.
+     */
     public function index(Request $request): View
     {
         $scope = $this->scope($request);
@@ -29,7 +33,7 @@ class ProviderScholarController extends ProviderController
                 'requirements as reqs_approved' => fn ($q) => $q->where('term', $term)->where('status', 'approved'),
                 'requirements as reqs_waiting' => fn ($q) => $q->where('term', $term)->where('status', 'submitted'),
             ])
-            ->with(['disbursements' => fn ($q) => $q->where('term', AcademicTerm::currentSemester())]);
+            ->with(['disbursements' => fn ($q) => $q->where('term', AcademicTerm::current())]);
 
         if ($sid = (int) $request->query('scholarship')) {
             $query->where('scholarship_id', $scope->scholarship($sid)->id);
@@ -66,6 +70,11 @@ class ProviderScholarController extends ProviderController
         ]);
     }
 
+    /**
+     * One scholar's profile: their details, status, maintaining documents per semester and stipend history.
+     *
+     * @param  int  $scholar  the scholars id from the URL (another provider's scholar is a 404)
+     */
     public function show(Request $request, int $scholar): View
     {
         $scope = $this->scope($request);

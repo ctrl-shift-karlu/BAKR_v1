@@ -30,6 +30,10 @@ use Illuminate\View\View;
  */
 class ScholarPortalController extends Controller
 {
+    /**
+     * Overview: every scholarship the scholar holds, the to-do list (uploads, revisions, locked stipends, status
+     * notes; most urgent first) and the latest updates from providers, which are marked read here.
+     */
     public function overview(Request $request): View
     {
         $scholars = $this->scholars($request);
@@ -94,6 +98,10 @@ class ScholarPortalController extends Controller
         ]);
     }
 
+    /**
+     * My scholarship: details, benefits, maintaining documents and stipends of one held scholarship (?s=).
+     * A scholar account without any scholarship goes back to Overview with a notice.
+     */
     public function scholarship(Request $request): View|RedirectResponse
     {
         $scholars = $this->scholars($request);
@@ -105,6 +113,7 @@ class ScholarPortalController extends Controller
         return view('scholar.scholarship', ['scholars' => $scholars, 'sc' => $selected, 'term' => AcademicTerm::current()]);
     }
 
+    /** Requirements: each held scholarship's maintaining documents per semester, with upload and preview. */
     public function requirements(Request $request): View
     {
         $scholars = $this->scholars($request);
@@ -209,6 +218,7 @@ class ScholarPortalController extends Controller
         ]);
     }
 
+    /** Shows the scholar Help page with its message form. */
     public function help(): View
     {
         return view('scholar.help', ['topics' => self::helpTopics()]);
@@ -223,6 +233,7 @@ class ScholarPortalController extends Controller
         return array_diff_key(ContactMessage::TOPICS, ['info' => true]);
     }
 
+    /** Saves and e-mails a Help message to the BAKR team; the name and e-mail come from the account. */
     public function message(Request $request, ContactMessageService $messages): RedirectResponse
     {
         $data = $this->validateHelpMessage($request, self::helpTopics());

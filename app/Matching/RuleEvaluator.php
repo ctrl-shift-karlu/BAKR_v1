@@ -189,6 +189,7 @@ final class RuleEvaluator
         return $this->result('unknown', 'This rule type is not supported.');
     }
 
+    /** An any_of rule passes when one of its sub-rules passes; it is unknown when a sub-rule has no answer yet, else it fails. */
     private function anyOf(array $rule, array $facts): array
     {
         $details = [];
@@ -207,6 +208,7 @@ final class RuleEvaluator
         return $this->result($sawUnknown ? 'unknown' : 'fail', implode(' ', $details));
     }
 
+    /** A confirm rule: the provider must confirm it, unless a published minimum (min_percent) can be checked. */
     private function confirm(array $rule, array $facts): array
     {
         $note = $rule['confirm_note'] ?? 'Only the provider can confirm this.';
@@ -228,6 +230,7 @@ final class RuleEvaluator
         return 'Your answer: '.ApplicationSchema::optionLabel($fact, is_scalar($v) ? (string) $v : $v).'.';
     }
 
+    /** A pass or fail result with the matching sentence. */
     private function bool(bool $ok, string $pass, string $fail): array
     {
         return $this->result($ok ? 'pass' : 'fail', $ok ? $pass : $fail);

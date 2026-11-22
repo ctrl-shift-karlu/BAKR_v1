@@ -11,11 +11,16 @@ use Illuminate\View\View;
 /** Admin sign-in (/adminLogin). The account comes from AdminAccountSeeder only (no registration). */
 class AdminAuthController extends Controller
 {
+    /** Shows the admin sign-in page. */
     public function showLogin(): View
     {
         return view('auth.admin-login');
     }
 
+    /**
+     * Signs in an ACTIVE admin account; any other role or a deactivated account is refused with the same message.
+     * The session id is regenerated after sign-in (prevents session fixation).
+     */
     public function login(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
@@ -34,6 +39,7 @@ class AdminAuthController extends Controller
         return $this->intendedWithin('admin', route('admin.overview'));
     }
 
+    /** Signs the admin out, destroys the session and issues a new CSRF token. */
     public function logout(Request $request): RedirectResponse
     {
         Auth::logout();

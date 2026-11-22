@@ -15,11 +15,13 @@ class ScholarshipDeadline extends Model
 {
     protected $fillable = ['scholarship_id', 'term', 'due_on', 'set_by'];
 
+    /** The due date as a Carbon date. */
     protected function casts(): array
     {
         return ['due_on' => 'date'];
     }
 
+    /** The scholarship this deadline belongs to. */
     public function scholarship(): BelongsTo
     {
         return $this->belongsTo(Scholarship::class);

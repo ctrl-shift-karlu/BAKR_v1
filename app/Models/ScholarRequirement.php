@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Support\MaintainingDocument;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /** One maintaining document of a scholar for one semester (settings copied from the scholarship). The file lives on the private `local` disk. */
 class ScholarRequirement extends Model
@@ -28,6 +30,7 @@ class ScholarRequirement extends Model
 
     protected $hidden = ['file_path'];
 
+    /** Column types: dates, file size and limits as numbers, accepted types as an array. */
     protected function casts(): array
     {
         return [
@@ -53,6 +56,7 @@ class ScholarRequirement extends Model
         return $this->accepted_types ?: MaintainingDocument::DEFAULT_TYPES;
     }
 
+    /** The largest file allowed for this item, in kilobytes (older items without settings use the default). */
     public function maxKb(): int
     {
         return $this->max_kb ?: MaintainingDocument::DEFAULT_MB * 1024;
@@ -88,21 +92,51 @@ class ScholarRequirement extends Model
             && $this->due_on !== null && $this->due_on->lt(now()->startOfDay());
     }
 
+    /** True when the uploaded file can be shown in the browser preview (PDF, JPG or PNG). */
     public function canPreview(): bool
     {
         return $this->hasFile() && in_array($this->mime, self::PREVIEW_MIMES, true);
     }
 
+    /**
+     * Streams the uploaded file from the private disk. Used by both the scholar and the provider side; each
+     * controller first checks that the person may open this requirement.
+     *
+     * With $inline = true and a previewable type (PDF / JPG / PNG) the browser shows the file in the page,
+     * with the stored type and nosniff so it is never guessed as something else; otherwise it is a download.
+     *
+     * @param  bool  $inline  true for the in-page preview (?inline=1)
+     */
+    public function fileResponse(bool $inline): StreamedResponse
+    {
+        $disk = Storage::disk('local');
+        abort_unless($this->hasFile() && $disk->exists($this->file_path), 404);
+        $name = $this->original_name ?: basename($this->file_path);
+
+        if ($inline && $this->canPreview()) {
+            return $disk->response($this->file_path, $name, [
+                'Content-Type' => $this->mime,
+                'X-Content-Type-Options' => 'nosniff',
+                'Cache-Control' => 'private, no-store',
+            ]);
+        }
+
+        return $disk->download($this->file_path, $name);
+    }
+
+    /** The scholar this checklist item belongs to. */
     public function scholar(): BelongsTo
     {
         return $this->belongsTo(Scholar::class);
     }
 
+    /** The status in words, e.g. "Waiting for review". */
     public function statusLabel(): string
     {
         return self::STATUSES[$this->status] ?? ucfirst($this->status);
     }
 
+    /** True when the scholar has uploaded a file for this item. */
     public function hasFile(): bool
     {
         return filled($this->file_path);

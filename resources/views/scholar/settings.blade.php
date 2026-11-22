@@ -25,6 +25,8 @@
             <form method="POST" action="{{ route('scholar.password.change.update') }}" class="dash-stack sc-collapse-body" novalidate data-busy="Saving your new password…" data-busy-sub="Just a moment">
                 @csrf
                 @method('PUT')
+                {{-- Not sent to the server: tells password managers which account the new password belongs to. --}}
+                <input type="email" autocomplete="username" value="{{ $user->email }}" hidden readonly aria-hidden="true">
                 <div class="dash-field">
                     <label for="current_password">Current password</label>
                     <input id="current_password" name="current_password" type="password" required autocomplete="current-password">

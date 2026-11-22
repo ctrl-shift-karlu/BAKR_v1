@@ -14,6 +14,7 @@ use Illuminate\View\View;
  */
 class AppStartController extends Controller
 {
+    /** Sends a signed-in user to their own portal, or shows the app start page (pick a portal) to a guest. */
     public function __invoke(Request $request): RedirectResponse|View
     {
         $route = match ($request->user()?->role) {

@@ -17,11 +17,13 @@ use Throwable;
  */
 class GeminiMatcher
 {
+    /** True when a Gemini API key (BAKR_GEMINI_KEY) is set; without it BAKR uses the rule check only. */
     public static function configured(): bool
     {
         return filled(config('bakr_ai.gemini.key'));
     }
 
+    /** The Gemini model name from config/bakr_ai.php (stored on the application as ai_model). */
     public static function model(): string
     {
         return (string) config('bakr_ai.gemini.model');

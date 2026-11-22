@@ -5,6 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * A message to the BAKR team: from the public Contact page, the About feedback form or a portal Help page.
+ * The admin reads, answers and marks them handled; shared feedback appears publicly only after approval.
+ */
 class ContactMessage extends Model
 {
     public const TOPICS = [
@@ -44,6 +48,7 @@ class ContactMessage extends Model
         'handled_at' => 'datetime',
     ];
 
+    /** The topic in words, e.g. "Question about BAKR". */
     public function topicLabel(): string
     {
         return self::TOPICS[$this->topic] ?? ucfirst($this->topic);

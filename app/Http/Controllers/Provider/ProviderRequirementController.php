@@ -9,7 +9,6 @@ use App\Support\AcademicTerm;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -17,6 +16,10 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 /** Maintaining documents per semester: each scholarship's deadline (opens the checklist), review uploads, preview / download files. */
 class ProviderRequirementController extends ProviderController
 {
+    /**
+     * Requirements page for one semester (?term=, optional ?scholarship=): each scholarship's deadline, the scholars
+     * with a checklist (25 per page), status totals, overdue items and the uploads waiting for review.
+     */
     public function index(Request $request): View
     {
         $scope = $this->scope($request);
@@ -91,6 +94,12 @@ class ProviderRequirementController extends ProviderController
         });
     }
 
+    /**
+     * Approves an uploaded document or sends it back ("needs revision", with a required note).
+     * An item without an uploaded file cannot be reviewed, because approving it would unlock the stipend.
+     *
+     * @param  int  $requirement  the scholar_requirements id from the URL (looked up inside the provider's scope)
+     */
     public function review(Request $request, int $requirement): RedirectResponse
     {
         $row = $this->scope($request)->requirement($requirement);
@@ -115,23 +124,13 @@ class ProviderRequirementController extends ProviderController
     }
 
     /**
-     * Download, or with ?inline=1 show it in the preview so the provider need not download it just to
-     * look (PDF / JPG / PNG only; the stored type is sent, never sniffed). Same rules as the scholar side.
+     * Downloads a scholar's uploaded file, or with ?inline=1 shows it in the preview so the provider need
+     * not download it just to look. Same rules as the scholar side (ScholarRequirement::fileResponse()).
+     *
+     * @param  int  $requirement  the scholar_requirements id from the URL (looked up inside the provider's scope)
      */
     public function download(Request $request, int $requirement): StreamedResponse
     {
-        $row = $this->scope($request)->requirement($requirement);
-        abort_unless($row->hasFile() && Storage::disk('local')->exists($row->file_path), 404);
-        $name = $row->original_name ?: basename($row->file_path);
-
-        if ($request->boolean('inline') && $row->canPreview()) {
-            return Storage::disk('local')->response($row->file_path, $name, [
-                'Content-Type' => $row->mime,
-                'X-Content-Type-Options' => 'nosniff',
-                'Cache-Control' => 'private, no-store',
-            ]);
-        }
-
-        return Storage::disk('local')->download($row->file_path, $name);
+        return $this->scope($request)->requirement($requirement)->fileResponse($request->boolean('inline'));
     }
 }

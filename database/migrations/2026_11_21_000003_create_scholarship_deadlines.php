@@ -55,7 +55,7 @@ return new class extends Migration
             $terms = collect([$s->started_term])
                 ->merge(DB::table('scholar_requirements')->where('scholar_id', $s->id)->distinct()->pluck('term'))
                 ->merge(DB::table('stipend_disbursements')->where('scholar_id', $s->id)->distinct()->pluck('term'))
-                ->push(AcademicTerm::of($s->created_at ? Carbon::parse($s->created_at) : now()))
+                ->push(AcademicTerm::current($s->created_at ? Carbon::parse($s->created_at) : now()))
                 ->filter(fn ($t) => AcademicTerm::indexOf($t) !== null);
             $earliest = $terms->sortBy(fn ($t) => AcademicTerm::indexOf($t))->first();
             if ($earliest !== $s->started_term) {

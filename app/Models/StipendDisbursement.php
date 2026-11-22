@@ -26,21 +26,25 @@ class StipendDisbursement extends Model
 
     protected $attributes = ['release_type' => 'semester', 'period_month' => ''];
 
+    /** The amount as a 2-decimal value, the release date as a Carbon object. */
     protected function casts(): array
     {
         return ['amount' => 'decimal:2', 'released_at' => 'datetime'];
     }
 
+    /** The scholar this stipend is for. */
     public function scholar(): BelongsTo
     {
         return $this->belongsTo(Scholar::class);
     }
 
+    /** The status in words: "Not yet released" or "Released". */
     public function statusLabel(): string
     {
         return self::STATUSES[$this->status] ?? ucfirst($this->status);
     }
 
+    /** How the stipend is released, in words: "Per semester" or "Per month". */
     public function releaseTypeLabel(): string
     {
         return self::RELEASE_TYPES[$this->release_type] ?? ucfirst((string) $this->release_type);

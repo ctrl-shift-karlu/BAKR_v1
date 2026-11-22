@@ -8,6 +8,11 @@ namespace App\Ai;
  */
 class TemplateExplainer implements Explainer
 {
+    /**
+     * Writes the built-in explanation of one match from its rule outcomes (no AI, always available).
+     *
+     * @param  array  $ctx  ExplanationPrompt::matchContext() data
+     */
     public function explainMatch(array $ctx): ?string
     {
         $name = $ctx['scholarship'];
@@ -47,6 +52,11 @@ class TemplateExplainer implements Explainer
         return implode("\n\n", $parts);
     }
 
+    /**
+     * Writes the built-in overview of all matches: how many fit, and which scholarships to look at first.
+     *
+     * @param  list<array>  $contexts  one ExplanationPrompt::matchContext() per match
+     */
     public function summarize(array $contexts): ?string
     {
         $group = fn (string $s) => array_values(array_map(fn ($c) => $c['scholarship'], array_filter($contexts, fn ($c) => $c['result'] === $s)));

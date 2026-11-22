@@ -29,6 +29,8 @@
 <form method="POST" action="{{ route($updateRoute) }}" novalidate data-busy="Saving your new password…" data-busy-sub="Just a moment">
     @csrf
     @method('PUT')
+    {{-- Not sent to the server: tells password managers which account the new password belongs to. --}}
+    <input type="email" autocomplete="username" value="{{ auth()->user()->email }}" hidden readonly aria-hidden="true">
     <div class="mb-3">
         <label for="current_password" class="form-label">{{ $forced ? 'Temporary password (from the e-mail)' : 'Current password' }}</label>
         <div class="input-group">

@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Collection;
 
+/**
+ * The result of one scholarship for one saved set of answers: the rule-check status, the AI review (when it
+ * ran), the shown status (the stricter of the two), an internal score for sorting, and the explanation.
+ */
 class ScholarshipMatch extends Model
 {
     public const STATUS_LABELS = [
@@ -26,6 +30,7 @@ class ScholarshipMatch extends Model
     /** Fit the AI matcher gives a scholarship (sorting and a small label only, never a percentage). */
     public const FIT_LABELS = ['high' => 'Strong fit', 'medium' => 'Fair fit', 'low' => 'Weak fit'];
 
+    /** JSON columns as arrays, the score as a number. */
     protected function casts(): array
     {
         return ['checks' => 'array', 'ai_notes' => 'array', 'score' => 'integer', 'explained_at' => 'datetime'];
@@ -64,11 +69,13 @@ class ScholarshipMatch extends Model
         return array_values(array_filter((array) $list, 'is_string'));
     }
 
+    /** The saved answers this result belongs to. */
     public function application(): BelongsTo
     {
         return $this->belongsTo(ScholarshipApplication::class, 'scholarship_application_id');
     }
 
+    /** The scholarship this result is for. */
     public function scholarship(): BelongsTo
     {
         return $this->belongsTo(Scholarship::class);
@@ -77,6 +84,7 @@ class ScholarshipMatch extends Model
     /** Statuses shown as results. "Not a match right now" is left out of the lists. */
     public const LISTED = ['eligible', 'possible', 'needs_info'];
 
+    /** The status in words: Eligible, Nearly eligible, Needs more information or Not eligible. */
     public function statusLabel(): string
     {
         return self::STATUS_LABELS[$this->status] ?? $this->status;

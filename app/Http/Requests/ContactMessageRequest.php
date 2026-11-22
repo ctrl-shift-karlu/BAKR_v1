@@ -6,13 +6,16 @@ use App\Models\ContactMessage;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
+/** Validation of the public Contact form (topic, name, e-mail, message; rating and sharing only for feedback). */
 class ContactMessageRequest extends FormRequest
 {
+    /** Anyone may send a message (the route is rate-limited to 5 per 10 minutes). */
     public function authorize(): bool
     {
         return true;
     }
 
+    /** Trims the text fields and lower-cases the e-mail before the rules run. */
     protected function prepareForValidation(): void
     {
         $this->merge([
@@ -23,6 +26,7 @@ class ContactMessageRequest extends FormRequest
         ]);
     }
 
+    /** The validation rules of the Contact form. */
     public function rules(): array
     {
         return [
@@ -35,6 +39,7 @@ class ContactMessageRequest extends FormRequest
         ];
     }
 
+    /** Friendlier error messages for the Contact form. */
     public function messages(): array
     {
         return [

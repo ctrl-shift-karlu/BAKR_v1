@@ -20,10 +20,14 @@ use Illuminate\View\View;
  */
 class ProviderDisbursementController extends ProviderController
 {
+    /**
+     * Disbursements page for one semester (?term=): totals per status, the records (pending first, 30 per page,
+     * optional ?status= filter), and how many eligible scholars still have no record or no stipend amount.
+     */
     public function index(Request $request): View
     {
         $scope = $this->scope($request);
-        $term = $this->semester($request);
+        $term = $this->term($request);
         $status = $request->query('status');
         $status = array_key_exists((string) $status, StipendDisbursement::STATUSES) ? $status : null;
 
@@ -46,7 +50,7 @@ class ProviderDisbursementController extends ProviderController
 
         return $this->page($scope, 'provider.disbursements', [
             'term' => $term,
-            'terms' => AcademicTerm::semesterOptions(),
+            'terms' => AcademicTerm::options(),
             'releaseTypes' => StipendDisbursement::RELEASE_TYPES,
             'months' => AcademicTerm::months($term),
             'status' => $status,
@@ -67,7 +71,7 @@ class ProviderDisbursementController extends ProviderController
     {
         $scope = $this->scope($request);
         $data = $request->validate([
-            'term' => ['required', Rule::in(AcademicTerm::semesterOptions())],
+            'term' => ['required', Rule::in(AcademicTerm::options())],
             'release_type' => ['required', Rule::in(array_keys(StipendDisbursement::RELEASE_TYPES))],
         ]);
         $term = $data['term'];
@@ -163,16 +167,14 @@ class ProviderDisbursementController extends ProviderController
         return back()->with('status', $message);
     }
 
+    /**
+     * The fields saved when a record is released. An earlier release date is kept.
+     *
+     * @param  string|null  $reference  the payment reference typed by the provider
+     * @param  int  $userId  the provider account that released it
+     */
     private function released(StipendDisbursement $row, ?string $reference, int $userId): array
     {
         return ['status' => 'released', 'reference' => $reference, 'released_at' => $row->released_at ?? now(), 'recorded_by' => $userId];
-    }
-
-    /** The semester picked in the query string if it is offered; else the current semester. */
-    private function semester(Request $request): string
-    {
-        $term = $request->query('term');
-
-        return AcademicTerm::isValidSemester($term) ? $term : AcademicTerm::currentSemester();
     }
 }

@@ -23,6 +23,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class ProviderScholarRosterController extends ProviderController
 {
+    /** Shows the "Add scholars" page: the one-scholar form, the Excel / CSV import and the last import report. */
     public function create(Request $request): View
     {
         $scope = $this->scope($request);
@@ -41,6 +42,10 @@ class ProviderScholarRosterController extends ProviderController
         ]);
     }
 
+    /**
+     * Adds one scholar: validates the form, checks campus + program, grant type, duplicates and the Scholar ID,
+     * then creates the record and the scholar's login (ScholarRoster::add) and opens their profile.
+     */
     public function store(Request $request, ScholarRoster $roster): RedirectResponse
     {
         $scope = $this->scope($request);
@@ -104,6 +109,10 @@ class ProviderScholarRosterController extends ProviderController
         };
     }
 
+    /**
+     * Imports many scholars from an uploaded .xlsx or .csv file (at most 5 MB) and shows a report of the rows
+     * that were added, skipped (with the reason) or not e-mailed.
+     */
     public function import(Request $request, ScholarRoster $roster): RedirectResponse
     {
         $scope = $this->scope($request);
@@ -163,6 +172,7 @@ class ProviderScholarRosterController extends ProviderController
         ]);
     }
 
+    /** Validation messages for the "Scholar since" field (shared with the profile's Scholarship card). */
     public static function startedTermMessages(): array
     {
         return [

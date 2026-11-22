@@ -29,6 +29,7 @@ class ProviderScholarshipController extends ProviderController
         'apply' => ['application_route', 'official_url'],
     ];
 
+    /** My scholarships: the provider's scholarships (?s= picks one), with the ten most recent edits. */
     public function index(Request $request): View
     {
         $scope = $this->scope($request);
@@ -45,6 +46,12 @@ class ProviderScholarshipController extends ProviderController
         ]);
     }
 
+    /**
+     * Saves one section of a scholarship (the hidden "section" field limits the save to SECTION_FIELDS) through
+     * ScholarshipEditor, which logs a revision and re-matches students when the qualifications change.
+     *
+     * @param  int  $scholarship  the scholarships id from the URL (looked up inside the provider's scope)
+     */
     public function update(Request $request, int $scholarship, ScholarshipEditor $editor): RedirectResponse
     {
         $scope = $this->scope($request);
@@ -110,14 +117,13 @@ class ProviderScholarshipController extends ProviderController
     /**
      * My scholarships › Maintaining documents: the documents scholars submit every semester, each with
      * its own name, instructions, accepted files, size limit and "every scholar / only if it applies".
-     * Only for providers that collect requirements in BAKR (404 otherwise, like the Requirements page).
-     * Open checklist items that are not approved yet take the new settings at once.
+     * Only for providers that collect requirements in BAKR: the route's provider.feature:requirements
+     * middleware answers 404 for the others. Open checklist items that are not approved yet take the new
+     * settings at once.
      */
     public function updateDocuments(Request $request, int $scholarship, ScholarshipEditor $editor): RedirectResponse
     {
-        $scope = $this->scope($request);
-        abort_unless($scope->has('requirements'), 404);
-        $s = $scope->scholarship($scholarship);
+        $s = $this->scope($request)->scholarship($scholarship);
 
         $request->validate([
             'docs' => ['nullable', 'array', 'max:'.(MaintainingDocument::MAX_DOCUMENTS + 5)],

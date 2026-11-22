@@ -13,6 +13,11 @@ use App\Models\ScholarshipMatch;
 /** Fetches (and caches) the explanation for a match or a whole result set. */
 class ExplanationService
 {
+    /**
+     * @param  ClaudeExplainer  $claude  used when BAKR_AI_PROVIDER=claude
+     * @param  GeminiExplainer  $gemini  the default AI explainer
+     * @param  TemplateExplainer  $template  the built-in fallback
+     */
     public function __construct(
         private ClaudeExplainer $claude,
         private GeminiExplainer $gemini,
@@ -31,6 +36,7 @@ class ExplanationService
         return self::provider() === 'claude' ? ClaudeExplainer::configured() : GeminiExplainer::configured();
     }
 
+    /** The explainer chosen in config/bakr_ai.php (Gemini by default, or Claude). */
     private function ai(): Explainer
     {
         return self::provider() === 'claude' ? $this->claude : $this->gemini;
@@ -42,6 +48,7 @@ class ExplanationService
         return $m->explanation && in_array($m->explanation_source, ['claude', 'gemini'], true) ? $m->explanation : null;
     }
 
+    /** The data an explainer needs for one match: scholarship facts, status and rule outcomes (no personal details). */
     public static function context(ScholarshipMatch $m): array
     {
         $s = $m->scholarship;
@@ -86,6 +93,11 @@ class ExplanationService
         return (string) $this->template->summarize($app->matches->map(fn ($m) => self::context($m))->all());
     }
 
+    /**
+     * Asks the AI for the overview of all matches and caches it on the application.
+     *
+     * @return bool false when the AI is off or unreachable (the built-in overview stays)
+     */
     public function forApplication(ScholarshipApplication $app): bool
     {
         if ($app->ai_summary) {

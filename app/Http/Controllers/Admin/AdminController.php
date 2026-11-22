@@ -14,12 +14,14 @@ use App\Models\ScholarshipDeadline;
 use App\Models\ScholarshipMatch;
 use App\Models\StipendDisbursement;
 use App\Models\User;
+use App\Services\Provider\ProviderScope;
 use App\Services\Provider\ScholarAccounts;
 use App\Support\AcademicTerm;
 use App\Support\Spreadsheet;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\Rule;
@@ -124,11 +126,10 @@ class AdminController extends Controller
             $matching[] = [$x['scholarship'], $x['rule'], $x['students']];
         }
 
-        $scholarships = Scholarship::orderBy('sort_order')->get()->keyBy('id');
         $scholars = [];
         foreach (array_keys(self::SCHOLAR_GROUPS) as $group) {
             $scholars[] = $b([$group === 'scholarship' ? 'Scholarship' : 'Campus', 'Active', 'Inactive', 'Terminated', 'Total']);
-            foreach ($this->scholarRows($scholarships, $group) as $r) {
+            foreach ($this->scholarRows($d['scholarships'], $group) as $r) {
                 $scholars[] = [$r['sub'] ? $r['label'].': '.$r['sub'] : $r['label'], $r['active'], $r['inactive'], $r['terminated'], $r['active'] + $r['inactive'] + $r['terminated']];
             }
             $scholars[] = [];
@@ -217,10 +218,10 @@ class AdminController extends Controller
                 'name' => $p['name'],
                 'logo' => $p['logo'] ?? null,
                 'status' => collect(array_keys(Scholar::STATUSES))->mapWithKeys(fn ($k) => [$k => Scholar::whereIn('scholarship_id', $ids)->whereStanding($k)->count()])->all(),
-                'hasReqs' => in_array('requirements', $p['features'] ?? [], true),
+                'hasReqs' => ProviderScope::providerHas($p, 'requirements'),
                 'reqApproved' => (clone $reqs)->where('status', 'approved')->count(),
                 'reqTotal' => (clone $reqs)->count(),
-                'hasPay' => in_array('disbursements', $p['features'] ?? [], true),
+                'hasPay' => ProviderScope::providerHas($p, 'disbursements'),
                 'payReleased' => (clone $pay)->where('status', 'released')->count(),
                 'payTotal' => (clone $pay)->count(),
                 'amount' => (float) (clone $pay)->where('status', 'released')->sum('amount'),
@@ -229,6 +230,7 @@ class AdminController extends Controller
 
         return [
             'term' => $term,
+            'scholarships' => $scholarships,
             'blockers' => $blockers,
             'headline' => $headline,
             'providers' => $providers,
@@ -245,7 +247,7 @@ class AdminController extends Controller
      * Sorted by eligible students; the trivia names the most and least matched scholarship
      * (only scholarships with at least one answered form count, so a tie at zero is not "least").
      */
-    private function matchingRows($scholarships, array $byScholarship): array
+    private function matchingRows(Collection $scholarships, array $byScholarship): array
     {
         $rows = $scholarships->map(function (Scholarship $s, $id) use ($byScholarship) {
             $c = $byScholarship[$id] ?? [];
@@ -283,7 +285,7 @@ class AdminController extends Controller
      * before campuses were recorded fall back to the only campus that offers their program; when several
      * campuses offer it they are counted under "Campus not set" until their provider picks one.
      */
-    private function scholarRows($scholarships, string $group): array
+    private function scholarRows(Collection $scholarships, string $group): array
     {
         $scholars = Scholar::query()->withStanding()->get(['id', 'scholarship_id', 'program', 'campus', 'status']);
 
@@ -564,7 +566,7 @@ class AdminController extends Controller
         }
 
         foreach (config('providers.accounts', []) as $p) {
-            if (! in_array('requirements', $p['features'] ?? [], true)) {
+            if (! ProviderScope::providerHas($p, 'requirements')) {
                 continue;
             }
             $ids = Scholarship::whereIn('slug', $p['slugs'] ?? [])->pluck('id');

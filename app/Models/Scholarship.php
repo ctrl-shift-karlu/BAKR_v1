@@ -8,6 +8,10 @@ use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * One scholarship (14 in all, from config/scholarships.php): its public information, matching rules, call
+ * dates, grants and maintaining documents. Providers edit their own rows; the public catalogue reads the same rows.
+ */
 class Scholarship extends Model
 {
     public const SECTORS = [
@@ -22,6 +26,7 @@ class Scholarship extends Model
         'application_opens_on', 'application_closes_on', 'results_on',
     ];
 
+    /** JSON columns as arrays, dates as Carbon objects. */
     protected function casts(): array
     {
         return [
@@ -68,11 +73,13 @@ class Scholarship extends Model
         };
     }
 
+    /** Every student match result for this scholarship. */
     public function matches(): HasMany
     {
         return $this->hasMany(ScholarshipMatch::class);
     }
 
+    /** Everyone who holds (or held) this scholarship. */
     public function scholars(): HasMany
     {
         return $this->hasMany(Scholar::class);
@@ -90,6 +97,7 @@ class Scholarship extends Model
         return $this->deadlines->firstWhere('term', $term);
     }
 
+    /** The audit trail of provider edits. */
     public function revisions(): HasMany
     {
         return $this->hasMany(ScholarshipRevision::class);
@@ -239,6 +247,7 @@ class Scholarship extends Model
         };
     }
 
+    /** The sector in words, e.g. "Government". */
     public function sectorLabel(): string
     {
         return self::SECTORS[$this->sector] ?? ucfirst($this->sector);

@@ -139,6 +139,10 @@ final class ApplicationSchema
     /** Grade points (DNSC 1.0–5.0 scale) mapped to the lower end of the usual percentage band. */
     private const DNSC_SCALE = [[1.0, 98], [1.25, 94], [1.5, 91], [1.75, 88], [2.0, 85], [2.25, 82], [2.5, 79], [2.75, 76], [3.0, 75], [5.0, 60]];
 
+    /**
+     * The matching form: every part (I, II, …) with its questions, options, validation and "when" conditions.
+     * This is the single source of truth for the form, the validator, the sanitizer and the AI profile.
+     */
     public static function sections(): array
     {
         $yn = self::YES_NO;
@@ -292,6 +296,12 @@ final class ApplicationSchema
         return $rules;
     }
 
+    /**
+     * The words a student chose for an answer (a list is joined with commas, an empty list = "None").
+     *
+     * @param  string  $field  the question key
+     * @param  mixed  $value  the stored option key or keys
+     */
     public static function optionLabel(string $field, mixed $value): string
     {
         $options = self::fields()[$field]['options'] ?? ($field === 'program_field' ? self::PROGRAM_FIELDS : []);
@@ -367,6 +377,7 @@ final class ApplicationSchema
         }
     }
 
+    /** A stored Y-m-d date as "March 14, 2005" (unreadable text is returned unchanged). */
     private static function formatDate(string $v): string
     {
         try {

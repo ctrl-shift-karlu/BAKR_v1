@@ -34,11 +34,13 @@ class StudentPasswordResetController extends Controller
     /** Same reply whether or not the email belongs to an account. */
     private const SENT_MESSAGE = 'If that e-mail belongs to a BAKR account, a reset link is on its way. Check your inbox (and spam folder). The link works for 60 minutes.';
 
+    /** Shows the "Forgot password" form; ?from= picks which login page "Back to sign in" returns to. */
     public function showRequest(Request $request): View
     {
         return view('auth.forgot-password', ['loginRoute' => self::LOGINS[(string) $request->query('from')] ?? 'student.login']);
     }
 
+    /** E-mails a reset link when the address belongs to an active account, and always shows the same message (so the form cannot reveal which e-mails exist). */
     public function sendLink(Request $request): RedirectResponse
     {
         $request->validate(['email' => ['required', 'email']]);
@@ -52,6 +54,11 @@ class StudentPasswordResetController extends Controller
         return back()->with('status', self::SENT_MESSAGE);
     }
 
+    /**
+     * Shows the "Choose a new password" form opened from the e-mailed link.
+     *
+     * @param  string  $token  the reset token from the e-mailed link
+     */
     public function showReset(Request $request, string $token): View
     {
         return view('auth.reset-password', [
@@ -60,6 +67,10 @@ class StudentPasswordResetController extends Controller
         ]);
     }
 
+    /**
+     * Checks the token and saves the new password, then signs the account out everywhere and sends the
+     * person to their own login page. An invalid or expired token shows an error and changes nothing.
+     */
     public function reset(Request $request): RedirectResponse
     {
         $data = $request->validate([

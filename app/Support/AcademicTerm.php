@@ -14,6 +14,11 @@ use Illuminate\Support\Carbon;
  */
 class AcademicTerm
 {
+    /**
+     * The semester a date falls in (default: today), e.g. "AY 2026–2027 · 1st Semester".
+     *
+     * @param  CarbonInterface|null  $date  any date; null = now
+     */
     public static function current(?CarbonInterface $date = null): string
     {
         return self::label(self::index(Carbon::instance($date ?? Carbon::now())));
@@ -33,6 +38,7 @@ class AcademicTerm
         return array_map(fn (int $k) => self::label($now + $k), [2, 1, 0, -1, -2, -3]);
     }
 
+    /** True when the label is one of the semesters offered in the pickers (options()). */
     public static function isValid(?string $term): bool
     {
         return $term !== null && in_array($term, self::options(), true);
@@ -70,29 +76,6 @@ class AcademicTerm
         return $index === null ? [] : array_map(fn (int $k) => self::label($index - $k), range(0, $back));
     }
 
-    /** The semester a date falls in (e.g. when a scholar row was created). */
-    public static function of(CarbonInterface $date): string
-    {
-        return self::current($date);
-    }
-
-    /** Same as current(): every term is a semester. Kept so stipend code reads naturally. */
-    public static function currentSemester(?CarbonInterface $date = null): string
-    {
-        return self::current($date);
-    }
-
-    /** Same as options() (there is no Midyear to leave out any more). */
-    public static function semesterOptions(?CarbonInterface $date = null): array
-    {
-        return self::options($date);
-    }
-
-    public static function isValidSemester(?string $term): bool
-    {
-        return self::isValid($term);
-    }
-
     /**
      * The calendar months of a semester as "YYYY-MM" (1st: Aug–Dec, 2nd: Jan–May).
      * Empty for an unrecognised label.
@@ -125,6 +108,7 @@ class AcademicTerm
         return $m >= 8 ? $y * 2 : ($y - 1) * 2 + 1;
     }
 
+    /** The semester label for an index (see index()). */
     private static function label(int $index): string
     {
         $start = intdiv($index, 2);

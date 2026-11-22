@@ -12,16 +12,19 @@ class ScholarshipRevision extends Model
 
     protected $fillable = ['scholarship_id', 'user_id', 'before', 'after', 'rules_changed'];
 
+    /** The before / after snapshots as arrays. */
     protected function casts(): array
     {
         return ['before' => 'array', 'after' => 'array', 'rules_changed' => 'boolean', 'created_at' => 'datetime'];
     }
 
+    /** The scholarship that was edited. */
     public function scholarship(): BelongsTo
     {
         return $this->belongsTo(Scholarship::class);
     }
 
+    /** The provider account that made the edit. */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

@@ -15,11 +15,16 @@ use Illuminate\View\View;
  */
 class ScholarAuthController extends Controller
 {
+    /** Shows the scholar sign-in page. */
     public function showLogin(): View
     {
         return view('auth.scholar-login');
     }
 
+    /**
+     * Signs in an ACTIVE scholar account. A scholar who still has the e-mailed temporary password is sent
+     * to "Change your password" first; everyone else goes back to the scholar page they asked for, or Overview.
+     */
     public function login(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
@@ -45,6 +50,7 @@ class ScholarAuthController extends Controller
         return $this->intendedWithin('scholar', route('scholar.overview'));
     }
 
+    /** Signs the scholar out, destroys the session and issues a new CSRF token. */
     public function logout(Request $request): RedirectResponse
     {
         Auth::logout();

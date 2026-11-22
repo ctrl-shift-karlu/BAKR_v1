@@ -18,7 +18,7 @@
 @php
     $uid = auth()->id();
     $me = auth()->user();
-    $current = \App\Models\ScholarshipApplication::where('user_id', $uid)->where('is_current', true)->first();
+    $current = \App\Models\ScholarshipApplication::currentFor($uid)->first();
     $tally = $current ? $current->matches()->selectRaw('status, count(*) as n')->groupBy('status')->pluck('n', 'status') : collect();
     $nElig = (int) ($tally['eligible'] ?? 0);
     $nPoss = (int) ($tally['possible'] ?? 0);

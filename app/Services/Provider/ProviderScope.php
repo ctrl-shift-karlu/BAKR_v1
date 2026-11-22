@@ -23,6 +23,10 @@ class ProviderScope
 
     private ?Collection $scholarships = null;
 
+    /**
+     * @param  string  $key  the provider key from config/providers.php
+     * @param  array  $provider  that provider's config entry
+     */
     public function __construct(public readonly string $key, public readonly array $provider) {}
 
     /** Does this provider use the optional page? A provider without a 'features' list has all of them. */
@@ -51,7 +55,14 @@ class ProviderScope
         return null;
     }
 
-    private static function providerHas(array $provider, string $feature): bool
+    /**
+     * Does this provider account (one entry of config/providers.php) use the optional page?
+     * Pages that are not optional are always on; a provider without a 'features' list has every page.
+     *
+     * @param  array  $provider  one entry of config('providers.accounts')
+     * @param  string  $feature  'disbursements' or 'requirements' (anything else is always true)
+     */
+    public static function providerHas(array $provider, string $feature): bool
     {
         if (! in_array($feature, self::OPTIONAL_FEATURES, true)) {
             return true;
@@ -60,6 +71,11 @@ class ProviderScope
         return in_array($feature, $provider['features'] ?? self::OPTIONAL_FEATURES, true);
     }
 
+    /**
+     * The scope of the signed-in provider account (403 for any other account).
+     *
+     * @param  User  $user  the signed-in user
+     */
     public static function for(User $user): self
     {
         $key = (string) $user->provider_key;
@@ -69,6 +85,7 @@ class ProviderScope
         return new self($key, $provider);
     }
 
+    /** The provider's display name, e.g. "CHED / UniFAST". */
     public function name(): string
     {
         return $this->provider['name'];
@@ -92,41 +109,65 @@ class ProviderScope
             ->get();
     }
 
+    /** The ids of the provider's active scholarships. */
     public function scholarshipIds(): array
     {
         return $this->scholarships()->pluck('id')->all();
     }
 
+    /**
+     * One of the provider's scholarships, or 404.
+     *
+     * @param  int  $id  a scholarships id from the URL or a form
+     */
     public function scholarship(int $id): Scholarship
     {
         return $this->scholarships()->firstWhere('id', $id) ?? abort(404);
     }
 
+    /** Query of every scholar of the provider's scholarships. */
     public function scholars(): Builder
     {
         return Scholar::query()->whereIn('scholarship_id', $this->scholarshipIds());
     }
 
+    /**
+     * One of the provider's scholars, or 404.
+     *
+     * @param  int  $id  a scholars id from the URL
+     */
     public function scholar(int $id): Scholar
     {
         return $this->scholars()->whereKey($id)->firstOrFail();
     }
 
+    /** Query of the checklist items of the provider's scholars. */
     public function requirements(): Builder
     {
         return ScholarRequirement::query()->whereHas('scholar', fn ($q) => $q->whereIn('scholarship_id', $this->scholarshipIds()));
     }
 
+    /**
+     * One checklist item of the provider's scholars, or 404.
+     *
+     * @param  int  $id  a scholar_requirements id from the URL
+     */
     public function requirement(int $id): ScholarRequirement
     {
         return $this->requirements()->whereKey($id)->firstOrFail();
     }
 
+    /** Query of the stipend records of the provider's scholars. */
     public function disbursements(): Builder
     {
         return StipendDisbursement::query()->whereHas('scholar', fn ($q) => $q->whereIn('scholarship_id', $this->scholarshipIds()));
     }
 
+    /**
+     * One stipend record of the provider's scholars, or 404.
+     *
+     * @param  int  $id  a stipend_disbursements id from the URL
+     */
     public function disbursement(int $id): StipendDisbursement
     {
         return $this->disbursements()->whereKey($id)->firstOrFail();
@@ -138,6 +179,11 @@ class ProviderScope
         return ScholarMessage::query()->whereHas('scholar', fn ($q) => $q->whereIn('scholarship_id', $this->scholarshipIds()));
     }
 
+    /**
+     * One correction request from the provider's scholars, or 404.
+     *
+     * @param  int  $id  a scholar_messages id from the URL
+     */
     public function message(int $id): ScholarMessage
     {
         return $this->messages()->whereKey($id)->firstOrFail();

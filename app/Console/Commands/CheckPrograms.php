@@ -6,12 +6,21 @@ use App\Matching\ProgramCatalog;
 use App\Models\Program;
 use Illuminate\Console\Command;
 
+/**
+ * Artisan command `php artisan bakr:check-programs`: lists every DNSC program in the database with
+ * the broad field it is mapped to (config/program_fields.php), and warns about programs no rule recognises.
+ */
 class CheckPrograms extends Command
 {
     protected $signature = 'bakr:check-programs';
 
     protected $description = 'Show how every DNSC program in the database is mapped to a scholarship field';
 
+    /**
+     * Prints the program table and the number of unrecognised programs.
+     *
+     * @return int Command::SUCCESS
+     */
     public function handle(): int
     {
         $rows = Program::with('campus')->orderBy('campus_id')->orderBy('program_name')->get()->map(fn ($p) => [

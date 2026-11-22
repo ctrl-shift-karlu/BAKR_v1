@@ -46,10 +46,7 @@ class ScholarRequirementController extends Controller
 
         $file = $request->file('file');
         $path = $file->storeAs('scholar-requirements/'.$row->scholar_id, Str::random(40).'.'.$file->extension(), 'local');
-
-        if ($row->hasFile()) {
-            Storage::disk('local')->delete($row->file_path);
-        }
+        $oldPath = $row->file_path;
 
         $row->update([
             'file_path' => $path,
@@ -62,6 +59,12 @@ class ScholarRequirementController extends Controller
             'review_note' => null,
         ]);
 
+        // The replaced file is deleted only after the row points at the new one, so a failed save never
+        // leaves the row pointing at a file that no longer exists.
+        if (filled($oldPath)) {
+            Storage::disk('local')->delete($oldPath);
+        }
+
         $message = $row->name.' was sent to '.$row->scholar->scholarship->provider.'. It is now waiting for their review.';
 
         if ($request->expectsJson()) {
@@ -73,22 +76,14 @@ class ScholarRequirementController extends Controller
         return redirect()->to(url()->previous().'#req-'.$row->id)->with('status', $message);
     }
 
-    /** Download, or with ?inline=1 show it in the preview (PDF / JPG / PNG only, type fixed, no sniffing). */
+    /**
+     * Downloads the scholar's own uploaded file, or with ?inline=1 shows it in the preview.
+     *
+     * @param  int  $requirement  the scholar_requirements id from the URL (must be the scholar's own)
+     */
     public function download(Request $request, int $requirement): StreamedResponse
     {
-        $row = $this->own($request, $requirement);
-        abort_unless($row->hasFile() && Storage::disk('local')->exists($row->file_path), 404);
-        $name = $row->original_name ?: basename($row->file_path);
-
-        if ($request->boolean('inline') && $row->canPreview()) {
-            return Storage::disk('local')->response($row->file_path, $name, [
-                'Content-Type' => $row->mime,
-                'X-Content-Type-Options' => 'nosniff',
-                'Cache-Control' => 'private, no-store',
-            ]);
-        }
-
-        return Storage::disk('local')->download($row->file_path, $name);
+        return $this->own($request, $requirement)->fileResponse($request->boolean('inline'));
     }
 
     /** A requirement that belongs to one of the signed-in scholar's own records. */

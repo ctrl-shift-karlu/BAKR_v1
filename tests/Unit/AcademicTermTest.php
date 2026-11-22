@@ -17,7 +17,7 @@ class AcademicTermTest extends TestCase
         $this->assertSame('AY 2026–2027 · 2nd Semester', AcademicTerm::current(Carbon::create(2027, 1, 1)));
         $this->assertSame('AY 2026–2027 · 2nd Semester', AcademicTerm::current(Carbon::create(2027, 6, 15)));   // the break: no Midyear
         $this->assertSame('AY 2026–2027 · 2nd Semester', AcademicTerm::current(Carbon::create(2027, 7, 31)));
-        $this->assertSame(AcademicTerm::current(Carbon::create(2027, 6, 15)), AcademicTerm::currentSemester(Carbon::create(2027, 6, 15)));
+        $this->assertSame(AcademicTerm::current(Carbon::create(2027, 6, 15)), AcademicTerm::current(Carbon::create(2027, 6, 15)));
     }
 
     public function test_options_are_consecutive_semesters_without_midyear(): void
@@ -36,7 +36,7 @@ class AcademicTermTest extends TestCase
             $this->assertCount(6, array_unique($terms));
             $this->assertSame([], array_values(array_filter($terms, fn ($t) => str_contains($t, 'Midyear'))));
             $this->assertContains(AcademicTerm::current($date), $terms);
-            $this->assertSame($terms, AcademicTerm::semesterOptions($date));
+            $this->assertSame($terms, AcademicTerm::options($date));
         }
     }
 

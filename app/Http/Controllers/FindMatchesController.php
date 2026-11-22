@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
  */
 class FindMatchesController extends Controller
 {
+    /** Redirects the visitor to the right "Find a Scholarship" step for their account (see the class description). */
     public function __invoke(Request $request): RedirectResponse
     {
         $user = $request->user();
@@ -27,7 +28,7 @@ class FindMatchesController extends Controller
         }
 
         return match ($user->role) {
-            'student' => ScholarshipApplication::where('user_id', $user->id)->where('is_current', true)->exists()
+            'student' => ScholarshipApplication::currentFor($user->id)->exists()
                 ? redirect()->route('student.results')
                 : redirect()->route('student.application.show'),
             // Scholar accounts have no matching: their own portal.

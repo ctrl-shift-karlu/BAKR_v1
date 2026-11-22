@@ -16,11 +16,19 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
+/**
+ * The student's matching form: show it (empty, with the current answers, or with an earlier version's
+ * answers), save it, and print a copy. Every query is limited to the signed-in student (rule 4).
+ */
 class StudentApplicationController extends Controller
 {
+    /**
+     * Shows the matching form. With ?version= it is filled in with that earlier version of the student's own
+     * answers ("Use these answers again"); nothing is saved until the student submits.
+     */
     public function show(Request $request): View
     {
-        $current = ScholarshipApplication::where('user_id', $request->user()->id)->where('is_current', true)->first();
+        $current = ScholarshipApplication::currentFor($request->user()->id)->first();
         $consent = StudentConsent::where('user_id', $request->user()->id)->where('consent_type', StudentConsent::TYPE_DATA_PRIVACY)->first();
 
         // "Use these answers again" (My profile › Saved versions): fill the form in with an EARLIER version of
@@ -39,7 +47,7 @@ class StudentApplicationController extends Controller
             'fromVersion' => $from,
             'application' => $current,
             'user' => $request->user(),
-            'term' => AcademicTerm::currentSemester(),
+            'term' => AcademicTerm::current(),
             // The Privacy Policy agreement is asked on every submit; the last date is shown under it.
             'hasConsent' => $consent !== null,
             'consentAt' => $consent?->accepted_at,
@@ -52,7 +60,7 @@ class StudentApplicationController extends Controller
      */
     public function printable(Request $request): View|RedirectResponse
     {
-        $application = ScholarshipApplication::where('user_id', $request->user()->id)->where('is_current', true)->first();
+        $application = ScholarshipApplication::currentFor($request->user()->id)->first();
         if (! $application) {
             return redirect()->route('student.application.show');
         }
@@ -69,6 +77,10 @@ class StudentApplicationController extends Controller
         ]);
     }
 
+    /**
+     * Saves the answers through ScholarshipApplicationService (a new version only when something changed),
+     * runs the rule check and opens the results page.
+     */
     public function store(ScholarshipApplicationRequest $request, ScholarshipApplicationService $service): RedirectResponse
     {
         $application = $service->submit($request->user(), $request->answers(), $request->boolean('privacy_consent'));

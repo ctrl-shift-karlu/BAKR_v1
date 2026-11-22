@@ -15,8 +15,14 @@ use Illuminate\Mail\Mailables\Envelope;
  */
 class ScholarAccountCreated extends Mailable
 {
+    /**
+     * @param  Scholar  $scholar  the new scholar record
+     * @param  string|null  $password  the temporary password of a NEW account; null for an existing account
+     * @param  bool  $converted  true when a student account was turned into a scholar account
+     */
     public function __construct(public Scholar $scholar, public ?string $password, public bool $converted = false) {}
 
+    /** Subject: the login details for a new account, or a "you were added" notice for an existing one. */
     public function envelope(): Envelope
     {
         return new Envelope(
@@ -26,6 +32,7 @@ class ScholarAccountCreated extends Mailable
         );
     }
 
+    /** The e-mail body (resources/views/emails/scholar-account.blade.php) with the Scholar login link. */
     public function content(): Content
     {
         return new Content(view: 'emails.scholar-account', with: [

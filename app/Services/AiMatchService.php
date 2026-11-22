@@ -25,8 +25,12 @@ class AiMatchService
 {
     private const FIT_POINTS = ['high' => 100, 'medium' => 60, 'low' => 25];
 
+    /**
+     * @param  GeminiMatcher  $matcher  sends the one Gemini request per application
+     */
     public function __construct(private GeminiMatcher $matcher) {}
 
+    /** True when the Gemini matcher has an API key. */
     public static function available(): bool
     {
         return GeminiMatcher::configured();

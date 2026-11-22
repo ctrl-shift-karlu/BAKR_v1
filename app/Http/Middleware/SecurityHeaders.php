@@ -24,6 +24,7 @@ class SecurityHeaders
         'Permissions-Policy' => 'camera=(), microphone=(), geolocation=()',
     ];
 
+    /** Adds the security headers above to the response, keeping any the controller already set. */
     public function handle(Request $request, Closure $next): Response
     {
         $response = $next($request);

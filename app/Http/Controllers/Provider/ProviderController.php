@@ -14,6 +14,7 @@ use Illuminate\View\View;
  */
 abstract class ProviderController extends Controller
 {
+    /** Everything the signed-in provider may see (403 when the account is not a known provider). */
     protected function scope(Request $request): ProviderScope
     {
         return ProviderScope::for($request->user());
@@ -36,7 +37,7 @@ abstract class ProviderController extends Controller
             'navCounts' => [
                 // Scholars needing attention: Inactive (overdue maintaining documents). Not the total.
                 'scholars' => $scope->scholars()->whereStanding('inactive')->count(),
-                'disbursements' => $scope->has('disbursements') ? $scope->disbursements()->where('term', AcademicTerm::currentSemester())->where('status', 'pending')->count() : 0,
+                'disbursements' => $scope->has('disbursements') ? $scope->disbursements()->where('term', AcademicTerm::current())->where('status', 'pending')->count() : 0,
                 'requirements' => $scope->has('requirements') ? $scope->requirements()->where('status', 'submitted')->count() : 0,
                 // Correction requests from the provider's scholars that are not handled yet.
                 'messages' => $scope->messages()->whereNull('handled_at')->count(),

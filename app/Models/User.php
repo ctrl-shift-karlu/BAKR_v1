@@ -8,6 +8,10 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Every BAKR login. The role decides the portal: student (matching), scholar (monitoring, created by a provider),
+ * provider (provider_key = its entry in config/providers.php) or admin. Role and status are only set on the server.
+ */
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
@@ -16,6 +20,7 @@ class User extends Authenticatable
 
     protected $hidden = ['password', 'remember_token'];
 
+    /** Dates as Carbon objects; the password is hashed automatically when it is set. */
     protected function casts(): array
     {
         return [

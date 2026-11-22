@@ -15,6 +15,11 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class ProviderFeature
 {
+    /**
+     * Answers 404 when the signed-in provider does not use the optional page.
+     *
+     * @param  string  $feature  'disbursements' or 'requirements' (from the route: provider.feature:<name>)
+     */
     public function handle(Request $request, Closure $next, string $feature): Response
     {
         abort_unless(ProviderScope::for($request->user())->has($feature), 404);

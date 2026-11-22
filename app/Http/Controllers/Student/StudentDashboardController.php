@@ -14,10 +14,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
+/**
+ * Student portal pages built on the current answers: Dashboard, My matches, My profile (with saved versions),
+ * and the background AI requests (Gemini matcher, AI explanations). Always scoped to the signed-in student.
+ */
 class StudentDashboardController extends Controller
 {
+    /**
+     * @param  ExplanationService  $explainer  built-in and AI explanations of the matches
+     */
     public function __construct(private ExplanationService $explainer) {}
 
+    /** Dashboard: match counts, the top four matches, the matches that need more information and the overview text. */
     public function index(Request $request): View|RedirectResponse
     {
         $application = $this->current($request);
@@ -40,6 +48,7 @@ class StudentDashboardController extends Controller
         ]);
     }
 
+    /** My matches: every listed match (optionally ?status=), or the near misses when nothing matches. */
     public function results(Request $request): View|RedirectResponse
     {
         $application = $this->current($request);
@@ -65,6 +74,7 @@ class StudentDashboardController extends Controller
         ]);
     }
 
+    /** My profile: the current answers and the list of saved versions. */
     public function profile(Request $request): View|RedirectResponse
     {
         $application = $this->current($request);
@@ -133,6 +143,11 @@ class StudentDashboardController extends Controller
         return collect(array_reverse($rows));
     }
 
+    /**
+     * Writes (or returns the cached) AI explanation of one match. JSON for the results page, a redirect otherwise.
+     *
+     * @param  int  $match  the scholarship_matches id from the URL (must belong to the student's current answers)
+     */
     public function explainMatch(Request $request, int $match): RedirectResponse|JsonResponse
     {
         // Only a match that belongs to the signed-in student's current answers can be found (otherwise 404).
@@ -180,6 +195,7 @@ class StudentDashboardController extends Controller
                 : 'The AI matcher could not be reached, so these results come from BAKR\'s rule check only. Try again in a minute.');
     }
 
+    /** Writes (or returns the cached) AI overview of all matches. JSON for the dashboard, a redirect otherwise. */
     public function explainAll(Request $request): RedirectResponse|JsonResponse
     {
         $application = $this->current($request);
@@ -205,10 +221,14 @@ class StudentDashboardController extends Controller
         return redirect()->route('student.application.show')->with('form_first', $page);
     }
 
+    /**
+     * The signed-in student's current answers, or null. An application that never had an AI review (saved
+     * before the matcher existed, or while it was off and a key was added since) is queued for one here.
+     */
     private function current(Request $request): ?ScholarshipApplication
     {
         // Always scoped to the signed-in student; no ID is ever read from the URL.
-        $application = ScholarshipApplication::where('user_id', $request->user()->id)->where('is_current', true)->first();
+        $application = ScholarshipApplication::currentFor($request->user()->id)->first();
 
         // Saved before the AI matcher existed (2026-11-19), or saved while it was off and a key was
         // added since: queue it for an AI review on this visit.

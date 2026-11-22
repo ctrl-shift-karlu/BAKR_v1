@@ -30,11 +30,13 @@ class ScholarUpdate extends Notification
         public array $channels = ['database'],
     ) {}
 
+    /** The channels this update goes to ("database" for the Overview list, "mail" for the e-mail). */
     public function via(object $notifiable): array
     {
         return $this->channels;
     }
 
+    /** What is stored in the notifications table and shown on the scholar's Overview. */
     public function toArray(object $notifiable): array
     {
         return [
@@ -47,6 +49,7 @@ class ScholarUpdate extends Notification
         ];
     }
 
+    /** The e-mail version (resources/views/emails/scholar-update.blade.php). */
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)

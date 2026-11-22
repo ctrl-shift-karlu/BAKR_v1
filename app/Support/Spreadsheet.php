@@ -12,7 +12,9 @@ use ZipArchive;
  *
  * read():  first worksheet of an .xlsx, or a .csv/.txt file → list of rows (list of cell strings).
  *          Old binary .xls is not supported (the caller asks for "Save as .xlsx").
- * xlsx():  one-sheet .xlsx file with plain text cells (the download template; tests).
+ * xlsx():      one-sheet .xlsx file (the roster template download; tests).
+ * workbook():  several sheets with numbers, bold cells and column widths (admin Analytics export).
+ *              xlsx() is workbook() with a single sheet.
  *
  * Safety: XML is parsed with LIBXML_NONET and without LIBXML_NOENT (no external entities),
  * each part is size-checked before it is unzipped (zip bombs), and rows are capped.
@@ -144,6 +146,7 @@ final class Spreadsheet
         return count($rows) > self::MAX_ROWS;
     }
 
+    /** The text of one sheet cell: a shared string, inline text, a boolean or a number. */
     private static function cellText(SimpleXMLElement $c, string $type, array $shared): string
     {
         $main = $c->children(self::NS_MAIN);
@@ -187,6 +190,7 @@ final class Spreadsheet
         return $out;
     }
 
+    /** The zip path of the workbook's first worksheet (read from the workbook relationships). */
     private static function firstSheetPath(ZipArchive $zip): string
     {
         $fallback = 'xl/worksheets/sheet1.xml';
@@ -211,6 +215,7 @@ final class Spreadsheet
         return $fallback;
     }
 
+    /** Reads and parses one XML part of the zip, refusing parts larger than MAX_PART_BYTES (zip bombs). */
     private static function part(ZipArchive $zip, string $name): SimpleXMLElement
     {
         $stat = $zip->statName($name);
@@ -242,61 +247,33 @@ final class Spreadsheet
         return max(0, $n - 1);
     }
 
+    /** Removes control characters from a cell value and trims it. */
     private static function clean(string $value): string
     {
         return trim(preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $value) ?? '');
     }
 
     /**
-     * Builds a one-sheet .xlsx (text cells only) and returns its bytes.
+     * Builds a one-sheet .xlsx file and returns its bytes (the roster template download and the tests).
      *
      * @param  list<list<string|int|float|null>>  $rows
+     * @param  string  $sheetName  the name shown on the sheet tab
+     * @return string the raw .xlsx file contents
      */
     public static function xlsx(array $rows, string $sheetName = 'Scholars'): string
     {
-        $esc = fn ($s) => htmlspecialchars((string) $s, ENT_XML1 | ENT_QUOTES, 'UTF-8');
-        $col = function (int $i): string {
-            $s = '';
-            for ($i++; $i > 0; $i = intdiv($i - 1, 26)) {
-                $s = chr(65 + ($i - 1) % 26).$s;
-            }
+        return self::workbook([$sheetName => $rows]);
+    }
 
-            return $s;
-        };
-
-        $sheetRows = '';
-        foreach (array_values($rows) as $r => $cells) {
-            $xmlCells = '';
-            foreach (array_values($cells) as $c => $value) {
-                if ($value === null || $value === '') {
-                    continue;
-                }
-                $xmlCells .= '<c r="'.$col($c).($r + 1).'" t="inlineStr"><is><t xml:space="preserve">'.$esc($value).'</t></is></c>';
-            }
-            $sheetRows .= '<row r="'.($r + 1).'">'.$xmlCells.'</row>';
+    /** 0 → "A", 25 → "Z", 26 → "AA" (the reverse of columnIndex()). */
+    private static function columnLetters(int $index): string
+    {
+        $letters = '';
+        for ($index++; $index > 0; $index = intdiv($index - 1, 26)) {
+            $letters = chr(65 + ($index - 1) % 26).$letters;
         }
 
-        $parts = [
-            '[Content_Types].xml' => '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>',
-            '_rels/.rels' => '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>',
-            'xl/workbook.xml' => '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="'.self::NS_MAIN.'" xmlns:r="'.self::NS_REL.'"><sheets><sheet name="'.$esc($sheetName).'" sheetId="1" r:id="rId1"/></sheets></workbook>',
-            'xl/_rels/workbook.xml.rels' => '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>',
-            'xl/worksheets/sheet1.xml' => '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="'.self::NS_MAIN.'"><sheetData>'.$sheetRows.'</sheetData></worksheet>',
-        ];
-
-        self::requireZip();
-        $tmp = tempnam(sys_get_temp_dir(), 'bakr-xlsx');
-        $zip = new ZipArchive;
-        $zip->open($tmp, ZipArchive::OVERWRITE);
-        foreach ($parts as $name => $xml) {
-            $zip->addFromString($name, $xml);
-        }
-        $zip->close();
-
-        $bytes = (string) file_get_contents($tmp);
-        @unlink($tmp);
-
-        return $bytes;
+        return $letters;
     }
 
     /**
@@ -309,14 +286,6 @@ final class Spreadsheet
     public static function workbook(array $sheets): string
     {
         $esc = fn ($s) => htmlspecialchars((string) $s, ENT_XML1 | ENT_QUOTES, 'UTF-8');
-        $col = function (int $i): string {
-            $s = '';
-            for ($i++; $i > 0; $i = intdiv($i - 1, 26)) {
-                $s = chr(65 + ($i - 1) % 26).$s;
-            }
-
-            return $s;
-        };
 
         $types = '';
         $sheetList = '';
@@ -337,7 +306,7 @@ final class Spreadsheet
                     if ($value === null || $value === '') {
                         continue;
                     }
-                    $ref = $col($c).($r + 1);
+                    $ref = self::columnLetters($c).($r + 1);
                     $style = $bold ? ' s="1"' : '';
                     $xmlCells .= is_int($value) || is_float($value)
                         ? '<c r="'.$ref.'"'.$style.'><v>'.(is_float($value) ? rtrim(rtrim(sprintf('%.2F', $value), '0'), '.') : $value).'</v></c>'

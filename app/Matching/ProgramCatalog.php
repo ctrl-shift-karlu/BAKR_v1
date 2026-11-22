@@ -176,6 +176,7 @@ final class ProgramCatalog
         return null;
     }
 
+    /** A program name reduced for comparison: lower case, punctuation removed, "BS" / "BSEd" / "AB" spelled out. */
     private static function nameKey(string $name): string
     {
         $n = mb_strtolower(trim($name));
@@ -185,6 +186,7 @@ final class ProgramCatalog
         return trim(preg_replace('/\s+/', ' ', str_replace(['agroforestry'], ['agro forestry'], $n)));
     }
 
+    /** The program-name patterns of config/program_fields.php (empty outside Laravel, e.g. in plain unit tests). */
     private static function map(): array
     {
         return function_exists('config') ? (array) config('program_fields', []) : [];

@@ -17,21 +17,40 @@ use Throwable;
  */
 class GeminiExplainer implements Explainer
 {
+    /** True when a Gemini API key (BAKR_GEMINI_KEY) is set, so explanations can be written by Gemini. */
     public static function configured(): bool
     {
         return filled(config('bakr_ai.gemini.key'));
     }
 
+    /**
+     * Asks Gemini to explain one match in plain words.
+     *
+     * @param  array  $ctx  ExplanationPrompt::matchContext() data (no name or e-mail)
+     * @return string|null the explanation, or null when Gemini is off or unreachable
+     */
     public function explainMatch(array $ctx): ?string
     {
         return $this->ask(ExplanationPrompt::matchMessage($ctx));
     }
 
+    /**
+     * Asks Gemini for a short overview of all of a student's matches.
+     *
+     * @param  list<array>  $contexts  one ExplanationPrompt::matchContext() per match
+     * @return string|null the overview, or null when Gemini is off or unreachable
+     */
     public function summarize(array $contexts): ?string
     {
         return $this->ask(ExplanationPrompt::summaryMessage($contexts));
     }
 
+    /**
+     * Sends one prompt to Gemini's generateContent endpoint and returns the cleaned reply text.
+     * The API key travels in a header (never in the URL), and only the HTTP status is logged on failure.
+     *
+     * @return string|null the reply, or null on any error
+     */
     private function ask(string $message): ?string
     {
         if (! self::configured()) {

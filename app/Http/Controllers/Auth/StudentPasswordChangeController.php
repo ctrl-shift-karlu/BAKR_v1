@@ -18,6 +18,7 @@ use Illuminate\View\View;
  */
 class StudentPasswordChangeController extends Controller
 {
+    /** Shows the "Change your password" page (forced after the first sign-in with a temporary password). */
     public function show(Request $request): View
     {
         $portal = $this->portal($request);
@@ -29,6 +30,10 @@ class StudentPasswordChangeController extends Controller
         ]);
     }
 
+    /**
+     * Checks the current password, saves the new one and signs the account out on every other device.
+     * After a forced change the person goes to their portal; a change from Settings stays on that page.
+     */
     public function update(Request $request): RedirectResponse
     {
         $data = $request->validate([

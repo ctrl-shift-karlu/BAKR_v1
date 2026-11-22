@@ -11,6 +11,7 @@ use Illuminate\View\View;
 /** Provider Help: about BAKR for providers, what they can and can't see, and a message form. */
 class ProviderHelpController extends ProviderController
 {
+    /** Shows the provider Help page with its message form. */
     public function show(Request $request): View
     {
         $scope = $this->scope($request);
@@ -27,6 +28,7 @@ class ProviderHelpController extends ProviderController
         return array_diff_key(ContactMessage::TOPICS, ['info' => true]);
     }
 
+    /** Saves and e-mails a Help message to the BAKR team, signed with the provider's name and account e-mail. */
     public function message(Request $request, ContactMessageService $messages): RedirectResponse
     {
         $scope = $this->scope($request);

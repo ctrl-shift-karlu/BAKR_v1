@@ -18,10 +18,11 @@ use Illuminate\View\View;
  */
 class StudentPortalController extends Controller
 {
+    /** All scholarships inside the portal, each card showing the student's own match status. */
     public function scholarships(Request $request): View
     {
         $scholarships = ScholarshipCatalogController::activeScholarships();
-        $current = ScholarshipApplication::where('user_id', $request->user()->id)->where('is_current', true)->first();
+        $current = ScholarshipApplication::currentFor($request->user()->id)->first();
 
         return view('student.scholarships', [
             'sections' => ScholarshipCatalogController::sections($scholarships),
@@ -30,11 +31,13 @@ class StudentPortalController extends Controller
         ]);
     }
 
+    /** Shows the student Help page with its message form. */
     public function help(): View
     {
         return view('student.help', ['topics' => ContactMessage::TOPICS]);
     }
 
+    /** Saves and e-mails a Help message to the BAKR team; the name and e-mail come from the account. */
     public function message(Request $request, ContactMessageService $messages): RedirectResponse
     {
         $data = $this->validateHelpMessage($request, ContactMessage::TOPICS);

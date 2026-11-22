@@ -11,8 +11,13 @@ use Illuminate\Mail\Mailables\Envelope;
 /** The BAKR team's answer to a Contact / Help message, sent from the admin's Messages page (not queued). */
 class ContactMessageReply extends Mailable
 {
+    /**
+     * @param  ContactMessage  $contact  the message being answered
+     * @param  string  $body  the admin's reply text
+     */
     public function __construct(public ContactMessage $contact, public string $body) {}
 
+    /** Subject "Re: <topic> (BAKR)"; a reply goes back to the BAKR team inbox. */
     public function envelope(): Envelope
     {
         return new Envelope(
@@ -21,6 +26,7 @@ class ContactMessageReply extends Mailable
         );
     }
 
+    /** The e-mail body (resources/views/emails/contact-reply.blade.php). */
     public function content(): Content
     {
         return new Content(view: 'emails.contact-reply');

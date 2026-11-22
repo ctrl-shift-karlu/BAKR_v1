@@ -11,13 +11,22 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
+/**
+ * Student (matching) accounts: self-registration, sign-in and sign-out at /studentRegister and /studentLogin.
+ * Role and status are always set here on the server, never taken from the form.
+ */
 class StudentAuthController extends Controller
 {
+    /** Shows the student registration page. */
     public function showRegister(): View
     {
         return view('auth.register');
     }
 
+    /**
+     * Creates a student account from the validated form, signs the student in and opens the matching form.
+     * The password is hashed by the User model's "hashed" cast.
+     */
     public function register(StudentRegisterRequest $request): RedirectResponse
     {
         $data = $request->validated();
@@ -37,11 +46,16 @@ class StudentAuthController extends Controller
         return redirect()->route('student.application.show');
     }
 
+    /** Shows the student sign-in page. */
     public function showLogin(): View
     {
         return view('auth.student-login');
     }
 
+    /**
+     * Signs in an ACTIVE student account ("Keep me signed in" = remember cookie). Scholar and provider
+     * accounts are refused here; they have their own sign-in pages.
+     */
     public function login(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
@@ -67,6 +81,7 @@ class StudentAuthController extends Controller
         return $this->intendedWithin('student', route('student.dashboard'));
     }
 
+    /** Signs the student out, destroys the session and issues a new CSRF token. */
     public function logout(Request $request): RedirectResponse
     {
         Auth::logout();

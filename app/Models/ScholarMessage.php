@@ -23,6 +23,7 @@ class ScholarMessage extends Model
 
     protected $fillable = ['scholar_id', 'user_id', 'topic', 'message'];
 
+    /** Reply and handled dates as Carbon objects. */
     protected function casts(): array
     {
         return [
@@ -32,16 +33,19 @@ class ScholarMessage extends Model
         ];
     }
 
+    /** The scholar row (one scholarship) the request is about. */
     public function scholar(): BelongsTo
     {
         return $this->belongsTo(Scholar::class);
     }
 
+    /** The scholar account that sent the request. */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** The topic in words, e.g. "Contact information (e-mail, mobile number, address)". */
     public function topicLabel(): string
     {
         return self::TOPICS[$this->topic] ?? ucfirst($this->topic);

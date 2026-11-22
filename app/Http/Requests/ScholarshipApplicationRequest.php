@@ -8,13 +8,19 @@ use App\Models\StudentConsent;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
+/**
+ * Validation of the student's matching form: the rules come from ApplicationSchema (one source of truth),
+ * plus the Privacy Policy agreement and the typed-name certification at the end of the form.
+ */
 class ScholarshipApplicationRequest extends FormRequest
 {
+    /** Only signed-in students reach this request. */
     public function authorize(): bool
     {
         return true;   // the auth + role:student middleware already guards the route
     }
 
+    /** Sets the year level to 1 for an incoming first-year (the field is hidden for them). */
     protected function prepareForValidation(): void
     {
         // Incoming first-years are always year 1, so the field is hidden for them.
@@ -23,6 +29,7 @@ class ScholarshipApplicationRequest extends FormRequest
         }
     }
 
+    /** The ApplicationSchema rules plus the Privacy Policy agreement and the certification name. */
     public function rules(): array
     {
         $rules = ApplicationSchema::rules();
@@ -34,6 +41,7 @@ class ScholarshipApplicationRequest extends FormRequest
         return $rules;
     }
 
+    /** Plain-language error messages shown next to the questions. */
     public function messages(): array
     {
         return [
@@ -53,6 +61,10 @@ class ScholarshipApplicationRequest extends FormRequest
         ];
     }
 
+    /**
+     * Extra checks after the rules: the certification name must match the account name, the program must be
+     * offered at the chosen campus, "awards" must be answered once a real talent is ticked, and the GWA must fit its scale.
+     */
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $v) {
@@ -96,6 +108,7 @@ class ScholarshipApplicationRequest extends FormRequest
         return $norm($a) !== '' && $norm($a) === $norm($b);
     }
 
+    /** True when the student already agreed to the current Privacy Policy on an earlier submit. */
     public function hasConsent(): bool
     {
         return $this->user() !== null && StudentConsent::where('user_id', $this->user()->id)

@@ -65,6 +65,10 @@ class ScholarRoster
         'program' => 'Program', 'year_level' => 'Year level',
     ];
 
+    /**
+     * @param  ScholarAccounts  $accounts  creates or links each scholar's login
+     * @param  RequirementChecklist  $checklist  gives a new scholar the checklists already open
+     */
     public function __construct(private ScholarAccounts $accounts, private RequirementChecklist $checklist) {}
 
     /**
@@ -78,6 +82,7 @@ class ScholarRoster
         return [$required ? 'required' : 'nullable', Rule::in(array_values(array_unique(array_filter([...AcademicTerm::startOptions(), $keep]))))];
     }
 
+    /** Validation rules for one scholar, used by the Add form and for every row of an imported file. */
     public function rules(): array
     {
         return [
@@ -207,6 +212,7 @@ class ScholarRoster
             'scholar_code' => 'Scholar ID', 'birthdate' => 'birthday', 'mobile' => 'mobile number'];
     }
 
+    /** Error messages for rules(). */
     public function messages(): array
     {
         return ['campus.required' => 'Choose the campus the scholar studies at.'] + self::personalMessages();
@@ -247,7 +253,11 @@ class ScholarRoster
      * Adds one validated scholar (grant already resolved; duplicates already checked by the caller),
      * creating or linking their account, then e-mails the login details.
      *
-     * @return array{scholar: ?Scholar, error: ?string, emailed: bool, new_account: bool}
+     * @param  array  $data  the validated form fields
+     * @param  string|null  $grantKey  the resolved grant type (resolveGrant())
+     * @param  bool  $withStipend  true when the provider uses Disbursements (the published amount is filled in)
+     * @param  User  $by  the provider account adding the scholar
+     * @return array{scholar: ?Scholar, error: ?string, emailed: bool, new_account: bool, converted: bool} (converted = an existing student account became a scholar account)
      */
     public function add(Scholarship $scholarship, array $data, ?string $grantKey, bool $withStipend, User $by): array
     {

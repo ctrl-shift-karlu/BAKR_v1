@@ -371,7 +371,7 @@ class ProviderOperationsTest extends TestCase
         $probation = $this->scholar('ched-tes', ['status' => 'active', 'stipend_amount' => 10000]);
         $graduated = $this->scholar('ched-tdp', ['status' => 'terminated']);
         $noAmount = $this->scholar('ched-tdp', ['stipend_amount' => null]);
-        $term = AcademicTerm::currentSemester();
+        $term = AcademicTerm::current();
 
         $this->actingAs($this->provider('ched'));
         $this->post('/provider/disbursements/generate', ['term' => $term, 'release_type' => 'semester'])->assertRedirect();
@@ -391,7 +391,7 @@ class ProviderOperationsTest extends TestCase
     public function test_preparing_monthly_creates_one_record_per_month_of_the_semester(): void
     {
         $scholar = $this->scholar('ched-tdp', ['stipend_amount' => 1500]);
-        $term = AcademicTerm::currentSemester();
+        $term = AcademicTerm::current();
 
         $this->actingAs($this->provider('ched'));
         $this->post('/provider/disbursements/generate', ['term' => $term, 'release_type' => 'monthly'])->assertRedirect();

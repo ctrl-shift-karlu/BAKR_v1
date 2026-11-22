@@ -455,7 +455,7 @@ class ProviderRosterTest extends TestCase
         $s->requirements()->create(['term' => '1st Semester 2026-2027', 'name' => 'COR', 'status' => 'submitted']);
         $this->actingAs($this->provider('ched'));
 
-        $this->post('/provider/disbursements/generate', ['term' => AcademicTerm::currentSemester(), 'release_type' => 'semester'])->assertRedirect();
+        $this->post('/provider/disbursements/generate', ['term' => AcademicTerm::current(), 'release_type' => 'semester'])->assertRedirect();
         $this->get('/provider/disbursements')->assertOk()->assertSee('Roster Person');
         $this->get('/provider/requirements?term='.urlencode('1st Semester 2026-2027'))->assertOk();
         $this->get('/provider/dashboard')->assertOk();

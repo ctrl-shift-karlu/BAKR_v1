@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/** A student's agreement to the Privacy Policy (Data Privacy Act of 2012), renewed on every submit of the matching form. */
 class StudentConsent extends Model
 {
     /**
@@ -18,6 +19,7 @@ class StudentConsent extends Model
 
     protected $fillable = ['user_id', 'consent_type', 'accepted_at'];
 
+    /** The acceptance date as a Carbon object. */
     protected function casts(): array
     {
         return ['accepted_at' => 'datetime'];

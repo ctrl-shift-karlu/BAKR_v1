@@ -12,6 +12,10 @@ use Illuminate\View\View;
 /** Overview: the provider's scholarships, this term's stipends and requirements at a glance. */
 class ProviderDashboardController extends ProviderController
 {
+    /**
+     * Overview page: per scholarship, the current scholars, this semester's stipends and documents, plus the five
+     * newest scholars, the Active / Inactive / Terminated totals and the five uploads waiting for review.
+     */
     public function index(Request $request): View
     {
         $scope = $this->scope($request);
@@ -19,7 +23,7 @@ class ProviderDashboardController extends ProviderController
         $scholarships = $scope->scholarships();
 
         $scholars = $scope->scholars()->selectRaw('scholarship_id, status, COUNT(*) as n')->groupBy('scholarship_id', 'status')->get();
-        $pay = $scope->disbursements()->where('term', AcademicTerm::currentSemester())
+        $pay = $scope->disbursements()->where('term', AcademicTerm::current())
             ->join('scholars', 'scholars.id', '=', 'stipend_disbursements.scholar_id')
             ->selectRaw('scholars.scholarship_id as sid, stipend_disbursements.status as st, COUNT(*) as n, SUM(stipend_disbursements.amount) as total')
             ->groupBy('scholars.scholarship_id', 'stipend_disbursements.status')->get();

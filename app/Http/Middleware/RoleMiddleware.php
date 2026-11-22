@@ -15,6 +15,11 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class RoleMiddleware
 {
+    /**
+     * Signs out a deactivated account, then allows the request only for the listed roles (403 otherwise).
+     *
+     * @param  string  ...$roles  the allowed roles from the route, e.g. role:student
+     */
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
         $user = $request->user();

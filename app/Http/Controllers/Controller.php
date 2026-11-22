@@ -6,6 +6,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
+/** Base class of every BAKR controller, with the small helpers several portals share. */
 abstract class Controller
 {
     /**

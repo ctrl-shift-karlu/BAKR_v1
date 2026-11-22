@@ -9,7 +9,8 @@ use Illuminate\View\View;
 /**
  * Public Scholarships page. Cards and modals are rendered from the `scholarships` table,
  * the same rows providers edit in the Provider Portal, so the page never drifts from them.
- * The student portal shows the same catalogue (StudentCatalogController) via sections().
+ * The student and scholar portals show the same catalogue (StudentPortalController, ScholarPortalController)
+ * through activeScholarships() and sections().
  */
 class ScholarshipCatalogController extends Controller
 {
@@ -20,6 +21,7 @@ class ScholarshipCatalogController extends Controller
         'private' => ['Non-Government', 'Private and foundation programs.', 'private / foundation'],
     ];
 
+    /** Shows the public Scholarships page, grouped into the sector tabs. */
     public function index(): View
     {
         $scholarships = self::activeScholarships();
@@ -30,6 +32,7 @@ class ScholarshipCatalogController extends Controller
         ]);
     }
 
+    /** Every active scholarship, in catalogue order (shared by the public page and both portals). */
     public static function activeScholarships(): Collection
     {
         return Scholarship::where('is_active', true)->orderBy('sort_order')->get();

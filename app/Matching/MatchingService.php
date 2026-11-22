@@ -8,6 +8,9 @@ namespace App\Matching;
  */
 final class MatchingService
 {
+    /**
+     * @param  RuleEvaluator  $evaluator  checks one scholarship's rules against the facts
+     */
     public function __construct(private RuleEvaluator $evaluator = new RuleEvaluator) {}
 
     /**

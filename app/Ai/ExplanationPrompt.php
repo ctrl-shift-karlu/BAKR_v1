@@ -37,6 +37,11 @@ TXT;
         ];
     }
 
+    /**
+     * The user message for explaining one match: the scholarship facts and the rule outcomes as JSON data.
+     *
+     * @param  array  $ctx  matchContext() data
+     */
     public static function matchMessage(array $ctx): string
     {
         return 'Explain this result to the student in 3 short parts, written as one paragraph each, 110 words in total at most: '

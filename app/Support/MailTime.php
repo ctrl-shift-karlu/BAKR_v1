@@ -13,6 +13,7 @@ class MailTime
 {
     public const SECONDS_PER_MAIL = 60;
 
+    /** Restarts PHP's execution timer with at least SECONDS_PER_MAIL seconds; call it before each e-mail. */
     public static function extend(): void
     {
         $limit = (int) ini_get('max_execution_time');

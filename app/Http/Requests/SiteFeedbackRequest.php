@@ -9,6 +9,7 @@ use Illuminate\Validation\Rule;
 /** The About page feedback form: a required 1-5 star rating, what was used, an optional comment. */
 class SiteFeedbackRequest extends FormRequest
 {
+    /** Anyone may send feedback (the route is rate-limited to 5 per 10 minutes). */
     public function authorize(): bool
     {
         return true;
@@ -20,6 +21,7 @@ class SiteFeedbackRequest extends FormRequest
         return route('about').'#feedback';
     }
 
+    /** Trims the text fields, lower-cases the e-mail and keeps only text values in the aspects list. */
     protected function prepareForValidation(): void
     {
         $this->merge([
@@ -30,6 +32,7 @@ class SiteFeedbackRequest extends FormRequest
         ]);
     }
 
+    /** The validation rules of the feedback form. */
     public function rules(): array
     {
         return [
@@ -43,6 +46,7 @@ class SiteFeedbackRequest extends FormRequest
         ];
     }
 
+    /** Friendlier error messages for the feedback form. */
     public function messages(): array
     {
         return [

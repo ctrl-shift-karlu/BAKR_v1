@@ -29,6 +29,13 @@ class SyncScholarship extends Command
 
     private const FIELDS = ['name', 'provider', 'official_url', 'overview', 'benefits', 'grants', 'documents', 'application_route', 'window_note', 'source_note', 'rules', 'verified_on'];
 
+    /**
+     * Compares one scholarship in the database with config/scholarships.php and prints the differences.
+     * With --apply it saves them (keeping provider-owned dates and maintaining documents), logs a revision
+     * and re-matches every student; a slug that is not in the database yet is added instead.
+     *
+     * @return int Command::SUCCESS, or Command::FAILURE when the slug is not in config/scholarships.php
+     */
     public function handle(ScholarshipApplicationService $applications): int
     {
         $slug = (string) $this->argument('slug');

@@ -30,6 +30,9 @@ class ScholarshipEditor
 
     public const NUMERIC_TYPES = ['gte', 'lte', 'income_lte'];
 
+    /**
+     * @param  ScholarshipApplicationService  $applications  re-matches students after a rule change
+     */
     public function __construct(private ScholarshipApplicationService $applications) {}
 
     /**
@@ -184,6 +187,7 @@ class ScholarshipEditor
         return $raw + 0;   // int when whole, float otherwise
     }
 
+    /** The editable fields of a scholarship in a comparable form (used for the revision log and change detection). */
     private function snapshot(Scholarship $s): array
     {
         return [

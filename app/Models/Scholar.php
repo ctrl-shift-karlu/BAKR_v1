@@ -64,26 +64,31 @@ class Scholar extends Model
     /** Longest Scholar ID a provider can type. */
     public const SCHOLAR_CODE_MAX = 40;
 
+    /** Column types: stipend as a 2-decimal amount, dates as Carbon objects. */
     protected function casts(): array
     {
         return ['stipend_amount' => 'decimal:2', 'credentials_sent_at' => 'datetime', 'birthdate' => 'date'];
     }
 
+    /** The scholar's BAKR login (null for older roster rows without an account). */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** The scholarship this scholar holds. */
     public function scholarship(): BelongsTo
     {
         return $this->belongsTo(Scholarship::class);
     }
 
+    /** The scholar's maintaining-document checklist items, every semester. */
     public function requirements(): HasMany
     {
         return $this->hasMany(ScholarRequirement::class);
     }
 
+    /** The scholar's stipend records, every semester. */
     public function disbursements(): HasMany
     {
         return $this->hasMany(StipendDisbursement::class);
@@ -110,6 +115,7 @@ class Scholar extends Model
         return $this->user?->name ?? ($this->full_name ?: 'Unnamed scholar');
     }
 
+    /** The account e-mail, else the roster e-mail (null when neither is known). */
     public function contactEmail(): ?string
     {
         return $this->user?->email ?? $this->email;
@@ -208,11 +214,13 @@ class Scholar extends Model
         return $this->scholarship?->hasGrantTypes() ? ($this->grant()['label'] ?? null) : null;
     }
 
+    /** The year level in words, e.g. "2nd year" (null when not recorded). */
     public function yearLabel(): ?string
     {
         return $this->year_level === null ? null : (self::YEAR_LEVELS[$this->year_level] ?? 'Year '.$this->year_level);
     }
 
+    /** The gender in words ("Male" / "Female"), or null when not recorded. */
     public function genderLabel(): ?string
     {
         return $this->gender ? (self::GENDERS[$this->gender] ?? null) : null;
@@ -327,16 +335,19 @@ class Scholar extends Model
         return $this->requirements()->where(self::overdueConstraint())->get();
     }
 
+    /** The provider-facing status in words: Active, Inactive or Terminated. */
     public function statusLabel(): string
     {
         return self::STATUSES[$this->standing()];
     }
 
+    /** The CSS tone class of the status (is-ok, is-warn, is-danger). */
     public function statusTone(): string
     {
         return self::STATUS_TONES[$this->standing()];
     }
 
+    /** True when the provider ended this scholarship (no uploads, no stipends). */
     public function isTerminated(): bool
     {
         return $this->status === 'terminated';
@@ -348,6 +359,7 @@ class Scholar extends Model
         return $this->status === 'inactive';
     }
 
+    /** True for an Active stored status: only these scholars get checklists and stipends. */
     public function isInGoodStanding(): bool
     {
         return in_array($this->status, self::GOOD_STANDING, true);

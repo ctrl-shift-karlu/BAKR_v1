@@ -11,11 +11,16 @@ use Illuminate\View\View;
 /** Provider Portal sign-in. Accounts are created by ProviderAccountSeeder only (no registration). */
 class ProviderAuthController extends Controller
 {
+    /** Shows the provider sign-in page. */
     public function showLogin(): View
     {
         return view('auth.provider-login');
     }
 
+    /**
+     * Signs in an ACTIVE provider account whose provider_key exists in config/providers.php.
+     * The session id is regenerated after sign-in (prevents session fixation).
+     */
     public function login(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
@@ -42,6 +47,7 @@ class ProviderAuthController extends Controller
         return $this->intendedWithin('provider', route('provider.dashboard'));
     }
 
+    /** Signs the provider out, destroys the session and issues a new CSRF token. */
     public function logout(Request $request): RedirectResponse
     {
         Auth::logout();

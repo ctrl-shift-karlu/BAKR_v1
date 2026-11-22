@@ -11,8 +11,15 @@ use App\Models\StudentConsent;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Saves a student's matching-form answers as versions and stores the rule-check results (step 1 of hybrid
+ * matching; the Gemini review is step 2, AiMatchService). Also re-matches saved answers after a scholarship changes.
+ */
 class ScholarshipApplicationService
 {
+    /**
+     * @param  MatchingService  $matcher  runs the rule check for every scholarship
+     */
     public function __construct(private MatchingService $matcher) {}
 
     /**
@@ -34,8 +41,7 @@ class ScholarshipApplicationService
                 );
             }
 
-            $current = ScholarshipApplication::where('user_id', $user->id)
-                ->where('is_current', true)->lockForUpdate()->first();
+            $current = ScholarshipApplication::currentFor($user->id)->lockForUpdate()->first();
 
             // Same answers, same results: do not create a new version.
             if ($current && self::sameAnswers($current->answers, $answers)) {

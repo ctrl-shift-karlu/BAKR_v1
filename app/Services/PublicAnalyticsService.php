@@ -25,6 +25,7 @@ class PublicAnalyticsService
     /** One colour per meaning (same as the portals' --viz-* tones): match status → tone class suffix. */
     public const OUTCOME_TONES = ['eligible' => 'good', 'possible' => 'warn', 'needs_info' => 'blue', 'not_eligible' => 'gray'];
 
+    /** The About page statistics, read live from the database (groups smaller than MIN_GROUP_SIZE are hidden). */
     public function summary(): array
     {
         return $this->fromDatabase();

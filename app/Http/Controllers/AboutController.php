@@ -9,8 +9,13 @@ use App\Services\PublicAnalyticsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
+/**
+ * Public About page: live aggregate statistics (PublicAnalyticsService), the team, and the star-rating
+ * feedback form. Only feedback that the sender agreed to share and the BAKR team approved is shown.
+ */
 class AboutController extends Controller
 {
+    /** Shows the About page with the matching statistics and the approved feedback summary (star counts, average, two quotes). */
     public function show(PublicAnalyticsService $analytics): View
     {
         // Only feedback the sender agreed to share AND the BAKR team approved is ever counted or quoted here.
@@ -33,6 +38,10 @@ class AboutController extends Controller
         ]);
     }
 
+    /**
+     * Saves a star-rating feedback message (topic "feedback") and e-mails it to the BAKR team.
+     * A filled-in honeypot field ("website") means a bot: the page answers as if it worked but stores nothing.
+     */
     public function feedback(SiteFeedbackRequest $request, ContactMessageService $messages): RedirectResponse
     {
         $back = redirect()->to(route('about').'#feedback');
