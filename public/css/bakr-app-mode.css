@@ -1,0 +1,42 @@
+/* BAKR "app mode": only inside the installed app (html.is-app, set by public/js/bakr-app-mode.js).
+   Goal: instant and smooth on phones. No entrance / decorative animation, no blur (backdrop-filter is
+   the most expensive effect on phone GPUs), content shown at once instead of revealed on scroll,
+   no transitions (everything changes at once). Loading spinners keep turning so you still see progress.
+   The normal website (browser tab) is unchanged. */
+
+html.is-app { scroll-behavior: auto !important; }
+
+html.is-app *,
+html.is-app *::before,
+html.is-app *::after {
+  animation: none !important;
+  transition-duration: 0s !important;   /* menus, dialogs, hovers change at once */
+  transition-delay: 0s !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Scroll-reveal: everything is visible straight away. */
+html.is-app .nx-reveal,
+html.is-app .nx-reveal-stagger > * { opacity: 1 !important; transform: none !important; }
+
+/* The preloader never shows in the app. */
+html.is-app .nx-preloader { display: none !important; }
+
+/* Page changes: no cross-document fade. */
+html.is-app::view-transition-group(*),
+html.is-app::view-transition-old(*),
+html.is-app::view-transition-new(*) { animation: none !important; }
+
+/* Without blur, the see-through hero button gets a firmer fill so its text stays readable. */
+html.is-app .bk-hero .bk-btn-outline { background: rgba(255, 255, 255, .18); }
+
+/* Loading feedback keeps moving (it tells you something is happening). */
+html.is-app .bk-spinner { animation: bkSpin .9s linear infinite !important; }
+html.is-app .bk-topbar::before { animation: bkSlide 1.1s ease-in-out infinite !important; }
+html.is-app .sp-ai-run[aria-busy="true"] > i { animation: sp-ai-spin 1.6s linear infinite !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  html.is-app .bk-spinner,
+  html.is-app .sp-ai-run[aria-busy="true"] > i { animation-duration: 2.4s !important; }
+}

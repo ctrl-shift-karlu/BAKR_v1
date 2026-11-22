@@ -1,0 +1,55 @@
+/* BAKR as an installable app (PWA): the "Install app" buttons (partials/pwa-install) and the
+   app start page (auth/app-start). Loaded on every page by partials/pwa-head. */
+
+[data-pwa-install][hidden],
+[data-pwa-ios-hint][hidden] { display: none !important; }
+
+.pwa-install { display: grid; gap: .4rem; min-width: 0; }
+
+.pwa-install-btn {
+  display: flex; align-items: center; justify-content: center; gap: .55rem;
+  min-height: 40px; padding: .45rem .9rem; border-radius: 12px;
+  font-weight: 600; font-size: var(--text-sm, 14px); line-height: 1.2;
+  cursor: pointer; transition: background .15s ease, color .15s ease;
+}
+.pwa-install-btn i { font-size: 1.05rem; }
+.pwa-install-btn:focus-visible { outline: 2px solid #e2c675; outline-offset: 2px; }
+
+.pwa-ios-hint { margin: 0; font-size: var(--text-xs, 12px); line-height: 1.45; }
+
+/* Portal sidebar (always dark green, both themes): gold, above the red Sign out. */
+.dash .dash-side-foot .pwa-install-btn {
+  border: 1px solid rgba(226, 198, 117, .5); background: rgba(201, 164, 67, .16); color: #f4e3ad;
+}
+.dash .dash-side-foot .pwa-install-btn:hover { background: #c9a443; color: #143a2b; }
+.dash .dash-side-foot .pwa-ios-hint { color: rgba(255, 255, 255, .78); }
+
+/* Public footer. */
+.bk-footer .pwa-install { margin-top: .9rem; justify-items: start; }
+.bk-footer .pwa-install-btn { border: 1px solid currentColor; background: transparent; color: inherit; }
+.bk-footer .pwa-install-btn:hover { background: #c9a443; border-color: #c9a443; color: #143a2b; }
+
+/* App start page (auth/app-start): one button per portal. */
+.pwa-start { display: grid; gap: .65rem; margin-top: .25rem; }
+.pwa-start-link {
+  display: flex; align-items: center; gap: .85rem; padding: .8rem 1rem;
+  border: 1px solid var(--sa-line, #e7e1d6); border-radius: 14px;
+  color: inherit; text-decoration: none; transition: border-color .15s ease, background .15s ease;
+}
+.pwa-start-link:hover, .pwa-start-link:focus-visible { border-color: #c9a443; background: rgba(201, 164, 67, .08); }
+.pwa-start-link > i:first-child {
+  flex: none; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 12px;
+  background: #143a2b; color: #f4e3ad; font-size: 1.15rem;
+}
+.pwa-start-link span { display: grid; min-width: 0; }
+.pwa-start-link strong { font-size: var(--text-md, 16px); }
+.pwa-start-link small { font-size: var(--text-caption, 13px); opacity: .8; }
+.pwa-start-link > i:last-child { margin-left: auto; opacity: .6; }
+.pwa-start-install { margin-top: 1rem; }
+.pwa-start-install .pwa-install-btn { width: 100%; border: 1px solid #c9a443; background: #c9a443; color: #143a2b; }
+
+:root[data-theme="dark"] .pwa-start-link { border-color: rgba(255, 255, 255, .16); }
+
+@media (prefers-reduced-motion: reduce) {
+  .pwa-install-btn, .pwa-start-link { transition: none; }
+}

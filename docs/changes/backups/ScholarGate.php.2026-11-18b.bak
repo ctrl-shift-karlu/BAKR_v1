@@ -1,0 +1,37 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use App\Models\Scholar;
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+/**
+ * Scholars and students share one student account (role "student"); what they see depends on
+ * whether the account holds a scholarship (a `scholars` row).
+ *
+ *   scholar.gate:scholar   scholar portal pages: a student without a scholarship goes to the student dashboard
+ *   scholar.gate:student   matching pages (dashboard, matches, matching form, answer history): a scholar goes
+ *                          to the scholar Overview instead, because matching is not part of the scholar portal
+ */
+class ScholarGate
+{
+    public function handle(Request $request, Closure $next, string $mode): Response
+    {
+        $isScholar = Scholar::heldBy((int) $request->user()?->id);
+
+        if ($mode === 'scholar' && ! $isScholar) {
+            return redirect()->route('student.dashboard');
+        }
+        if ($mode === 'student' && $isScholar) {
+            if ($request->expectsJson()) {
+                abort(403, 'Matching is not available in the scholar portal.');
+            }
+
+            return redirect()->route('scholar.overview');
+        }
+
+        return $next($request);
+    }
+}

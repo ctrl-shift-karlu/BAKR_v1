@@ -1,0 +1,121 @@
+@extends('provider.layout')
+
+@section('title', 'Applicants')
+@section('photo', 'opt/students2.jpg')
+@section('kicker', 'Applicants')
+@section('heading')Students who <em>chose you</em>@endsection
+@section('sub', 'Students who shared their profile with you, and match counts for everyone else.')
+
+@section('content')
+@php
+    $pillFor = ['submitted' => 'is-info', 'approved' => 'is-ok', 'rejected' => 'is-danger', 'withdrawn' => ''];
+    $matchPill = ['eligible' => 'is-ok', 'possible' => 'is-warn', 'needs_info' => 'is-info', 'not_eligible' => ''];
+@endphp
+
+<div class="dash-section-head pv-first">
+    <h2 class="dash-section-title">Shared with you</h2>
+    <nav class="dash-seg" aria-label="Filter by status">
+        @foreach (\App\Models\ProviderApplication::STATUSES as $key => $label)
+            <a href="{{ route('provider.applicants', ['status' => $key]) }}" @if ($status === $key) aria-current="true" @endif>{{ $label }} ({{ $statusCounts[$key] ?? 0 }})</a>
+        @endforeach
+    </nav>
+</div>
+
+<div class="dash-table-wrap">
+    <table class="dash-table">
+        <thead>
+            <tr><th scope="col">Student</th><th scope="col">Scholarship</th><th scope="col">Program / year</th><th scope="col">Current match</th><th scope="col">Shared</th><th scope="col">Status</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr>
+        </thead>
+        <tbody>
+        @forelse ($applications as $a)
+            @php
+                $snap = $a->snapshot ?? [];
+                $match = $a->status === 'withdrawn' ? null : $a->currentMatch();
+            @endphp
+            <tr>
+                <td>
+                    <div class="dash-person">
+                        <span class="dash-avatar is-2" aria-hidden="true">{{ collect(explode(' ', $a->user->name))->filter()->take(2)->map(fn ($w) => mb_substr($w, 0, 1))->implode('') }}</span>
+                        <div><strong>{{ $a->user->name }}</strong>@if ($a->status !== 'withdrawn')<small>{{ $a->user->email }}</small>@endif</div>
+                    </div>
+                </td>
+                <td><span class="dash-pill is-violet">{{ $a->scholarship->shortName() }}</span></td>
+                <td>
+                    @if ($a->status === 'withdrawn')
+                        <small class="pv-muted">Hidden after withdrawal</small>
+                    @else
+                        {{ $snap['program_name'] ?? '—' }}<br><small class="pv-muted">{{ $snap['campus_name'] ?? '' }}@if (! empty($snap['year_level'])) · Year {{ $snap['year_level'] }}@endif</small>
+                    @endif
+                </td>
+                <td>
+                    @if ($match)
+                        <span class="dash-pill {{ $matchPill[$match->status] ?? '' }}">{{ $match->statusLabel() }}</span>
+                    @else
+                        <small class="pv-muted">—</small>
+                    @endif
+                </td>
+                <td><small>{{ $a->consented_at->format('M j, Y') }}</small></td>
+                <td>
+                    <span class="dash-pill {{ $pillFor[$a->status] ?? '' }}">{{ $a->statusLabel() }}</span>
+                    @if ($a->decision_note)<br><small class="pv-muted">{{ $a->decision_note }}</small>@endif
+                </td>
+                <td>
+                    @if ($a->status === 'submitted')
+                        <div class="dash-row-actions">
+                            <form method="POST" action="{{ route('provider.applicants.decide', $a->id) }}">
+                                @csrf
+                                <input type="hidden" name="decision" value="approved">
+                                <button type="submit" class="dash-btn is-sm"><i class="bi bi-check2" aria-hidden="true"></i>Approve</button>
+                            </form>
+                            <details class="pv-decline">
+                                <summary class="dash-btn is-danger is-sm">Decline</summary>
+                                <form method="POST" action="{{ route('provider.applicants.decide', $a->id) }}" class="dash-inline-form">
+                                    @csrf
+                                    <input type="hidden" name="decision" value="rejected">
+                                    <label class="visually-hidden" for="note-{{ $a->id }}">Reason (optional)</label>
+                                    <input id="note-{{ $a->id }}" class="dash-input" name="decision_note" maxlength="500" placeholder="Reason (optional)">
+                                    <button type="submit" class="dash-btn is-danger is-sm">Confirm</button>
+                                </form>
+                            </details>
+                        </div>
+                    @elseif ($a->status === 'approved' && $a->scholar)
+                        <a class="dash-btn is-soft is-sm" href="{{ route('provider.scholars.show', $a->scholar->id) }}">View scholar</a>
+                    @endif
+                </td>
+            </tr>
+        @empty
+            <tr><td colspan="7"><div class="dash-empty"><i class="bi bi-people" aria-hidden="true"></i>No {{ strtolower(\App\Models\ProviderApplication::STATUSES[$status]) }} applicants. Students appear here only after they choose to share a match with you.</div></td></tr>
+        @endforelse
+        </tbody>
+    </table>
+</div>
+{{ $applications->links('pagination::bootstrap-5') }}
+
+<section id="applicants" aria-labelledby="applicants-title">
+    <div class="dash-section-head">
+        <h2 class="dash-section-title" id="applicants-title">All matched students</h2>
+        <p class="pv-privacy"><i class="bi bi-shield-check" aria-hidden="true"></i><span>Students whose <strong>current</strong> BAKR answers were matched. Aggregates only; groups under {{ $minGroup }} are hidden.</span></p>
+    </div>
+    <div class="dash-board">
+        @foreach (['eligible' => 'ok', 'possible' => 'warn', 'needs_info' => 'info', 'not_eligible' => ''] as $st => $dot)
+            <div class="dash-col">
+                <div class="dash-col-head"><h3><span class="dash-dot {{ $dot }}" aria-hidden="true"></span>{{ $statusLabels[$st] ?? $st }}</h3></div>
+                <ul class="dash-rows">
+                    @foreach ($scholarships as $i => $s)
+                        @php($count = $stats[$s->id][$st])
+                        <li class="dash-row is-{{ ($i % 4) + 1 }}">
+                            <span class="dash-avatar" aria-hidden="true">{{ mb_substr($s->shortName(), 0, 4) }}</span>
+                            <span>{{ $s->name }}</span>
+                            @if ($count === null)
+                                <b class="is-hidden">Fewer than {{ $minGroup }}</b>
+                            @else
+                                <b>{{ number_format($count) }}</b>
+                            @endif
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        @endforeach
+    </div>
+</section>
+@endsection

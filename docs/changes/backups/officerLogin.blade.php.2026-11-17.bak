@@ -1,0 +1,14 @@
+@include('partials.staff-login', [
+    'role' => 'officer',
+    'portal' => 'Officer Portal',
+    'title' => 'Officer login',
+    'help' => 'Sign in with your DNSC scholarship office account.',
+    'eyebrow' => 'BAKR Officer Portal',
+    'headline' => 'Every application, <em>one pipeline.</em>',
+    'lead' => 'Review applications, manage approvals and keep track of every scholar in one view.',
+    'points' => [
+        ['bi-clipboard-check', 'Review applications and approve or return them.'],
+        ['bi-folder-check', 'Check submitted documents for each scholar and term.'],
+        ['bi-bar-chart', 'Follow the scholarship pipeline with clear numbers.'],
+    ],
+])

@@ -1,0 +1,228 @@
+﻿/* BAKR — Admin portal: the Analytics chart (resources/views/admin/partials/stacked), the
+   "why students don't qualify" list and the providers table. Server-rendered, no chart library.
+   Load before bakr-dashboard.css.
+   Colours: the one-colour-per-meaning --viz-* tokens defined once in bakr-dashboard.css (same as the
+   provider charts, the pills and the student portal). The legend and "Show as table" carry the
+   numbers, so colour never works alone. */
+
+:is(.viz-swatch, .viz-seg-bar).is-good { background: var(--viz-good); }
+:is(.viz-swatch, .viz-seg-bar).is-warn { background: var(--viz-warn); }
+:is(.viz-swatch, .viz-seg-bar).is-blue { background: var(--viz-blue); }
+:is(.viz-swatch, .viz-seg-bar).is-critical { background: var(--viz-critical); }
+:is(.viz-swatch, .viz-seg-bar).is-gray { background: var(--viz-gray); }
+
+/* ---- Legend ---- */
+.viz-legend { list-style: none; margin: 0 0 .9rem; padding: 0; display: flex; flex-wrap: wrap; gap: .4rem 1.1rem; font-size: var(--text-sm); }
+.viz-legend li { display: flex; align-items: center; gap: .45rem; }
+.viz-legend-label { color: var(--dash-ink); }
+.viz-swatch { flex: 0 0 auto; width: 12px; height: 12px; border-radius: 4px; }
+
+/* ---- 100% stacked bars ---- */
+.viz-stack { list-style: none; margin: 0; padding: 0; display: grid; gap: .75rem; }
+.viz-stack li { display: grid; grid-template-columns: minmax(5.5rem, 26%) 1fr auto; align-items: center; gap: .75rem; font-size: var(--text-sm); }
+.viz-bar-label { min-width: 0; overflow-wrap: anywhere; font-weight: 600; color: var(--dash-ink); }
+.viz-bar-label small { display: block; font-weight: 400; font-size: var(--text-xs); color: var(--dash-ink-faint); }
+.viz-bar-value { min-width: 2.5rem; text-align: right; font-weight: 600; color: var(--dash-text-strong); font-variant-numeric: tabular-nums; }
+.viz-stack-track { display: flex; gap: 2px; height: 14px; }   /* 2px surface gap between segments */
+.viz-seg-bar { display: block; height: 100%; min-width: 3px; }
+.viz-seg-bar:first-child { border-radius: 4px 0 0 4px; }
+.viz-seg-bar:last-child { border-radius: 0 4px 4px 0; }
+.viz-seg-bar:only-child { border-radius: 4px; }
+.viz-seg-bar:hover { filter: brightness(1.08); }
+.viz-stack-track.is-empty { align-items: center; height: auto; min-height: 14px; padding: .1rem .5rem; border-radius: 4px; background: var(--viz-track); font-size: var(--text-xs); color: var(--dash-ink-soft); }   /* ink-faint was 4:1 on the dark track */
+
+/* ---- Table view ---- */
+
+/* =====================================================================================================
+   Analytics page (reworked 2026-11-19). Uses the shared dashboard tokens only (--dash-*, --viz-*, --text-*).
+   Layout:  .an-pair  table | chart   (matching)        .an-duo  chart | chart   (scholars, sign-ups)
+   Both are one column on small screens and two from 1280px (the sidebar takes ~280px of that).
+   ===================================================================================================== */
+
+/* ---- Section headings and card heads ---- */
+.dash .an-sub { margin: .2rem 0 0; font-size: var(--text-caption); color: var(--dash-ink-soft); }
+.dash .an-card { display: flex; flex-direction: column; min-width: 0; }
+.dash .an-card-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem .9rem; margin-bottom: .35rem; }
+.dash .an-card-head .dash-card-title { margin: 0; }
+.dash .an-lead { margin: 0 0 1rem; font-size: var(--text-caption); color: var(--dash-ink-soft); }
+/* Text scale on this page: data = --text-sm, descriptions (sub, lead, note, fact note) = --text-caption,
+   chart labels, tags and table headers = --text-xs. */
+.dash .an-note { margin: .9rem 0 0; font-size: var(--text-caption); color: var(--dash-ink-soft); }
+.dash .an-foot { margin: .6rem 0 0; }
+
+/* Smaller filter buttons for inside a card (same segmented control as everywhere, just compact) */
+.dash .dash-seg.is-compact { gap: .35rem; }
+.dash .dash-seg.is-compact a { min-height: 32px; padding: .25rem .85rem; display: inline-flex; align-items: center; background: transparent; box-shadow: inset 0 0 0 1px var(--dash-line); font-size: var(--text-caption); }
+.dash .dash-seg.is-compact a[aria-current="true"] { background: var(--dash-accent-grad); color: #fff; box-shadow: none; }
+
+/* ---- The two layouts ---- */
+.dash .an-pair, .dash .an-duo { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--dash-gap); align-items: stretch; }
+@media (min-width: 1280px) {
+  .dash .an-pair { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); }   /* the table gets the wider side */
+  .dash .an-duo { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+}
+
+/* ---- "Why students don't qualify" and the providers table ---- */
+.dash .an-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+.dash .an-list li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: .65rem; padding: .6rem .75rem; border: 1px solid var(--dash-line); border-radius: var(--dash-radius-sm); font-size: var(--text-sm); }
+.dash .an-list-text { min-width: 0; color: var(--dash-ink); overflow-wrap: anywhere; }
+.dash .an-list b { font-variant-numeric: tabular-nums; color: var(--dash-text-strong); }
+.dash .an-provider { display: inline-flex; align-items: center; gap: .55rem; }
+.dash .an-provider img { width: 28px; height: 28px; flex: none; object-fit: contain; border-radius: 50%; background: #fff; border: 1px solid var(--dash-line); padding: 2px; }
+
+/* ---- Tables: every column visible, no sideways scrolling ----
+   Wide card: the table is fixed to the card's width (first column a little wider, headers wrap, tight cells).
+   Narrow card (phones, or a half-width card on a small laptop): each row becomes a block of "label  value"
+   lines, so every column is still there. The wrapper is a container, so this follows the card's own width,
+   not the screen's. */
+.dash .an-card .dash-table-wrap { box-shadow: none; border: 1px solid var(--dash-line); border-radius: var(--dash-radius-sm); }
+.dash .dash-table-wrap:has(.an-table) { overflow-x: hidden; container-type: inline-size; }
+.dash .dash-table.an-table { table-layout: fixed; width: 100%; }
+.dash .dash-table.an-table th { white-space: normal; vertical-align: bottom; padding: .65rem .4rem; line-height: 1.25; letter-spacing: 0; overflow: hidden; overflow-wrap: anywhere; color: var(--dash-ink-soft); }
+.dash .dash-table.an-table td { padding: .65rem .4rem; overflow-wrap: anywhere; }
+.dash .dash-table.an-table :is(th, td):first-child { padding-left: .85rem; }
+.dash .dash-table.an-table :is(th, td):last-child { padding-right: .85rem; }
+.dash .dash-table.an-table .is-num { white-space: normal; }
+.dash .dash-table.an-table .an-provider { flex-wrap: wrap; }
+.dash .dash-table.an-table th:first-child { width: 22%; }
+.dash .dash-table.an-table.is-wide th:first-child { width: 20%; }
+
+@container (max-width: 30rem) {
+  .dash .dash-table.an-table, .dash .dash-table.an-table :is(tbody, tfoot) { display: block; }
+  .dash .dash-table.an-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }   /* labels move into each cell */
+  .dash .dash-table.an-table tr { display: block; padding: .65rem .85rem; border-bottom: 1px solid var(--dash-line); }
+  .dash .dash-table.an-table tr:last-child { border-bottom: 0; }
+  .dash .dash-table.an-table :is(th, td) { display: flex; justify-content: space-between; gap: .75rem; padding: .15rem 0; border: 0; text-align: right; }
+  .dash .dash-table.an-table :is(th, td):first-child { width: auto; padding: 0 0 .3rem; justify-content: flex-start; text-align: left; font-size: var(--text-sm); }
+  .dash .dash-table.an-table td[data-label]:not(:first-child)::before { content: attr(data-label); color: var(--dash-ink-soft); font-size: var(--text-caption); text-align: left; }
+  .dash .dash-table.an-table tbody tr:hover td { background: transparent; }
+}
+
+/* ---- Collapsed by default but still showing the first rows (bakr-admin-analytics.js; no script = all shown) ---- */
+.dash .an-peek { max-height: var(--peek-h, none); overflow: hidden; position: relative; transition: max-height .3s ease; }
+.dash .an-peek.is-instant { transition: none; }
+.dash .an-peek.is-peek::after { content: ""; position: absolute; inset: auto 0 0 0; height: 2.75rem; pointer-events: none; background: linear-gradient(to bottom, transparent, var(--dash-card, #fff)); }
+.dash .an-peek-toggle { align-self: flex-start; display: inline-flex; align-items: center; gap: .35rem; margin: .6rem 0 0; padding: .3rem .1rem; border: 0; background: none; font: inherit; font-size: var(--text-caption); font-weight: 600; color: var(--dash-accent); cursor: pointer; }
+.dash .an-peek-toggle:hover { text-decoration: underline; }
+.dash .an-peek-toggle:focus-visible { outline: 2px solid var(--dash-accent); outline-offset: 2px; border-radius: 4px; }
+:root[data-theme="dark"] .dash .an-peek-toggle { color: #f0d48a; }
+@media (prefers-reduced-motion: reduce) { .dash .an-peek { transition: none; } }
+
+/* ---- Donut + legend ---- */
+.dash .an-donut { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.5rem; }
+.dash .an-donut .dash-donut { width: 150px; height: 150px; }
+.dash .an-donut .dash-legend { flex: 1 1 11rem; gap: .55rem; }
+.dash .an-donut .dash-legend li { font-size: var(--text-sm); color: var(--dash-ink); }
+
+/* Categorical colours for "which scholarship" slices (statuses keep their own meaning colours) */
+.dash { --viz-cat-1: #1f6f5c; --viz-cat-2: #3b6fb6; --viz-cat-3: #c9803a; --viz-cat-4: #8a5aa8; --viz-cat-5: #c1566b; --viz-cat-6: #9b968b; }
+:root[data-theme="dark"] .dash { --viz-cat-1: #3fa58c; --viz-cat-2: #6a9be0; --viz-cat-3: #e0a064; --viz-cat-4: #b88fd1; --viz-cat-5: #e07f92; --viz-cat-6: #8a877f; }
+.dash .dash-sw.is-cat1 { background: var(--viz-cat-1); }
+.dash .dash-sw.is-cat2 { background: var(--viz-cat-2); }
+.dash .dash-sw.is-cat3 { background: var(--viz-cat-3); }
+.dash .dash-sw.is-cat4 { background: var(--viz-cat-4); }
+.dash .dash-sw.is-cat5 { background: var(--viz-cat-5); }
+.dash .dash-sw.is-cat6 { background: var(--viz-cat-6); }
+.dash .dash-donut-seg.is-cat1 { stroke: var(--viz-cat-1); }
+.dash .dash-donut-seg.is-cat2 { stroke: var(--viz-cat-2); }
+.dash .dash-donut-seg.is-cat3 { stroke: var(--viz-cat-3); }
+.dash .dash-donut-seg.is-cat4 { stroke: var(--viz-cat-4); }
+.dash .dash-donut-seg.is-cat5 { stroke: var(--viz-cat-5); }
+.dash .dash-donut-seg.is-cat6 { stroke: var(--viz-cat-6); }
+
+/* ---- Trivia: two small fact cards ---- */
+.dash .an-trivia { margin-top: 1.25rem; padding: .85rem; border-radius: var(--dash-radius-sm); background: var(--dash-surface); display: grid; gap: .65rem; }
+.dash .an-trivia-title { display: flex; align-items: center; gap: .45rem; font-size: var(--text-xs); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--dash-ink-soft); }
+.dash .an-trivia-title i { color: var(--dash-accent); }
+.dash .an-trivia .an-lead { margin: 0; }
+.dash .an-trivia-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr)); gap: .65rem; }
+.dash .an-fact { display: grid; gap: .1rem; min-width: 0; padding: .65rem .8rem; border-radius: var(--dash-radius-sm); background: var(--dash-card); border: 1px solid var(--dash-line); border-left: 4px solid var(--viz-gray); }
+.dash .an-fact.is-good { border-left-color: var(--viz-good); }
+.dash .an-fact-tag { font-size: var(--text-xs); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--dash-ink-soft); }
+.dash .an-fact strong { font-family: var(--dash-serif); font-weight: 600; font-size: var(--text-lg); line-height: 1.2; color: var(--dash-text-strong); overflow-wrap: anywhere; }
+.dash .an-fact-note { font-size: var(--text-caption); color: var(--dash-ink-soft); }
+
+/* ---- Bars (scholars) and 100% stacked bars ---- */
+.viz-stack.is-absolute .viz-stack-track { min-width: 3px; height: 16px; }
+.viz-stack.is-absolute { gap: .85rem; }
+
+/* ---- Line chart (admin/partials/line): SVG only for the line; dots and text are HTML so the text is always --text-xs ---- */
+.viz-line { position: relative; height: 230px; container-type: inline-size; }
+.viz-plot { position: absolute; inset: 14px 30px 34px 34px; }
+.viz-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.viz-grid { stroke: var(--dash-line); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.viz-path { fill: none; stroke: var(--viz-cat-1); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.viz-area { fill: var(--viz-cat-1); opacity: .14; }
+.viz-ylab, .viz-xlab { position: absolute; font: 400 var(--text-xs) / 1 var(--dash-font, "Poppins", sans-serif); color: var(--dash-ink-soft); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.viz-ylab { right: 100%; margin-right: 8px; transform: translateY(50%); }
+.viz-xlab { top: 100%; margin-top: 10px; transform: translateX(-50%); }
+.viz-dot { position: absolute; width: 12px; height: 12px; border-radius: 50%; transform: translate(-50%, 50%); background: var(--dash-card, #fff); border: 2px solid var(--viz-cat-1); box-sizing: border-box; cursor: default; }
+.viz-dot:hover { background: var(--viz-cat-1); }
+@container (max-width: 30rem) { .viz-xlab.is-minor { display: none; } }
+@media (max-width: 575.98px) {
+  .viz-stack li { grid-template-columns: 1fr auto; gap: .35rem .75rem; }
+  .viz-bar-label { grid-column: 1 / -1; }
+  .dash .an-donut { justify-content: center; }
+}
+
+
+/* ---- Analytics: Print / Save as PDF / Download Excel (2026-11-21) ---- */
+.dash .an-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; margin: 0 0 var(--dash-gap); }
+.dash .an-tools-text { margin-right: auto; font-size: var(--text-caption); color: var(--dash-ink-soft); }
+.dash .an-pdf-tip { display: flex; align-items: center; gap: .5rem; margin: -.4rem 0 var(--dash-gap); padding: .55rem .8rem; border-radius: var(--dash-radius-sm); background: var(--dash-surface); border: 1px solid var(--dash-line); font-size: var(--text-caption); color: var(--dash-ink); }
+.dash .an-pdf-tip[hidden] { display: none; }
+.dash .an-print-head { display: none; }
+@media (max-width: 575.98px) {
+  .dash .an-tools-text { flex-basis: 100%; }
+  .dash .an-tools .dash-btn { flex: 1 1 auto; justify-content: center; }
+}
+
+@media print {
+  @page { size: A4 portrait; margin: 12mm; }
+  html, body.dash { background: #fff !important; }
+  .dash, .dash * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .dash .dash-side, .dash .dash-mobilebar, .dash .dash-backdrop, .dash .dash-hero,
+  .dash .dash-flash, .dash .an-tools, .dash .an-pdf-tip, .dash .an-peek-toggle, .dash .dash-seg.is-compact,
+  .bk-busy, .bk-topbar, dialog { display: none !important; }
+  .dash .dash-panel { display: block !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; border: 0 !important; background: #fff !important; min-height: 0 !important; height: auto !important; overflow: visible !important; }
+  .dash .dash-main { padding: 0 !important; margin: 0 !important; overflow: visible !important; height: auto !important; max-height: none !important; }
+  .dash .an-print-head { display: flex; align-items: center; gap: 12px; margin: 0 0 14px; padding: 0 0 10px; border-bottom: 2px solid #143a2b; color: #143a2b; }
+  .dash .an-print-head img { width: 40px; height: 40px; object-fit: contain; }
+  .dash .an-print-head div { display: grid; gap: 2px; }
+  .dash .an-print-head strong { font-size: 14pt; }
+  .dash .an-print-head span { font-size: 9pt; color: #444; }
+  /* Every row on paper: collapsed boxes are opened. */
+  .dash .an-peek { max-height: none !important; overflow: visible !important; }
+  .dash .an-peek::after { display: none !important; }
+  /* One column, cards kept whole. */
+  .dash .an-pair, .dash .an-duo { grid-template-columns: minmax(0, 1fr) !important; }
+  .dash .dash-card, .dash .dash-kpi, .dash .dash-table-wrap, .dash .an-list li { break-inside: avoid; box-shadow: none !important; }
+  .dash .dash-card { border: 1px solid #d9d4c7; }
+  .dash .dash-section-head { break-after: avoid; margin-top: 1.2rem; }
+  .dash .dash-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+  .dash a[href]::after { content: none !important; }
+}
+
+/* ---- Accounts: search + filters (2026-11-21) ----
+   The Search button sits right beside the box from 576px up (tablets, laptops, desktops) and drops under it,
+   full width, on small phones. Filters wrap onto their own line when there is no room; nothing scrolls sideways. */
+.dash .ac-head { margin-bottom: .75rem; }
+.dash .ac-filters { display: flex; flex-wrap: wrap; align-items: end; gap: 10px 12px; margin: 0 0 16px; }
+.dash .ac-filters > .dash-field { flex: 0 1 220px; min-width: 0; }
+.dash .ac-filters > .ac-search { flex: 1 1 340px; max-width: 520px; }
+.dash .ac-filters > .ac-sort { flex: 0 1 160px; }
+.dash .ac-search-row { display: flex; align-items: stretch; gap: 8px; min-width: 0; }
+.dash .ac-search-row input { flex: 1 1 auto; min-width: 0; width: auto; }
+.dash .ac-search-row .dash-btn { flex: none; white-space: nowrap; }
+.dash .ac-clear { align-self: end; }
+@media (max-width: 575.98px) {
+  .dash .ac-filters > .dash-field, .dash .ac-filters > .ac-search { flex: 1 1 100%; max-width: none; }
+  .dash .ac-search-row { flex-direction: column; }
+  .dash .ac-search-row .dash-btn, .dash .ac-clear { width: 100%; justify-content: center; }
+}
+
+/* ---- Messages: reply by e-mail (.am-reply / .am-sent) moved to bakr-dashboard.css on 2026-11-20:
+        the provider's Messages page and the scholar's correction requests use them too. ---- */
+
+
+

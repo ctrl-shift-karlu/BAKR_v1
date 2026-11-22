@@ -1,0 +1,109 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\Scholar;
+use App\Models\Scholarship;
+use App\Models\ScholarshipApplication;
+use App\Models\ScholarshipMatch;
+use App\Models\User;
+use App\Support\AcademicTerm;
+use Database\Seeders\ScholarshipSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Tests\TestCase;
+
+/** Student side: sharing a match with a provider (consent) and uploading scholar requirements. */
+class StudentScholarTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Storage::fake('local');
+        $this->seed(ScholarshipSeeder::class);
+    }
+
+    private function student(string $email = 'student@example.test'): User
+    {
+        $u = new User;
+        $u->name = 'Maria Santos';
+        $u->email = $email;
+        $u->password = Hash::make('StudentPass123');
+        $u->role = 'student';
+        $u->status = 'active';
+        $u->save();
+
+        return $u;
+    }
+
+    private function match(User $u, string $slug, string $status = 'eligible'): ScholarshipMatch
+    {
+        $app = ScholarshipApplication::firstOrCreate(
+            ['user_id' => $u->id, 'version' => 1],
+            ['is_current' => true, 'answers' => ['program_name' => 'BS Accountancy', 'campus_name' => 'Main Campus', 'year_level' => 1, 'income' => 'secret'], 'submitted_at' => now()],
+        );
+
+        return ScholarshipMatch::create([
+            'scholarship_application_id' => $app->id,
+            'scholarship_id' => Scholarship::where('slug', $slug)->value('id'),
+            'status' => $status, 'score' => 80, 'checks' => [],
+        ]);
+    }
+
+    public function test_scholar_uploads_a_requirement_privately(): void
+    {
+        $u = $this->student();
+        $s = Scholar::create(['user_id' => $u->id, 'scholarship_id' => Scholarship::where('slug', 'ched-tdp')->value('id'), 'status' => 'active']);
+        $r = $s->requirements()->create(['term' => AcademicTerm::current(), 'name' => 'Certificate of Registration', 'status' => 'missing']);
+
+        $this->actingAs($u);
+        $this->get('/scholar/requirements')->assertOk()->assertSee('Certificate of Registration');
+
+        $this->post("/student/requirements/{$r->id}/upload", ['file' => UploadedFile::fake()->create('cor.pdf', 100, 'application/pdf')])->assertRedirect();
+        $r->refresh();
+        $this->assertSame('submitted', $r->status);
+        $this->assertSame('cor.pdf', $r->original_name);
+        $this->assertStringStartsWith("scholar-requirements/{$s->id}/", $r->file_path);
+        $this->assertStringNotContainsString('cor', basename($r->file_path));   // random stored name
+        Storage::disk('local')->assertExists($r->file_path);
+
+        $this->get("/student/requirements/{$r->id}/file")->assertOk()->assertDownload('cor.pdf');
+
+        // Replacing removes the old file.
+        $old = $r->file_path;
+        $this->post("/student/requirements/{$r->id}/upload", ['file' => UploadedFile::fake()->create('cor.png', 50, 'image/png')])->assertRedirect();
+        Storage::disk('local')->assertMissing($old);
+    }
+
+    public function test_uploads_are_validated(): void
+    {
+        $u = $this->student();
+        $s = Scholar::create(['user_id' => $u->id, 'scholarship_id' => Scholarship::where('slug', 'ched-tdp')->value('id'), 'status' => 'active']);
+        $r = $s->requirements()->create(['term' => AcademicTerm::current(), 'name' => 'COR', 'status' => 'missing']);
+        $this->actingAs($u);
+
+        $this->post("/student/requirements/{$r->id}/upload", ['file' => UploadedFile::fake()->create('evil.php', 10, 'application/x-php')])->assertSessionHasErrors('file');
+        $this->post("/student/requirements/{$r->id}/upload", ['file' => UploadedFile::fake()->create('big.pdf', 6000, 'application/pdf')])->assertSessionHasErrors('file');
+        $this->assertSame('missing', $r->fresh()->status);
+
+        $r->update(['status' => 'approved']);
+        $this->post("/student/requirements/{$r->id}/upload", ['file' => UploadedFile::fake()->create('cor.pdf', 10, 'application/pdf')])->assertStatus(409);
+    }
+
+    public function test_a_student_cannot_touch_another_scholars_requirement(): void
+    {
+        $owner = $this->student('owner@example.test');
+        $s = Scholar::create(['user_id' => $owner->id, 'scholarship_id' => Scholarship::where('slug', 'ched-tdp')->value('id'), 'status' => 'active']);
+        $r = $s->requirements()->create(['term' => AcademicTerm::current(), 'name' => 'COR', 'status' => 'submitted', 'file_path' => 'scholar-requirements/1/x.pdf']);
+        Storage::disk('local')->put('scholar-requirements/1/x.pdf', 'secret');
+
+        $this->actingAs($this->student());
+        $this->get("/student/requirements/{$r->id}/file")->assertNotFound();
+        $this->post("/student/requirements/{$r->id}/upload", ['file' => UploadedFile::fake()->create('a.pdf', 10, 'application/pdf')])->assertNotFound();
+        $this->get('/student/scholarship')->assertRedirect(route('student.dashboard'));
+    }
+}

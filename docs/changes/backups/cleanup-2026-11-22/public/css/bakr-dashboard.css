@@ -1,0 +1,1494 @@
+/* ==========================================================================
+   BAKR — shared dashboard shell. ONE stylesheet for every dashboard:
+   provider, student, scholar, officer and admin.
+
+   Markup contract (add these classes to the existing elements):
+     .dash          backdrop (body, or the outer wrapper on pages that use layouts.app)
+     .dash-panel    the floating rounded panel (sidebar + content)
+     .dash-side     white sidebar           .dash-brand   logo + name
+     .dash-nav      a list of links/buttons  .dash-nav-label  small section label
+     .dash-user     signed-in block at the bottom of the sidebar
+     .dash-main     content column           .dash-topbar  page title + icon buttons
+   Components: .dash-tiles/.dash-tile, .dash-board/.dash-col/.dash-row,
+               .dash-card, .dash-seg, .dash-section-title, .dash-icon-btn, .dash-avatar
+
+   Load it AFTER a page's own stylesheet. Shell geometry (floating panel, sticky
+   sidebar) applies from 992px up; below that each dashboard keeps its own mobile
+   menu, recoloured here. Change the palette in the tokens block only.
+   ========================================================================== */
+
+/* BAKR type scale (same values as bakr-core.css: md and up are fluid, a step smaller on phones). */
+:root {
+  --text-xs: 0.75rem;
+  --text-caption: 0.8125rem;
+  --text-sm: 0.875rem;
+  --text-md: clamp(0.9375rem, 0.9107rem + 0.119vw, 1rem);
+  --text-title: clamp(1.03125rem, 0.991rem + 0.179vw, 1.125rem);
+  --text-lg: clamp(1.125rem, 1.071rem + 0.238vw, 1.25rem);
+  --text-xl: clamp(1.25rem, 1.143rem + 0.476vw, 1.5rem);
+  --text-2xl: clamp(1.5625rem, 1.375rem + 0.833vw, 2rem);
+  /* Role colours (dark mode redefines these in bakr-dark.css; light values are unchanged). */
+  --text-strong: var(--green-900);
+  --text-accent: var(--green-700);
+  --page-bg: var(--vanilla);
+  --page-bg-deep: var(--vanilla-deep);
+}
+
+.dash {
+  /* Palette: the home page's — deep green, gold, sage, teal on vanilla (bakr-core.css) */
+  --dash-backdrop:
+    linear-gradient(160deg, rgba(14, 42, 31, .94) 0%, rgba(20, 58, 43, .90) 50%, rgba(31, 77, 58, .86) 100%),
+    url("../images/img/dnsc_campus.jpg") center / cover;
+  --dash-surface: #faf7f2;
+  --dash-card: #ffffff;
+  --dash-ink: #2b2925;
+  --dash-ink-soft: #5b564f;
+  --dash-ink-faint: #6f6a62;   /* was #8a847a = 3.7:1 on white (hints, "Not announced", labels); now ≈5.3:1 */
+  --dash-line: #eeece8;
+  --dash-hover: #f3efe6;
+  --dash-accent: #1f4d3a;
+  --dash-accent-2: #2a6147;
+  --dash-accent-grad: linear-gradient(160deg, #2a6147, #143a2b);
+  --dash-green-900: #143a2b;
+  --dash-text-strong: var(--dash-green-900);   /* headings; dark mode lightens it */
+  --dash-gold: #b8912f;
+  --dash-gold-light: #f6dfa0;
+  --dash-gold-text: #7d5f17;
+  --dash-gold-tint: #fbf1dc;
+  --dash-sage: #8fa898;
+  --dash-sage-tint: #e7efe9;
+  --dash-teal: #2c6470;
+  --dash-teal-tint: #e6f0f1;
+  --dash-marker: #b8912f;
+  --dash-ok: #2f8f5b;
+  --dash-warn: #b8912f;
+  --dash-info: #2c6470;
+  --dash-danger: #b42318;
+  --dash-muted: #d6d0c4;
+
+  /* Tile colours (cycled with .is-1 … .is-4): green, gold, teal, sage. Gold uses dark text. */
+  --tile-1: linear-gradient(160deg, #2a6147, #143a2b);
+  --tile-1-bar: #c9a443;
+  --tile-2: linear-gradient(160deg, #f6dfa0, #c9a443);
+  --tile-2-bar: #143a2b;
+  --tile-2-ink: #143a2b;
+  --tile-3: linear-gradient(160deg, #3a7d8c, #1d4750);
+  --tile-3-bar: #f6dfa0;
+  --tile-4: linear-gradient(160deg, #9db5a5, #5f7f6c);
+  --tile-4-bar: #143a2b;
+
+  /* Shape */
+  --dash-radius-panel: 28px;
+  --dash-radius-card: 18px;
+  --dash-radius-sm: 10px;
+  --dash-shadow-panel: 0 30px 80px rgba(0, 0, 0, .35), 0 4px 14px rgba(0, 0, 0, .12);
+  --dash-shadow-card: 0 1px 2px rgba(20, 58, 43, .05), 0 14px 30px -18px rgba(20, 58, 43, .35);
+  --dash-gutter: 24px;
+  --dash-gap: 16px;   /* space between cards, grid cells and page sections (every portal) */
+  --dash-pad: 22px;   /* inside every card (16px on phones) */
+  --dash-side-w: 248px;
+  --dash-font: "Poppins", "Inter", system-ui, sans-serif;
+  --dash-serif: "Source Serif 4", Georgia, serif;
+}
+
+/* ------------------------------------------------------------ Backdrop */
+.dash {
+  background: var(--dash-backdrop) fixed;
+  color: var(--dash-ink);
+  font-family: var(--dash-font);
+  min-height: 100vh;
+}
+body.dash { margin: 0; }
+
+/* ------------------------------------------------------------ Panel */
+.dash .dash-panel {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+  max-width: 1680px;
+  margin: 0 auto;
+  padding: 0;
+  background: var(--dash-surface);
+  color: var(--dash-ink);
+}
+
+/* ------------------------------------------------------------ Sidebar */
+body.dash .dash-side,
+.dash .dash-side {
+  background: var(--dash-card);
+  color: var(--dash-ink);
+  border: 0;
+  box-shadow: none;
+  font-family: var(--dash-font);
+}
+.dash .dash-side::before,
+.dash .dash-side::after { content: none; display: none; }
+
+.dash .dash-brand {
+  display: flex; align-items: center; gap: .6rem;
+  padding: 0 .4rem 1.6rem;
+  color: var(--dash-ink); text-decoration: none;
+  font-size: var(--text-lg); font-weight: 600; letter-spacing: -.01em;
+}
+.dash .dash-brand img { width: 30px; height: 30px; object-fit: contain; border-radius: 50%; }
+.dash .dash-brand small { display: block; font-size: var(--text-xs); font-weight: 500; color: var(--dash-ink-faint); letter-spacing: .02em; }
+
+.dash .dash-side :is(.dash-nav-label, .nav-section-label, .nav-label) {
+  color: var(--dash-ink-faint);
+  font-size: var(--text-xs); font-weight: 500; letter-spacing: .02em; text-transform: none;
+  margin: 1.1rem .9rem .45rem; padding: 0;
+}
+
+/* Nav items: links or buttons, any depth inside .dash-nav */
+body.dash .dash-side .dash-nav :is(a, button):not(.badge),
+.dash .dash-side .dash-nav :is(a, button):not(.badge) {
+  position: relative;
+  display: flex; align-items: center; gap: .85rem;
+  width: 100%; min-height: 44px;
+  margin: 0 0 .15rem; padding: .55rem .9rem;
+  border: 0; border-left: 0; border-radius: var(--dash-radius-sm);
+  background: transparent; box-shadow: none;
+  color: var(--dash-ink-soft) !important;
+  font: 500 var(--text-sm)/1.3 var(--dash-font);
+  text-align: left; text-decoration: none; cursor: pointer;
+  transition: background .15s ease, color .15s ease;
+}
+.dash .dash-side .dash-nav :is(a, button) :is(i, svg) {
+  color: currentColor !important; stroke: currentColor;
+  width: 1.15rem; height: 1.15rem; font-size: 1.1rem; flex: none; text-align: center;
+}
+.dash .dash-side .dash-nav :is(a, button):hover { background: var(--dash-hover); color: var(--dash-ink) !important; }
+
+body.dash .dash-side .dash-nav :is(a, button):is(.active, [aria-current="page"]),
+.dash .dash-side .dash-nav :is(a, button):is(.active, [aria-current="page"]) {
+  background: transparent;
+  color: var(--dash-ink) !important;
+  font-weight: 600;
+}
+.dash .dash-side .dash-nav :is(a, button):is(.active, [aria-current="page"])::before {
+  content: "";
+  position: absolute; left: -18px; top: 18%; bottom: 18%;
+  width: 3px; border-radius: 0 3px 3px 0;
+  background: var(--dash-marker);
+}
+.dash .dash-side .dash-nav :is(a, button):focus-visible { outline: 2px solid var(--dash-accent); outline-offset: 2px; }
+
+/* Counters inside nav items */
+.dash .dash-side .dash-nav :is(em, .badge, .dash-count) {
+  margin-left: auto;
+  min-width: 22px; height: 22px; padding: 0 6px;
+  display: inline-grid; place-items: center;
+  border-radius: 999px; font-style: normal; font-size: var(--text-xs); font-weight: 600;
+  background: var(--dash-accent) !important; color: #fff !important;
+}
+.dash .dash-side .dash-nav form { margin: 0; padding: 0; border: 0; }
+
+/* Signed-in block */
+.dash .dash-user {
+  margin-top: auto;
+  display: flex; align-items: center; gap: .75rem;
+  padding: 1rem .5rem .25rem;
+  border-top: 1px solid var(--dash-line);
+}
+.dash .dash-user strong { display: block; font-size: var(--text-sm); font-weight: 600; color: var(--dash-ink); line-height: 1.25; }
+.dash .dash-user small { display: block; font-size: var(--text-xs); color: var(--dash-ink-soft); }
+
+/* Scholar prototype: its dark sidebar internals, recoloured for the white sidebar */
+.dash .dash-side :is(.brand-name, .scholar-name, .brand-title, .admin-mini-name) { color: var(--dash-ink); }
+.dash .dash-side :is(.brand-tag, .scholar-meta, .brand-sub, .admin-mini-role) { color: var(--dash-ink-soft); }
+.dash .dash-side .scholar-card {
+  background: var(--dash-surface); border: 0; border-radius: 14px;
+}
+.dash .dash-side .scholar-card::before { content: none; }
+.dash .dash-side .avatar { border-color: #fff; box-shadow: none; }
+.dash .dash-side .sidebar-close { color: var(--dash-ink); }
+
+/* ------------------------------------------------------------ Main column */
+body.dash .dash-main,
+.dash .dash-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  background: transparent;
+  padding: 28px 32px 40px;
+  max-width: none;
+}
+
+.dash .dash-topbar {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+  margin-bottom: 1.4rem;
+}
+.dash .dash-topbar h1 { font-size: clamp(1.2rem, .9rem + 1.2vw, 1.65rem); font-weight: 700; color: var(--dash-ink); margin: 0; letter-spacing: -.01em; }
+.dash .dash-topbar h1 em { font-style: normal; color: var(--dash-accent); }
+.dash .dash-topbar p { margin: .2rem 0 0; color: var(--dash-ink-soft); font-size: var(--text-sm); }
+.dash .dash-topbar-actions { display: flex; align-items: center; gap: .6rem; }
+
+.dash .dash-icon-btn {
+  position: relative;
+  width: 42px; height: 42px; flex: none;
+  display: inline-grid; place-items: center;
+  border-radius: 50%; border: 0;
+  background: var(--dash-card); color: var(--dash-ink);
+  box-shadow: var(--dash-shadow-card);
+  text-decoration: none; font-size: 1.05rem; cursor: pointer;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.dash .dash-icon-btn:hover { transform: translateY(-1px); color: var(--dash-accent); }
+.dash .dash-icon-btn:focus-visible { outline: 2px solid var(--dash-accent); outline-offset: 2px; }
+.dash .dash-icon-btn.has-dot::after {
+  content: ""; position: absolute; top: 9px; right: 10px;
+  width: 7px; height: 7px; border-radius: 50%; background: var(--dash-marker); border: 2px solid #fff;
+}
+
+.dash .dash-section-title {
+  font-size: var(--text-lg); font-weight: 700; color: var(--dash-ink); margin: 0;
+}
+.dash .dash-section-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+  margin: 2rem 0 1rem;
+}
+
+/* ------------------------------------------------------------ Avatars */
+.dash .dash-avatar {
+  /* 34px circle for initials; codes such as "DOST-SEI" widen it into a pill instead of shrinking the text */
+  min-width: 34px; width: auto; height: 34px; padding: 0 .4rem; flex: none;
+  display: inline-grid; place-items: center;
+  border-radius: 999px;
+  /* Dark text on the gold fills (default / is-1 / is-3): white on gold was 2.4:1 and 1.3:1 (audit 2026-11-22). */
+  font-size: var(--text-xs); letter-spacing: -.02em; line-height: 1; font-weight: 600; color: #143a2b;
+  background: var(--tile-1-bar);
+}
+.dash .dash-avatar.is-lg { min-width: 44px; height: 44px; font-size: var(--text-sm); }
+.dash .dash-avatar img { width: 100%; height: 100%; object-fit: contain; border-radius: inherit; background: #fff; }
+.dash .is-1 > .dash-avatar, .dash .dash-avatar.is-1 { background: var(--tile-1-bar); }
+.dash .is-2 > .dash-avatar, .dash .dash-avatar.is-2 { background: var(--tile-2-bar); color: #fff; }
+.dash .is-3 > .dash-avatar, .dash .dash-avatar.is-3 { background: var(--tile-3-bar); }
+.dash .is-4 > .dash-avatar, .dash .dash-avatar.is-4 { background: var(--tile-4-bar); color: #fff; }
+
+/* ------------------------------------------------------------ Coloured tiles */
+.dash .dash-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+.dash .dash-tile {
+  position: relative;
+  display: flex; flex-direction: column; gap: .3rem;
+  min-height: 120px;
+  padding: 14px 16px 22px;
+  border-radius: var(--dash-radius-card);
+  overflow: hidden;
+  color: #fff; text-decoration: none;
+  background: var(--tile-1);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.dash a.dash-tile:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(20, 58, 43, .18); color: #fff; }
+.dash .dash-tile.is-2 { background: var(--tile-2); }
+.dash .dash-tile.is-3 { background: var(--tile-3); }
+.dash .dash-tile.is-2 { color: var(--tile-2-ink); }
+.dash a.dash-tile.is-2:hover { color: var(--tile-2-ink); }
+.dash .dash-tile.is-2 .dash-tile-chip { background: rgba(255, 255, 255, .5); }
+.dash .dash-tile.is-4 { background: var(--tile-4); }
+.dash .dash-tile-top { display: flex; align-items: center; justify-content: space-between; gap: .5rem; font-size: var(--text-xs); opacity: .95; }
+.dash .dash-tile-chip { padding: .1rem .55rem; border-radius: 999px; background: rgba(255, 255, 255, .25); font-weight: 600; }
+.dash .dash-tile strong { font-size: var(--text-md); font-weight: 600; line-height: 1.3; }
+.dash .dash-tile span.dash-tile-sub { font-size: var(--text-xs); opacity: .9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Two-tone bar along the bottom edge; --fill is a real ratio set by the page */
+.dash .dash-tile-bar {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 12px;
+  background: rgba(255, 255, 255, .35);
+}
+.dash .dash-tile-bar::before {
+  content: ""; position: absolute; inset: 0 auto 0 0;
+  width: calc(var(--fill, .5) * 100%);
+  background: var(--tile-1-bar);
+}
+.dash .dash-tile.is-2 .dash-tile-bar::before { background: var(--tile-2-bar); }
+.dash .dash-tile.is-3 .dash-tile-bar::before { background: var(--tile-3-bar); }
+.dash .dash-tile.is-4 .dash-tile-bar::before { background: var(--tile-4-bar); }
+
+/* ------------------------------------------------------------ Board columns */
+.dash .dash-board {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+.dash .dash-col {
+  background: var(--dash-card);
+  border-radius: var(--dash-radius-card);
+  padding: 16px 16px 14px;
+  box-shadow: var(--dash-shadow-card);
+  min-width: 0;
+}
+.dash .dash-col-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: .85rem; }
+.dash .dash-col-head h3 { font-size: var(--text-md); font-weight: 600; margin: 0; color: var(--dash-ink); display: flex; align-items: center; gap: .5rem; }
+.dash .dash-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--dash-muted); flex: none; }
+.dash .dash-dot.ok { background: var(--dash-ok); }
+.dash .dash-dot.warn { background: var(--dash-warn); }
+.dash .dash-dot.info { background: var(--dash-info); }
+.dash .dash-rows { list-style: none; margin: 0; padding: 0; display: grid; gap: .55rem; }
+.dash .dash-row { display: flex; align-items: center; gap: .65rem; min-width: 0; font-size: var(--text-caption); color: var(--dash-ink-soft); }
+.dash .dash-row > span:not(.dash-avatar) { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dash .dash-row b { flex: none; font-weight: 700; color: var(--dash-ink); font-variant-numeric: tabular-nums; }
+.dash .dash-row b.is-hidden { font-weight: 500; font-size: var(--text-xs); color: var(--dash-ink-faint); }
+.dash .dash-col-foot { margin-top: .9rem; padding-top: .7rem; border-top: 1px solid var(--dash-line); font-size: var(--text-xs); color: var(--dash-ink-faint); }
+
+/* ------------------------------------------------------------ Cards */
+.dash .dash-card {
+  background: var(--dash-card);
+  border: 0;
+  border-radius: var(--dash-radius-card);
+  box-shadow: var(--dash-shadow-card);
+  padding: var(--dash-pad);
+}
+
+/* ------------------------------------------------------------ Segmented control */
+.dash .dash-seg { display: flex; flex-wrap: wrap; gap: .5rem; }
+.dash .dash-seg button,
+.dash .dash-seg a {
+  min-height: 38px; padding: .45rem 1.1rem;
+  border: 0; border-radius: 999px;
+  background: var(--dash-card); color: var(--dash-ink);
+  font: 500 var(--text-caption) var(--dash-font); text-decoration: none; cursor: pointer;
+  box-shadow: var(--dash-shadow-card);
+  transition: background .15s ease, color .15s ease;
+}
+.dash .dash-seg :is(button, a):hover { color: var(--dash-accent); }
+.dash .dash-seg :is(button, a):is([aria-selected="true"], [aria-current="true"], .active) {
+  background: var(--dash-accent-grad); color: #fff;
+}
+.dash .dash-seg :is(button, a):focus-visible { outline: 2px solid var(--dash-accent); outline-offset: 2px; }
+
+/* ------------------------------------------------------------ Prototype content harmonised
+   The staff prototypes keep their own content CSS; these rules only align the surfaces
+   (cards, KPI tiles, page headers, hero banners) with the shared look. */
+.dash .dash-main :is(.kpi-card, .card, .sd-card, .panel-card, .table-card) {
+  background: var(--dash-card);
+  border: 0;
+  border-radius: var(--dash-radius-card);
+  box-shadow: var(--dash-shadow-card);
+}
+.dash .dash-main :is(.page-header, .header) h1 {
+  font-family: var(--dash-font);
+  font-size: clamp(1.35rem, 2.2vw, 1.65rem);
+  font-weight: 700; color: var(--dash-ink); letter-spacing: -.01em;
+}
+.dash .dash-main :is(.page-header, .header) .eyebrow { color: var(--dash-accent); }
+.dash .dash-main :is(.sd-hero, .hero) {
+  background: var(--tile-1);
+  border: 0;
+  border-radius: var(--dash-radius-card);
+  box-shadow: none;
+  color: #fff;
+}
+.dash .dash-main :is(.sd-hero, .hero) :is(h2, .sd-sub, .sub, p, .hero-eyebrow) { color: #fff; }
+.dash .dash-main :is(h1, h2, h3, h4, h5) { font-family: var(--dash-font); }
+
+/* ------------------------------------------------------------ Desktop geometry */
+@media (min-width: 992px) {
+  .dash { padding: var(--dash-gutter); }
+  .dash .dash-panel {
+    min-height: calc(100vh - var(--dash-gutter) * 2);
+    border-radius: var(--dash-radius-panel);
+    overflow: clip;
+    box-shadow: var(--dash-shadow-panel);
+  }
+  body.dash .dash-side,
+  .dash .dash-side {
+    position: sticky;
+    top: var(--dash-gutter);
+    align-self: flex-start;
+    flex: 0 0 var(--dash-side-w);
+    width: var(--dash-side-w);
+    height: calc(100vh - var(--dash-gutter) * 2);
+    margin: 0;
+    padding: 28px 18px 20px;
+    border-radius: var(--dash-radius-panel) 0 0 var(--dash-radius-panel);
+    display: flex; flex-direction: column;
+    overflow-y: auto; overflow-x: hidden;
+    transform: none;
+  }
+  /* Scholar prototype nests its content one level deeper */
+  .dash .dash-side > .sidebar-inner { padding: 0; height: 100%; }
+}
+
+/* ------------------------------------------------------------ Tablet / phone */
+@media (max-width: 1199.98px) {
+  .dash .dash-board { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 991.98px) {
+  .dash .dash-panel { flex-direction: column; min-height: 100vh; }
+  .dash .dash-main { padding: 20px 16px 32px; }
+
+  /* Native sidebars (provider, student, scholar) become an off-canvas drawer opened by the
+     burger in .dash-mobilebar (bakr-dashboard.js toggles .dash.is-nav-open). Same green
+     sidebar, same links and groups as on desktop. */
+  .dash .dash-panel .dash-side.is-native {
+    position: fixed; top: 0; bottom: 0; left: 0; z-index: 1060;
+    width: min(300px, 86vw); height: 100dvh;
+    padding: 18px 16px 20px;
+    display: flex; flex-direction: column;
+    overflow-y: auto; overscroll-behavior: contain;
+    border-radius: 0 24px 24px 0;
+    transform: translateX(-105%); visibility: hidden;
+    transition: transform .26s cubic-bezier(.22, 1, .36, 1), visibility 0s linear .26s;
+  }
+  .dash.is-nav-open .dash-panel .dash-side.is-native {
+    transform: none; visibility: visible; transition: transform .26s cubic-bezier(.22, 1, .36, 1);
+    box-shadow: 18px 0 48px -12px rgba(0, 0, 0, .5);
+  }
+  .dash .dash-side-close { display: grid; }
+}
+@media (max-width: 991.98px) {
+  /* Scholar drawer: its close button sits where the PORTAL tag is */
+  .dash .dash-side .sidebar-close ~ .brand .brand-tag { display: none; }
+}
+@media (max-width: 575.98px) {
+  .dash .dash-board { grid-template-columns: minmax(0, 1fr); }
+  .dash .dash-tiles { grid-template-columns: minmax(0, 1fr); }
+  .dash { --dash-pad: 16px; }
+  .dash .dash-topbar h1 { font-size: var(--text-lg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash .dash-tile,
+  .dash .dash-icon-btn,
+  .dash .dash-seg :is(button, a),
+  .dash .dash-side .dash-nav :is(a, button) { transition: none; }
+}
+
+/* ==========================================================================
+   Operational components (tables, pills, KPIs, buttons, forms, flash, filters)
+   Shared by every dashboard page that manages records.
+   ========================================================================== */
+
+/* Flash messages */
+.dash .dash-flash {
+  display: flex; gap: .6rem; align-items: flex-start;
+  padding: .8rem 1rem; margin-bottom: 1rem;
+  border-radius: 14px; font-size: var(--text-sm);
+  background: var(--dash-sage-tint); color: var(--dash-text-strong);
+}
+.dash .dash-flash.is-warn { background: var(--dash-gold-tint); color: var(--dash-gold-text); }
+.dash .dash-flash.is-error { background: #fde8e7; color: #b42318; }
+.dash .dash-flash i { font-size: 1.05rem; line-height: 1.3; }
+.dash .dash-flash ul { margin: 0; padding-left: 1.1rem; }
+
+/* KPI cards: white card, coloured icon chip */
+.dash .dash-kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+.dash .dash-kpi {
+  display: flex; align-items: center; gap: .85rem;
+  padding: 16px 18px; border-radius: var(--dash-radius-card);
+  background: var(--dash-card); box-shadow: var(--dash-shadow-card);
+  color: var(--dash-ink); text-decoration: none;
+  transition: transform .15s ease;
+}
+.dash a.dash-kpi:hover { transform: translateY(-2px); color: var(--dash-ink); }
+.dash .dash-kpi-icon {
+  width: 46px; height: 46px; flex: none; display: grid; place-items: center;
+  border-radius: 14px; font-size: 1.25rem; color: #fff; background: var(--tile-1);
+}
+.dash .dash-kpi.is-2 .dash-kpi-icon { background: var(--tile-2); }
+.dash .dash-kpi.is-2 .dash-kpi-icon { color: var(--tile-2-ink); }
+.dash .dash-kpi.is-3 .dash-kpi-icon { background: var(--tile-3); }
+.dash .dash-kpi.is-4 .dash-kpi-icon { background: var(--tile-4); }
+.dash .dash-kpi strong { display: block; font-size: var(--text-2xl); font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.dash .dash-kpi > span:last-child > span { display: block; font-size: var(--text-xs); color: var(--dash-ink-soft); }
+
+/* Status pills */
+.dash .dash-pill {
+  display: inline-flex; align-items: center; gap: .35rem;
+  padding: .2rem .65rem; border-radius: 999px;
+  font-size: var(--text-xs); font-weight: 600; white-space: nowrap;
+  background: #eef2f0; color: var(--dash-ink-soft);
+}
+.dash .dash-pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: .8; }
+.dash .dash-pill.is-ok { background: #e2f3ea; color: #23744a; }
+.dash .dash-pill.is-warn { background: var(--dash-gold-tint); color: var(--dash-gold-text); }
+.dash .dash-pill.is-info { background: var(--dash-teal-tint); color: #1d4750; }
+.dash .dash-pill.is-danger { background: #fde8e7; color: #b42318; }
+.dash .dash-pill.is-violet { background: var(--dash-sage-tint); color: var(--dash-accent); }
+
+/* Buttons */
+.dash .dash-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .45rem;
+  min-height: 40px; padding: .45rem 1.05rem;
+  border: 0; border-radius: 999px; cursor: pointer;
+  font: 600 var(--text-sm) var(--dash-font); text-decoration: none; white-space: nowrap;
+  background: var(--dash-accent-grad); color: #fff;
+  box-shadow: 0 8px 18px -8px rgba(20, 58, 43, .55);
+  transition: transform .15s ease, filter .15s ease;
+}
+.dash .dash-btn:hover { color: #fff; filter: brightness(1.05); transform: translateY(-1px); }
+.dash .dash-btn:focus-visible { outline: 2px solid var(--dash-marker); outline-offset: 2px; }
+.dash .dash-btn.is-soft { background: var(--dash-hover); color: var(--dash-accent); box-shadow: none; }
+.dash .dash-btn.is-soft:hover { color: var(--dash-accent); }
+.dash .dash-btn.is-sun { background: linear-gradient(160deg, var(--dash-gold-light), #c9a443); color: var(--dash-green-900); box-shadow: 0 8px 18px -8px rgba(184, 145, 47, .7); }
+.dash .dash-btn.is-sun:hover { color: var(--dash-text-strong); }
+.dash .dash-btn.is-danger { background: #fde8e7; color: #b42318; box-shadow: none; }
+.dash .dash-btn.is-danger:hover { color: #8f1c13; }
+.dash .dash-btn.is-sm { min-height: 32px; padding: .25rem .75rem; font-size: var(--text-xs); }
+.dash .dash-btn[disabled] { opacity: .5; cursor: not-allowed; transform: none; }
+
+/* Forms */
+.dash .dash-field { display: grid; gap: .3rem; align-content: start; }
+.dash .dash-field > label, .dash .dash-label { font-size: var(--text-caption); font-weight: 600; color: var(--dash-ink-soft); }
+.dash .dash-input,
+.dash .dash-field :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea) {
+  width: 100%; min-height: 40px;
+  padding: .5rem .8rem;
+  border: 1.5px solid var(--dash-line); border-radius: 12px;
+  background: #fff; color: var(--dash-ink);
+  font: 400 var(--text-md) var(--dash-font);
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.dash .dash-field textarea { min-height: 96px; resize: vertical; line-height: 1.5; }
+.dash .dash-input:focus,
+.dash .dash-field :is(input, select, textarea):focus { outline: none; border-color: var(--dash-accent); box-shadow: 0 0 0 3px rgba(184, 145, 47, .25); }
+.dash .dash-field small { font-size: var(--text-xs); color: var(--dash-ink-faint); }
+.dash .dash-field .is-invalid, .dash .dash-input.is-invalid { border-color: var(--dash-danger); }
+.dash .dash-error { font-size: var(--text-xs); color: #b42318; }
+.dash .dash-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 18px; }
+.dash .dash-form-grid .is-wide { grid-column: 1 / -1; }
+.dash .dash-check { display: inline-flex; align-items: center; gap: .45rem; font-size: var(--text-caption); color: var(--dash-ink); }
+.dash .dash-check input { width: 18px; height: 18px; accent-color: var(--dash-accent); }
+
+/* Filters bar */
+.dash .dash-filters { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; margin-bottom: 16px; }
+.dash .dash-filters .dash-field { min-width: 170px; flex: 0 1 280px; }
+.dash .dash-filters .dash-field.is-grow { flex: 1 1 280px; }
+
+/* Tables */
+.dash .dash-table-wrap {
+  position: relative; /* contains .visually-hidden labels, which are position:absolute */
+  background: var(--dash-card); border-radius: var(--dash-radius-card);
+  box-shadow: var(--dash-shadow-card); overflow-x: auto;
+}
+.dash .dash-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--text-sm); }
+.dash .dash-table th {
+  text-align: left; font-weight: 600; font-size: var(--text-xs); letter-spacing: .02em; color: var(--dash-ink-soft);
+  padding: .85rem .8rem; border-bottom: 1px solid var(--dash-line); white-space: normal; background: var(--dash-surface);   /* headers wrap instead of forcing a sideways scroll */
+}
+.dash .dash-table td { padding: .8rem .8rem; border-bottom: 1px solid var(--dash-line); vertical-align: middle; color: var(--dash-ink); }
+.dash .dash-table :is(th, td):first-child { padding-left: 1rem; }
+.dash .dash-table :is(th, td):last-child { padding-right: 1rem; }
+.dash .dash-table tr:last-child td { border-bottom: 0; }
+.dash .dash-table tbody tr:hover td { background: #fdfaf3; }
+.dash .dash-table .is-num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.dash .dash-person { display: flex; align-items: center; gap: .65rem; min-width: min(180px, 100%); }
+.dash .dash-person strong { display: block; font-weight: 600; font-size: var(--text-sm); }
+.dash .dash-person small { display: block; color: var(--dash-ink-faint); font-size: var(--text-xs); }
+.dash .dash-person a { color: inherit; text-decoration: none; }
+.dash .dash-person a:hover strong { color: var(--dash-accent); }
+/* A person that opens a profile must LOOK clickable (2026-11-19): accent name, arrow, underline on hover. */
+.dash .dash-person a.is-link strong { display: inline-flex; align-items: center; gap: .3rem; color: var(--dash-accent); text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: text-decoration-color .15s ease; }
+.dash .dash-person a.is-link strong::after { content: "\F285"; font-family: "bootstrap-icons"; font-size: .8em; font-weight: 400; transition: transform .15s ease; }
+.dash .dash-person a.is-link:hover strong, .dash .dash-person a.is-link:focus-visible strong { text-decoration-color: currentColor; }
+.dash .dash-person a.is-link:hover strong::after { transform: translateX(2px); }
+.dash .dash-person a.is-link:focus-visible { outline: 2px solid var(--dash-accent); outline-offset: 3px; border-radius: 6px; }
+/* Rows that lead to a profile: highlight on hover */
+.dash .dash-table tr.is-clickable:hover > td { background: var(--dash-hover); }
+@media (prefers-reduced-motion: reduce) { .dash .dash-person a.is-link strong, .dash .dash-person a.is-link strong::after { transition: none; } }
+/* Phones and narrow cards (container query on the table's wrapper): a row becomes a small block, the first
+   cell is its title and every other cell is a "label  value" line. The labels are filled in from the column
+   headers by bakr-dashboard.js (data-label), so no table needs extra markup. Analytics tables (.an-table)
+   have their own, narrower breakpoint in bakr-admin.css. */
+.dash .dash-table-wrap:has(> .dash-table:not(.an-table)) { container-type: inline-size; }
+@container (max-width: 40rem) {
+  .dash .dash-table:not(.an-table), .dash .dash-table:not(.an-table) :is(tbody, tfoot) { display: block; }
+  .dash .dash-table:not(.an-table) thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .dash .dash-table:not(.an-table) tr { display: block; padding: .7rem .9rem; border-bottom: 1px solid var(--dash-line); }
+  .dash .dash-table:not(.an-table) tr:last-child { border-bottom: 0; }
+  .dash .dash-table:not(.an-table) :is(th, td) { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .25rem .75rem; padding: .2rem 0; border: 0; text-align: right; }
+  .dash .dash-table:not(.an-table) :is(th, td) { min-width: 0; overflow-wrap: anywhere; }   /* a long e-mail wraps instead of widening the row */
+  .dash .dash-table:not(.an-table) :is(th, td):first-child { justify-content: flex-start; text-align: left; padding: 0 0 .35rem; }
+  .dash .dash-table:not(.an-table) td[data-label]:not(:first-child)::before { content: attr(data-label); color: var(--dash-ink-soft); font-size: var(--text-caption); text-align: left; }
+  .dash .dash-table:not(.an-table) .is-num { white-space: normal; }
+  .dash .dash-table:not(.an-table) tbody tr:hover td { background: transparent; }
+  .dash .dash-table:not(.an-table) .dash-row-actions { justify-content: flex-end; }
+}
+/* Tables with many columns or inline forms (provider Scholars, Disbursements) need ~1000px; below that they
+   take the same stacked layout instead of scrolling sideways inside their card (audit 2026-11-21). */
+@container (min-width: 40.01rem) and (max-width: 66rem) {
+  .dash .dash-table.is-many-cols, .dash .dash-table.is-many-cols :is(tbody, tfoot) { display: block; }
+  .dash .dash-table.is-many-cols thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .dash .dash-table.is-many-cols tr { display: block; padding: .7rem .9rem; border-bottom: 1px solid var(--dash-line); }
+  .dash .dash-table.is-many-cols tr:last-child { border-bottom: 0; }
+  .dash .dash-table.is-many-cols :is(th, td) { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .25rem .75rem; padding: .2rem 0; border: 0; text-align: right; min-width: 0; overflow-wrap: anywhere; }
+  .dash .dash-table.is-many-cols :is(th, td):first-child { justify-content: flex-start; text-align: left; padding: 0 0 .35rem; }
+  .dash .dash-table.is-many-cols td[data-label]:not(:first-child)::before { content: attr(data-label); color: var(--dash-ink-soft); font-size: var(--text-caption); text-align: left; }
+  .dash .dash-table.is-many-cols .is-num { white-space: normal; }
+  .dash .dash-table.is-many-cols tbody tr:hover td { background: transparent; }
+  .dash .dash-table.is-many-cols .dash-row-actions { justify-content: flex-end; }
+}
+.dash .dash-row-actions { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
+.dash .dash-inline-form { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; margin: 0; }
+.dash .dash-inline-form .dash-input { min-height: 32px; padding: .25rem .6rem; font-size: var(--text-caption); width: auto; min-width: 120px; }
+
+/* Progress bar */
+.dash .dash-progress { height: 8px; border-radius: 999px; background: var(--dash-line); overflow: hidden; display: flex; }
+.dash .dash-progress i { display: block; height: 100%; width: calc(var(--w, 0) * 1%); background: var(--dash-ok); }
+.dash .dash-progress i.is-warn { background: var(--dash-warn); }
+.dash .dash-progress i.is-info { background: var(--dash-info); }
+.dash .dash-progress i.is-danger { background: var(--dash-danger); }
+
+/* Empty state */
+.dash .dash-empty { text-align: center; padding: 2.5rem 1.25rem; color: var(--dash-ink-soft); font-size: var(--text-sm); }
+.dash .dash-empty i { display: block; font-size: 2rem; color: var(--dash-accent); margin-bottom: .5rem; }
+
+/* Two-column page layout */
+.dash .dash-split { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: var(--dash-gap); align-items: start; }
+.dash .dash-stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--dash-gap); }
+/* One card-title style for every portal, whether the heading is an h2 or an h3 */
+.dash .dash-card-title { font-size: var(--text-md); font-weight: 700; margin: 0 0 .9rem; display: flex; align-items: center; gap: .5rem; color: var(--dash-ink); }
+.dash .dash-card-title i { color: var(--dash-accent); }
+.dash .dash-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: .65rem; }   /* minmax: long titles never widen the page */
+.dash .dash-list li { display: flex; align-items: center; gap: .7rem; font-size: var(--text-sm); }
+.dash .dash-list li > div { min-width: 0; flex: 1 1 auto; }
+.dash .dash-list li strong { display: block; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dash .dash-list li small { display: block; color: var(--dash-ink-faint); font-size: var(--text-xs); }
+@media (max-width: 575.98px) {
+  /* Phones: titles wrap instead of being cut off with "…", and a row's button drops below its text. */
+  .dash .dash-list li { flex-wrap: wrap; }
+  .dash .dash-list li strong { white-space: normal; overflow-wrap: anywhere; }
+  .dash .dash-list li > .dash-btn { margin-left: auto; }
+}
+
+/* Pagination (Laravel Bootstrap 5 markup) */
+.dash nav[role="navigation"] { margin-top: 14px; }
+.dash .pagination { gap: .3rem; flex-wrap: wrap; }
+.dash .page-link { border: 0; border-radius: 999px !important; color: var(--dash-ink); background: var(--dash-card); box-shadow: var(--dash-shadow-card); }
+.dash .page-item.active .page-link { background: var(--dash-accent-grad); color: #fff; }
+
+@media (max-width: 991.98px) {
+  .dash .dash-split { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 575.98px) {
+  .dash .dash-form-grid { grid-template-columns: minmax(0, 1fr); }
+  .dash .dash-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dash .dash-kpi { padding: 12px; gap: .6rem; }
+  .dash .dash-kpi-icon { width: 38px; height: 38px; font-size: 1.05rem; }
+  .dash .dash-kpi strong { font-size: var(--text-lg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dash .dash-btn, .dash .dash-kpi { transition: none; }
+}
+
+/* Requirement lists (provider review + student upload use the same markup) */
+.dash .pv-term { display: flex; align-items: baseline; justify-content: space-between; gap: .5rem; font-size: var(--text-sm); font-weight: 700; margin: 1rem 0 .5rem; color: var(--dash-ink); }
+.dash .pv-term:first-of-type { margin-top: 0; }
+.dash .pv-term small { font-weight: 500; color: var(--dash-ink-faint); font-size: var(--text-xs); }
+.dash .pv-reqs { list-style: none; margin: 0; padding: 0; display: grid; gap: .55rem; }
+.dash .pv-reqs > li { border: 1px solid var(--dash-line); border-radius: 14px; padding: .7rem .85rem; background: #fff; display: grid; gap: .4rem; }
+.dash .pv-req-main { display: flex; align-items: center; justify-content: space-between; gap: .6rem; flex-wrap: wrap; }
+.dash .pv-req-main strong { font-size: var(--text-sm); font-weight: 600; }
+.dash .pv-req-meta { display: flex; flex-wrap: wrap; gap: .35rem .6rem; font-size: var(--text-xs); color: var(--dash-ink-faint); }
+.dash .pv-req-meta a { color: var(--dash-accent); font-weight: 600; text-decoration: none; display: inline-flex; gap: .25rem; align-items: center; }
+.dash .pv-req-meta a:hover { text-decoration: underline; }
+.dash .pv-note { color: var(--dash-gold-text); background: var(--dash-gold-tint); border-radius: 8px; padding: .1rem .45rem; }
+.dash .pv-muted { color: var(--dash-ink-faint); }
+.dash .pv-gap { margin-top: var(--dash-gap); }
+.dash .dash-seg a[aria-current="true"] { background: var(--dash-accent-grad); color: #fff; }
+
+/* ==========================================================================
+   HOME-PAGE LOOK (2026-11-13): green sidebar like the site navbar, photo hero,
+   "at a glance" ledger, photo cards, serif numbers. Same palette as bakr-core.css.
+   ========================================================================== */
+
+/* ---------- Sidebar: deep green, gold active pill (like the navbar's "Home") ---------- */
+body.dash .dash-side,
+.dash .dash-side {
+  background:
+    repeating-linear-gradient(-55deg, transparent 0 18px, rgba(255, 255, 255, .025) 18px 19px),
+    linear-gradient(185deg, #1f4d3a, #143a2b 70%);
+  color: #fff;
+}
+.dash .dash-brand { color: #fff; }
+.dash .dash-brand:hover { color: var(--dash-gold-light); }
+.dash .dash-brand small { color: var(--dash-gold-light); opacity: .85; }
+.dash .dash-brand img { background: transparent; }
+.dash .dash-side :is(.dash-nav-label, .nav-section-label, .nav-label) { color: rgba(246, 223, 160, .7); letter-spacing: .12em; text-transform: uppercase; font-size: var(--text-xs); font-weight: 600; }
+
+body.dash .dash-side .dash-nav :is(a, button):not(.badge),
+.dash .dash-side .dash-nav :is(a, button):not(.badge) { color: rgba(255, 255, 255, .78) !important; }
+.dash .dash-side .dash-nav :is(a, button):hover { background: rgba(255, 255, 255, .08); color: #fff !important; }
+body.dash .dash-side .dash-nav :is(a, button):not(.badge):is(.active, [aria-current="page"]),
+.dash .dash-side .dash-nav :is(a, button):not(.badge):is(.active, [aria-current="page"]) {
+  background: linear-gradient(160deg, var(--dash-gold-light), #c9a443);
+  color: var(--dash-green-900) !important;
+  box-shadow: 0 8px 18px -10px rgba(0, 0, 0, .6);
+}
+.dash .dash-side .dash-nav :is(a, button):is(.active, [aria-current="page"])::before { content: none; }
+.dash .dash-side .dash-nav :is(em, .badge, .dash-count) { background: var(--dash-gold) !important; color: var(--dash-green-900) !important; }
+.dash .dash-side .dash-nav :is(a, button):is(.active, [aria-current="page"]) :is(em, .badge, .dash-count) { background: var(--dash-green-900) !important; color: var(--dash-gold-light) !important; }
+.dash .dash-side .dash-nav :is(a, button):focus-visible { outline-color: var(--dash-gold-light); }
+.dash .dash-user { border-top-color: rgba(255, 255, 255, .12); }
+.dash .dash-user strong { color: #fff; }
+.dash .dash-user small { color: rgba(255, 255, 255, .6); }
+
+/* Staff prototype sidebars, recoloured for the green sidebar */
+.dash .dash-side :is(.brand-name, .scholar-name, .brand-title, .admin-mini-name) { color: #fff; }
+.dash .dash-side :is(.brand-tag, .scholar-meta, .brand-sub, .admin-mini-role) { color: rgba(255, 255, 255, .65); }
+.dash .dash-side .scholar-card { background: rgba(255, 255, 255, .07); border: 1px solid rgba(255, 255, 255, .1); }
+.dash .dash-side .sidebar-close { color: #fff; }
+.dash .dash-side :is(.role-badge, .scholar-year-pill) { color: var(--dash-gold-light); border-color: rgba(246, 223, 160, .35); background: rgba(246, 223, 160, .12); }
+.dash .dash-side .admin-mini { background: rgba(255, 255, 255, .06); border-color: rgba(255, 255, 255, .1); }
+
+/* ---------- Serif numbers and section titles (as on the home page) ---------- */
+.dash .dash-section-title { font-family: var(--dash-serif); font-weight: 600; font-size: clamp(1.3rem, 2vw, 1.6rem); letter-spacing: -.01em; color: var(--dash-text-strong); }
+.dash .dash-kpi strong { font-family: var(--dash-serif); font-weight: 600; font-size: var(--text-2xl); color: var(--dash-accent); letter-spacing: -.02em; }
+.dash .dash-kpi { border-top: 3px solid transparent; }
+.dash .dash-kpi.is-1 { border-top-color: var(--dash-accent); }
+.dash .dash-kpi.is-2 { border-top-color: var(--dash-gold); }
+.dash .dash-kpi.is-3 { border-top-color: var(--dash-teal); }
+.dash .dash-kpi.is-4 { border-top-color: var(--dash-sage); }
+.dash .dash-kicker { font-size: var(--text-xs); font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--dash-gold-text); }
+
+/* ---------- Photo hero (page header) ---------- */
+.dash .dash-hero {
+  position: relative; isolation: isolate; overflow: hidden;
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 1.25rem; flex-wrap: wrap;
+  min-height: 210px; margin-bottom: 1.5rem; padding: 28px 32px;
+  border-radius: 24px; color: #fff; background: var(--dash-green-900);
+  box-shadow: 0 28px 56px -34px rgba(20, 58, 43, .65);
+}
+.dash .dash-hero-photo { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; }
+.dash .dash-hero::before {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(100deg, rgba(14, 42, 31, .95) 10%, rgba(20, 58, 43, .78) 50%, rgba(20, 58, 43, .3));
+}
+.dash .dash-hero::after { content: ""; position: absolute; left: 32px; bottom: 0; width: 56px; height: 4px; background: var(--dash-gold); }
+.dash .dash-hero-copy { max-width: 640px; }
+.dash .dash-hero .dash-kicker { color: var(--dash-gold-light); }
+.dash .dash-hero h1 { margin: .45rem 0 .5rem; color: #fff; font-weight: 700; font-size: clamp(1.6rem, 3vw, 2.35rem); line-height: 1.15; letter-spacing: -.01em; }
+.dash .dash-hero h1 em { font-family: var(--dash-serif); font-style: italic; font-weight: 600; color: var(--dash-gold-light); }
+.dash .dash-hero p { margin: 0; color: rgba(255, 255, 255, .82); font-size: var(--text-md); line-height: 1.6; }
+.dash .dash-hero .bk-crumbs { margin: 0; padding: 0; font-size: var(--text-xs); }
+.dash .dash-hero .bk-crumbs :is(a, li) { color: rgba(255, 255, 255, .75); text-shadow: none; }
+.dash .dash-hero-actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.1rem; }
+.dash .dash-hero-aside { display: flex; align-items: center; gap: .6rem; }
+.dash .dash-hero .dash-icon-btn { background: rgba(255, 255, 255, .14); color: #fff; box-shadow: none; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border: 1px solid rgba(255, 255, 255, .2); }
+.dash .dash-hero .dash-icon-btn:hover { background: rgba(255, 255, 255, .24); color: var(--dash-gold-light); }
+.dash .dash-hero .dash-btn.is-soft { background: rgba(255, 255, 255, .14); color: #fff; border: 1px solid rgba(255, 255, 255, .3); backdrop-filter: blur(6px); }
+.dash .dash-hero .dash-btn.is-soft:hover { background: rgba(255, 255, 255, .24); color: #fff; }
+
+/* ---------- "At a glance" ledger (the home page's panel) ---------- */
+.dash .dash-ledger {
+  display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.6fr);
+  border-radius: 24px; overflow: hidden; background: #fff; border: 1px solid var(--dash-line);
+  box-shadow: 0 28px 56px -34px rgba(20, 58, 43, .45);
+}
+.dash .dash-ledger-intro { position: relative; padding: 32px 30px; color: #fff; background: linear-gradient(160deg, var(--dash-green-900), var(--dash-accent)); }
+.dash .dash-ledger-intro::after { content: ""; position: absolute; left: 30px; bottom: 0; width: 56px; height: 4px; background: var(--dash-gold); }
+.dash .dash-ledger-intro .dash-kicker { color: var(--dash-gold-light); }
+.dash .dash-ledger-intro h2 { margin: 12px 0; font-family: var(--dash-serif); font-weight: 600; font-size: clamp(1.45rem, 2.4vw, 1.95rem); line-height: 1.2; color: #fff; }
+.dash .dash-ledger-intro p { margin: 0 0 18px; color: rgba(255, 255, 255, .8); font-size: var(--text-sm); line-height: 1.65; }
+.dash .dash-ledger-link { display: inline-flex; align-items: center; gap: 8px; color: var(--dash-gold-light); font-weight: 600; font-size: var(--text-sm); text-decoration: none; padding-bottom: 3px; border-bottom: 1.5px solid rgba(246, 223, 160, .5); }
+.dash .dash-ledger-link:hover { color: var(--dash-gold-light); border-bottom-color: var(--dash-gold-light); }
+.dash .dash-ledger-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; }
+.dash .dash-ledger-cell { display: block; padding: 24px 26px; border-left: 1px solid var(--dash-line); color: inherit; text-decoration: none; transition: background .15s ease; }
+.dash a.dash-ledger-cell:hover { background: var(--dash-surface); }
+.dash .dash-ledger-cell:nth-child(n + 3) { border-top: 1px solid var(--dash-line); }
+.dash .dash-ledger-cell:nth-child(odd) { border-left: 0; }
+.dash .dash-ledger-cell dt { margin: 0 0 6px; font-size: var(--text-xs); font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--dash-ink-soft); }
+.dash .dash-ledger-cell dd { margin: 0; display: grid; gap: 8px; }
+.dash .dash-ledger-num { font-family: var(--dash-serif); font-weight: 600; font-size: clamp(2.3rem, 4vw, 3.2rem); line-height: 1; letter-spacing: -.02em; color: var(--dash-accent); font-variant-numeric: tabular-nums; }
+.dash .dash-ledger-num small { font-size: .45em; color: var(--dash-ink-faint); letter-spacing: 0; }
+.dash .dash-ledger-cell dd > small { color: var(--dash-ink-soft); font-size: var(--text-caption); line-height: 1.5; }
+.dash .dash-ledger-cell dd > small b { color: var(--dash-text-strong); }
+.dash .dash-split3 { display: flex; gap: 3px; height: 8px; max-width: 220px; }
+.dash .dash-split3 i { display: block; height: 100%; border-radius: 99px; width: calc(var(--w, 0) * 1%); min-width: 0; }
+.dash .dash-split3 .s1 { background: var(--dash-accent); }
+.dash .dash-split3 .s2 { background: var(--dash-gold); }
+.dash .dash-split3 .s3 { background: var(--dash-sage); }
+
+/* ---------- Photo cards (one per scholarship) ---------- */
+.dash .dash-photo-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 18px; }
+.dash .dash-photo-card {
+  display: flex; flex-direction: column; overflow: hidden;
+  background: #fff; border: 1px solid var(--dash-line); border-radius: 22px;
+  box-shadow: var(--dash-shadow-card); transition: transform .18s ease, box-shadow .18s ease;
+}
+.dash .dash-photo-card:hover { transform: translateY(-3px); box-shadow: 0 22px 40px -24px rgba(20, 58, 43, .55); }
+.dash .dash-photo-cover { position: relative; height: 128px; background: var(--dash-green-900); }
+.dash .dash-photo-cover > img:first-child { width: 100%; height: 100%; object-fit: cover; display: block; }
+.dash .dash-photo-cover::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(20, 58, 43, .1), rgba(20, 58, 43, .65)); }
+.dash .dash-photo-chip {
+  position: absolute; z-index: 1; top: 12px; left: 12px;
+  padding: .2rem .65rem; border-radius: 999px; font-size: var(--text-xs); font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  background: linear-gradient(160deg, var(--dash-gold-light), #c9a443); color: var(--dash-green-900);
+}
+.dash .dash-photo-code { position: absolute; z-index: 1; top: 12px; right: 14px; color: #fff; font-family: var(--dash-serif); font-weight: 600; font-size: var(--text-title); text-shadow: 0 2px 8px rgba(0, 0, 0, .35); }
+.dash .dash-photo-logo {
+  position: absolute; z-index: 1; left: 16px; bottom: -22px;
+  width: 52px; height: 52px; padding: 6px; border-radius: 16px; object-fit: contain;
+  background: #fff; box-shadow: 0 8px 18px -8px rgba(0, 0, 0, .45);
+}
+.dash .dash-photo-body { display: grid; gap: .65rem; padding: 32px 18px 16px; flex: 1 1 auto; }
+.dash .dash-photo-body h3 { margin: 0; font-size: var(--text-md); font-weight: 700; line-height: 1.3; color: var(--dash-text-strong); }
+.dash .dash-photo-meta { display: flex; flex-wrap: wrap; gap: .35rem .9rem; font-size: var(--text-xs); color: var(--dash-ink-soft); }
+.dash .dash-photo-meta b { font-family: var(--dash-serif); font-size: var(--text-title); color: var(--dash-accent); margin-right: .2rem; }
+.dash .dash-photo-stat { display: grid; gap: .3rem; }
+.dash .dash-photo-stat span { display: flex; justify-content: space-between; font-size: var(--text-xs); color: var(--dash-ink-soft); }
+.dash .dash-photo-stat span b { color: var(--dash-ink); font-weight: 600; }
+.dash .dash-photo-foot { display: flex; gap: .5rem; padding: 12px 18px 16px; border-top: 1px dashed var(--dash-line); }
+.dash .dash-photo-foot a { flex: 1 1 0; }
+
+/* Tiles with a photo behind them (student "My scholarship" banner) */
+.dash .dash-tile { isolation: isolate; }
+.dash .dash-tile > .dash-tile-photo { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; opacity: .35; mix-blend-mode: luminosity; }
+
+/* Progress colours on the home palette */
+.dash .dash-progress i { background: var(--dash-accent); }
+.dash .dash-progress i.is-warn { background: var(--dash-gold); }
+.dash .dash-progress i.is-info { background: var(--dash-teal); }
+.dash .dash-progress i.is-danger { background: #c0533f; }
+.dash .dash-dot.ok { background: var(--dash-accent); }
+.dash .dash-dot.warn { background: var(--dash-gold); }
+.dash .dash-dot.info { background: var(--dash-teal); }
+
+/* Segmented control and buttons */
+.dash .dash-seg :is(button, a):is([aria-selected="true"], [aria-current="true"], .active) { background: linear-gradient(160deg, #2a6147, #143a2b); color: #fff; }
+.dash .dash-seg :is(button, a):hover { color: var(--dash-gold-text); }
+
+@media (max-width: 991.98px) {
+  .dash .dash-ledger { grid-template-columns: minmax(0, 1fr); }
+  .dash .dash-hero { padding: 22px 20px; min-height: 180px; }
+  .dash .dash-hero::after { left: 20px; }
+  .dash .dash-ledger-intro::after { left: 26px; }
+}
+@media (max-width: 575.98px) {
+  .dash .dash-ledger-grid { grid-template-columns: minmax(0, 1fr); }
+  .dash .dash-ledger-cell { border-left: 0 !important; padding: 20px 22px; }
+  .dash .dash-ledger-cell:nth-child(n + 2) { border-top: 1px solid var(--dash-line); }
+  .dash .dash-hero { border-radius: 18px; }
+  .dash .dash-hero-aside { width: 100%; justify-content: flex-end; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dash .dash-photo-card, .dash .dash-ledger-cell { transition: none; }
+}
+.dash .dash-ledger-cell dl { margin: 0; }
+
+/* ==========================================================================
+   APP SHELL (2026-11-13): on desktop the panel fills the window and stays put.
+   The sidebar never moves; only the content column scrolls. Opt in with
+   `.dash.is-app` (provider + student portals). Phones keep normal page scroll.
+   ========================================================================== */
+
+/* Sidebar: no visible scrollbar (it still scrolls on very short windows) */
+.dash .dash-side { scrollbar-width: none; }
+.dash .dash-side::-webkit-scrollbar { display: none; }
+
+@media (min-width: 992px) {
+  .dash.is-app { height: 100vh; overflow: hidden; }
+  .dash.is-app .dash-panel { height: calc(100vh - var(--dash-gutter) * 2); min-height: 0; }
+  body.dash.is-app .dash-side,
+  .dash.is-app .dash-side { position: relative; top: 0; height: 100%; align-self: stretch; }
+  .dash.is-app .dash-main {
+    height: 100%; overflow-y: auto; overscroll-behavior: contain;
+    scrollbar-width: thin; scrollbar-color: rgba(20, 58, 43, .35) transparent;
+    scroll-padding-top: 16px;
+  }
+  .dash.is-app .dash-main::-webkit-scrollbar { width: 10px; }
+  .dash.is-app .dash-main::-webkit-scrollbar-thumb { background: rgba(20, 58, 43, .3); border-radius: 99px; border: 3px solid transparent; background-clip: content-box; }
+
+  /* Compact sidebar so everything fits without scrolling */
+  .dash .dash-side { padding: 22px 16px 16px; }
+  .dash .dash-brand { padding-bottom: 1rem; }
+  .dash .dash-side :is(.dash-nav-label, .nav-section-label, .nav-label) { margin: .85rem .9rem .35rem; }
+  body.dash .dash-side .dash-nav :is(a, button):not(.badge),
+  .dash .dash-side .dash-nav :is(a, button):not(.badge) { min-height: 40px; padding: .45rem .85rem; margin-bottom: .1rem; }
+  .dash .dash-side .sd-me { margin-top: .9rem; }
+  .dash .dash-user { padding-top: .8rem; }
+}
+
+/* Short windows: drop the extras before anything gets cut off */
+@media (min-width: 992px) and (max-height: 860px) {
+  .dash .dash-side .dash-side-extra { display: none; }
+}
+@media (min-width: 992px) and (max-height: 700px) {
+  body.dash .dash-side .dash-nav :is(a, button):not(.badge),
+  .dash .dash-side .dash-nav :is(a, button):not(.badge) { min-height: 34px; padding-top: .3rem; padding-bottom: .3rem; }
+  .dash .dash-side :is(.dash-nav-label, .nav-section-label, .nav-label) { margin-top: .55rem; }
+}
+
+/* ==========================================================================
+   In-portal help (2026-11-13): "About BAKR" dialog, about content, FAQ.
+   Keeps students and providers inside their portal.
+   ========================================================================== */
+.dash-dialog {
+  width: min(640px, calc(100vw - 32px)); max-height: calc(100vh - 48px);
+  padding: 0; border: 0; border-radius: 24px; overflow: hidden auto;
+  background: #fff; color: #2b2925; font-family: "Poppins", system-ui, sans-serif;
+  box-shadow: 0 40px 90px -30px rgba(0, 0, 0, .6);
+}
+.dash-dialog::backdrop { background: rgba(14, 42, 31, .6); backdrop-filter: blur(3px); }
+.dash-dialog[open] { animation: dashDialogIn .22s ease-out; }
+@keyframes dashDialogIn { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: none; } }
+.dash-dialog-head {
+  position: relative; isolation: isolate; display: flex; align-items: flex-end; gap: 1rem;
+  min-height: 150px; padding: 22px 26px; color: #fff; background: #143a2b;
+}
+.dash-dialog-head::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(100deg, rgba(14, 42, 31, .95), rgba(20, 58, 43, .55)); }
+.dash-dialog-photo { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; }
+.dash-dialog-head .dash-kicker { font-size: var(--text-xs); font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: #f6dfa0; }
+.dash-dialog-head h2 { margin: .35rem 0 0; color: #fff; font-weight: 700; font-size: var(--text-xl); }
+.dash-dialog-head h2 em { font-family: "Source Serif 4", Georgia, serif; font-style: italic; font-weight: 600; color: #f6dfa0; }
+.dash-dialog-close {
+  position: absolute; top: 14px; right: 14px; width: 38px; height: 38px; display: grid; place-items: center;
+  border: 1px solid rgba(255, 255, 255, .3); border-radius: 50%; background: rgba(255, 255, 255, .14); color: #fff; cursor: pointer;
+}
+.dash-dialog-close:hover { background: rgba(255, 255, 255, .26); }
+.dash-dialog-close:focus-visible { outline: 2px solid #f6dfa0; outline-offset: 2px; }
+.dash-dialog-body { padding: 22px 26px 6px; }
+.dash-dialog-foot { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: .6rem; padding: 14px 26px 22px; }
+/* Sticky action bar (2026-11-19, owner): in every modal that needs scrolling, the buttons stay at the bottom edge of
+   the dialog while its content scrolls, on every screen size. A dialog that fits has nothing to scroll, so nothing
+   changes there. "inherit" takes the dialog's own background, so light and dark themes both work. */
+.dash-dialog-foot {
+  position: sticky; bottom: 0; z-index: 2;
+  background: inherit; border-top: 1px solid rgba(127, 127, 127, .18);
+  box-shadow: 0 -10px 18px -14px rgba(0, 0, 0, .28);
+  padding-bottom: max(22px, env(safe-area-inset-bottom));
+}
+.dash-dialog > form { background: inherit; }   /* dialogs that wrap their content in a form (upload, review): pass the background down to the bar */
+/* Phones: the browser's address bar changes the viewport height, so size the dialog by the dynamic viewport. */
+@supports (height: 100dvh) { .dash-dialog { max-height: calc(100dvh - 48px); } }
+/* Buttons inside the dialog sit outside .dash, so give them the dashboard look here */
+.dash-dialog .dash-btn {
+  display: inline-flex; align-items: center; gap: .45rem; min-height: 40px; padding: .45rem 1.1rem;
+  border: 0; border-radius: 999px; cursor: pointer; text-decoration: none; font: 600 var(--text-sm) "Poppins", system-ui, sans-serif;
+  background: linear-gradient(160deg, #2a6147, #143a2b); color: #fff;
+}
+.dash-dialog .dash-btn.is-soft { background: #f3efe6; color: #1f4d3a; }
+
+/* About content (dialog + Help pages) */
+.about-bakr { display: grid; gap: 1rem; font-size: var(--text-sm); line-height: 1.6; }
+.about-lead { margin: 0; color: #2b2925; }
+.about-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; }
+.about-steps li { display: flex; gap: .7rem; align-items: flex-start; padding: .7rem .8rem; border-radius: 14px; background: #faf7f2; border: 1px solid #eeece8; counter-increment: step; }
+.about-steps li > i { flex: none; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 10px; background: linear-gradient(160deg, #f6dfa0, #c9a443); color: #143a2b; }
+.about-steps strong { display: block; font-size: var(--text-sm); color: #143a2b; }
+.about-steps span { display: block; font-size: var(--text-xs); color: #5b564f; line-height: 1.45; }
+.about-facts { list-style: none; margin: 0; padding: 0; display: grid; gap: .55rem; }
+.about-facts li { display: flex; gap: .6rem; align-items: flex-start; font-size: var(--text-caption); color: #5b564f; }
+.about-facts i { color: #1f4d3a; font-size: 1.05rem; line-height: 1.4; }
+.about-facts strong { color: #143a2b; }
+
+/* FAQ (Help pages) */
+.dash .help-faq { display: grid; gap: .5rem; margin-top: .9rem; }
+.dash .help-faq details { border: 1px solid var(--dash-line); border-radius: 14px; background: #fff; }
+.dash .help-faq summary { cursor: pointer; padding: .8rem 1rem; font-weight: 600; font-size: var(--text-sm); color: var(--dash-text-strong); list-style: none; display: flex; justify-content: space-between; gap: 1rem; }
+.dash .help-faq summary::-webkit-details-marker { display: none; }
+.dash .help-faq summary::after { content: "\f282"; font-family: "bootstrap-icons"; color: var(--dash-gold); transition: transform .2s ease; }
+.dash .help-faq details[open] summary::after { transform: rotate(180deg); }
+.dash .help-faq p { margin: 0; padding: 0 1rem .9rem; font-size: var(--text-sm); line-height: 1.6; color: var(--dash-ink-soft); }
+.dash .help-contact { position: sticky; top: 0; }
+.dash .help-contact .dash-section-title { margin-bottom: .35rem; }
+.dash .dash-card > .dash-section-title + .about-bakr { margin-top: .9rem; }
+
+@media (max-width: 575.98px) {
+  .about-steps { grid-template-columns: minmax(0, 1fr); }
+  .dash-dialog-head { min-height: 120px; padding: 18px 20px; }
+  .dash-dialog-body { padding: 18px 20px 4px; }
+  .dash-dialog-foot { padding: 12px 20px max(18px, env(safe-area-inset-bottom)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dash-dialog[open] { animation: none; }
+  .dash .help-faq summary::after { transition: none; }
+}
+
+/* ==========================================================================
+   KPI cards, refined (2026-11-13): label on top, big serif number, small tinted
+   icon in the corner, short accent bar at the bottom. Same markup as before:
+   .dash-kpi.is-N > .dash-kpi-icon + span > (strong + span)
+   ========================================================================== */
+.dash .dash-kpis { gap: var(--dash-gap); }
+.dash .dash-kpi {
+  position: relative; display: block; overflow: hidden;
+  min-height: 118px; padding: 18px 20px 22px;
+  border: 1px solid var(--dash-line); border-top: 1px solid var(--dash-line);
+  border-radius: 20px; background: #fff;
+  box-shadow: 0 1px 2px rgba(20, 58, 43, .04), 0 18px 34px -26px rgba(20, 58, 43, .45);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  --kpi-tone: var(--dash-accent);
+  --kpi-tint: var(--dash-sage-tint);
+}
+.dash .dash-kpi.is-1 { --kpi-tone: #1f4d3a; --kpi-tint: #e7efe9; }
+.dash .dash-kpi.is-2 { --kpi-tone: #b8912f; --kpi-tint: #fbf1dc; }
+.dash .dash-kpi.is-3 { --kpi-tone: #2c6470; --kpi-tint: #e6f0f1; }
+.dash .dash-kpi.is-4 { --kpi-tone: #6f8b79; --kpi-tint: #eef2ee; }
+.dash a.dash-kpi:hover { transform: translateY(-2px); border-color: rgba(184, 145, 47, .45); box-shadow: 0 1px 2px rgba(20, 58, 43, .05), 0 24px 40px -26px rgba(20, 58, 43, .55); }
+.dash a.dash-kpi:focus-visible { outline: 2px solid var(--dash-gold); outline-offset: 2px; }
+
+/* Short accent bar along the bottom edge */
+.dash .dash-kpi::after {
+  content: ""; position: absolute; left: 20px; bottom: 0;
+  width: 44px; height: 4px; border-radius: 4px 4px 0 0;
+  background: var(--kpi-tone);
+  transition: width .25s ease;
+}
+.dash a.dash-kpi:hover::after { width: 72px; }
+
+/* Icon: small tinted circle in the top-right corner */
+.dash .dash-kpi .dash-kpi-icon,
+.dash .dash-kpi.is-2 .dash-kpi-icon,
+.dash .dash-kpi.is-3 .dash-kpi-icon,
+.dash .dash-kpi.is-4 .dash-kpi-icon {
+  position: absolute; top: 16px; right: 16px;
+  width: 38px; height: 38px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--kpi-tint); color: var(--kpi-tone);
+  font-size: 1.05rem; box-shadow: none;
+}
+
+/* Text: label above the number */
+.dash .dash-kpi > span:last-child { display: flex; flex-direction: column-reverse; gap: 6px; padding-right: 44px; }
+.dash .dash-kpi > span:last-child > span {
+  display: flex; align-items: center; gap: 7px;
+  font-size: var(--text-xs); font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--dash-ink-soft); line-height: 1.35;
+}
+.dash .dash-kpi > span:last-child > span::before {
+  content: ""; flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--kpi-tone);
+}
+.dash .dash-kpi strong {
+  font-family: var(--dash-serif); font-weight: 600;
+  font-size: clamp(2rem, 2.6vw, 2.5rem); line-height: 1; letter-spacing: -.02em;
+  color: var(--dash-text-strong); font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 575.98px) {
+  .dash .dash-kpi { min-height: 104px; padding: 14px 14px 18px; border-radius: 16px; }
+  .dash .dash-kpi .dash-kpi-icon,
+  .dash .dash-kpi.is-2 .dash-kpi-icon,
+  .dash .dash-kpi.is-3 .dash-kpi-icon,
+  .dash .dash-kpi.is-4 .dash-kpi-icon { top: 12px; right: 12px; width: 30px; height: 30px; font-size: .9rem; }
+  .dash .dash-kpi > span:last-child { padding-right: 32px; }
+  .dash .dash-kpi > span:last-child > span { font-size: var(--text-xs); letter-spacing: .08em; }
+  .dash .dash-kpi strong { font-size: var(--text-xl); }
+  .dash .dash-kpi::after { left: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dash .dash-kpi, .dash .dash-kpi::after { transition: none; }
+}
+.dash .dash-kpi:is(.is-1, .is-2, .is-3, .is-4) { border-top-color: var(--dash-line); }
+.dash .dash-kpis { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+.dash .dash-kpi > span:last-child > span { min-height: 2.7em; align-items: flex-start; }
+.dash .dash-kpi > span:last-child > span::before { margin-top: .32em; }
+@media (max-width: 575.98px) { .dash .dash-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .dash .dash-kpi > span:last-child > span { min-height: 4em; } }
+
+/* ==========================================================================
+   Statistics cards (2026-11-13): donuts + horizontal bars, provider overview.
+   Chart colours: the --viz-* one-colour-per-meaning tokens (see .dash-sw below).
+   ========================================================================== */
+.dash .dash-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; }
+.dash .dash-stat-card {
+  display: flex; flex-direction: column; gap: 14px;
+  padding: 18px 20px 16px; border-radius: 20px; background: #fff;
+  border: 1px solid var(--dash-line); color: var(--dash-ink); text-decoration: none;
+  box-shadow: 0 1px 2px rgba(20, 58, 43, .04), 0 18px 34px -26px rgba(20, 58, 43, .45);
+  transition: transform .18s ease, border-color .18s ease;
+}
+.dash a.dash-stat-card:hover { transform: translateY(-2px); border-color: rgba(184, 145, 47, .45); color: var(--dash-ink); }
+.dash a.dash-stat-card:focus-visible { outline: 2px solid var(--dash-gold); outline-offset: 2px; }
+.dash .dash-stat-card header { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.dash .dash-stat-kicker { font-size: var(--text-xs); font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--dash-ink-soft); }
+.dash .dash-stat-total { font-family: var(--dash-serif); font-weight: 600; font-size: var(--text-xl); line-height: 1; color: var(--dash-text-strong); font-variant-numeric: tabular-nums; }
+.dash .dash-stat-card footer { margin-top: auto; padding-top: 10px; border-top: 1px dashed var(--dash-line); font-size: var(--text-xs); color: var(--dash-ink-faint); }
+
+/* Donut + legend side by side */
+.dash .dash-stat-body { display: flex; align-items: center; gap: 16px; }
+.dash .dash-donut { width: 124px; height: 124px; flex: none; }
+.dash .dash-donut-seg { transition: stroke-width .15s ease; }
+.dash .dash-donut-seg:hover { stroke-width: 17; }
+.dash .dash-donut-center { font-family: "Source Serif 4", Georgia, serif; font-weight: 600; font-size: var(--text-xl); fill: #143a2b; }
+.dash .dash-donut-sub { font-family: "Poppins", sans-serif; font-size: var(--text-xs); letter-spacing: .06em; fill: #8a847a; text-transform: uppercase; }
+
+.dash .dash-legend { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; flex: 1 1 auto; min-width: 0; }
+.dash .dash-legend li { display: flex; align-items: center; gap: 8px; font-size: var(--text-caption); color: var(--dash-ink-soft); }
+.dash .dash-legend li span { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dash .dash-legend li b { color: var(--dash-ink); font-weight: 700; font-variant-numeric: tabular-nums; }
+/* ONE colour per meaning in every chart of every portal (2026-11-19; admin charts use the same tokens):
+   good = eligible / approved / released / active      warn = nearly eligible / needs revision / not yet released / inactive
+   blue = needs more information / waiting for review   gray = not eligible / not submitted
+   critical = terminated (the root danger red) */
+.dash {
+  --viz-good: #2f8f5b; --viz-warn: #c9a443; --viz-blue: #1c86a8;
+  --viz-critical: #b42318; --viz-gray: #cfc9bd; --viz-track: #eeece8;
+}
+.dash .dash-sw { width: 10px; height: 10px; flex: none; border-radius: 3px; background: var(--viz-good); }
+.dash .dash-sw.is-warn { background: var(--viz-warn); }
+.dash .dash-sw.is-blue { background: var(--viz-blue); }
+.dash .dash-sw.is-gray { background: var(--viz-gray); }
+.dash .dash-sw.is-critical { background: var(--viz-critical); }
+.dash .dash-donut-seg { stroke: var(--viz-good); }
+.dash .dash-donut-seg.is-warn { stroke: var(--viz-warn); }
+.dash .dash-donut-seg.is-blue { stroke: var(--viz-blue); }
+.dash .dash-donut-seg.is-gray { stroke: var(--viz-gray); }
+.dash .dash-donut-seg.is-critical { stroke: var(--viz-critical); }
+
+/* Horizontal bars (single hue: magnitude) */
+.dash .dash-hbars { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
+.dash .dash-hbars li { display: grid; grid-template-columns: minmax(64px, 34%) minmax(0, 1fr) 2.2em; align-items: center; gap: 10px; font-size: var(--text-caption); color: var(--dash-ink-soft); }
+.dash .dash-hbars li > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dash .dash-hbars li b { text-align: right; color: var(--dash-ink); font-weight: 700; font-variant-numeric: tabular-nums; }
+.dash .dash-hbar { height: 10px; border-radius: 0 4px 4px 0; background: #f1ede5; overflow: hidden; }
+.dash .dash-hbar i { display: block; height: 100%; width: calc(var(--w, 0) * 1%); min-width: 0; border-radius: 0 4px 4px 0; background: #2f8f5b; transition: width .4s ease; }
+.dash .dash-hbars li:hover .dash-hbar i { background: #257a4c; }
+
+/* The legend never pushes past its card (it ran 19px off a 320px phone and let the page zoom out):
+   one shrinkable column, and on narrow cards it drops under the donut. */
+.dash .dash-legend { grid-template-columns: minmax(0, 1fr); }
+.dash .dash-legend li { min-width: 0; }
+.dash .dash-stat-body { flex-wrap: wrap; }
+.dash .dash-stat-body > .dash-legend { flex: 1 1 9rem; }
+@media (max-width: 575.98px) {
+  .dash .dash-stat-body { gap: 12px; }
+  .dash .dash-donut { width: 96px; height: 96px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dash .dash-stat-card, .dash .dash-donut-seg, .dash .dash-hbar i { transition: none; }
+}
+.dash .dash-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 1600px) { .dash .dash-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 767.98px) { .dash .dash-stats { grid-template-columns: minmax(0, 1fr); } }
+
+/* ==========================================================================
+   Smooth page changes (2026-11-13). Every BAKR page opts in to the browser's
+   cross-document view transitions, so clicking a link cross-fades to the next
+   page instead of blanking and repainting. The sidebar and the top navbar keep
+   their place (no fade), so only the content changes. Browsers without support
+   simply load the page as before. Same block in bakr-core.css,
+   bakr-dashboard.css and student-auth.css: both pages must opt in.
+   ========================================================================== */
+@view-transition { navigation: auto; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 160ms; animation-timing-function: ease-out; }
+.dash .dash-side { view-transition-name: bakr-side; }
+.bk-navbar { view-transition-name: bakr-nav; }
+::view-transition-group(bakr-side), ::view-transition-group(bakr-nav) { animation-duration: 0s; }
+::view-transition-old(bakr-side), ::view-transition-old(bakr-nav) { display: none; }
+::view-transition-new(bakr-side), ::view-transition-new(bakr-nav) { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+}
+/* App shell: only the content column scrolls. Reserve its scrollbar space so content doesn't
+   shift sideways between short and long pages; the window itself never scrolls, so no gutter there. */
+@media (min-width: 992px) {
+  .dash.is-app .dash-main { scrollbar-gutter: stable; }
+  html:has(.dash.is-app) { scrollbar-gutter: auto; }
+}
+
+/* Application call status from the provider's dates (partials/call-status, 2026-11-15). */
+.bk-call { display: flex; gap: 8px; align-items: flex-start; margin: 0 0 6px; padding: 8px 10px; border-radius: 10px; font-size: var(--text-caption); line-height: 1.45; border: 1px solid transparent; }
+.bk-call > i { flex: none; margin-top: 1px; font-size: 1rem; }
+.bk-call strong { display: block; font-size: var(--text-sm); }
+.bk-call small { display: block; font-size: var(--text-xs); opacity: .85; }
+.bk-call.is-open { background: #e8f4ec; border-color: #b9dcc6; color: #1d5a3a; }
+.bk-call.is-upcoming { background: #fdf6e3; border-color: #ecd9a2; color: #6b5212; }
+.bk-call.is-closed { background: #f3f1ee; border-color: #e2ddd6; color: #5b564f; }
+.bk-call.is-compact { display: inline-flex; align-items: center; gap: 5px; margin: 0; padding: 2px 9px; border-radius: 999px; font-size: var(--text-xs); font-weight: 600; }
+.bk-call.is-compact > i { font-size: .85rem; margin: 0; }
+
+/* ==========================================================================
+   SHARED PORTAL CHROME (2026-11-18) — provider, student and scholar portals.
+   Mobile bar + burger drawer, collapsible sidebar groups, danger actions and the
+   sign-out confirmation. Everything uses the .dash tokens and the --text-* scale.
+   ========================================================================== */
+
+/* ---------- Mobile bar with burger (phones / tablets only) ---------- */
+.dash .dash-mobilebar { display: none; }
+.dash .dash-side-close { display: none; }
+@media (max-width: 991.98px) {
+  .dash .dash-mobilebar {
+    position: sticky; top: 0; z-index: 1040;
+    display: flex; align-items: center; gap: .75rem;
+    min-height: 56px; padding: .5rem 1rem;
+    background: linear-gradient(185deg, #1f4d3a, #143a2b 70%); color: #fff;
+    box-shadow: 0 6px 18px -12px rgba(0, 0, 0, .5);
+  }
+  .dash .dash-mobilebar .dash-brand { padding: 0; font-size: var(--text-title); }
+  .dash .dash-mobilebar .dash-brand img { width: 28px; height: 28px; }
+  .dash .dash-mobilebar .dash-brand small { display: none; }
+  .dash .dash-mobilebar-title { margin-left: auto; font-size: var(--text-caption); font-weight: 600; color: rgba(255, 255, 255, .78); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+}
+.dash .dash-burger, .dash .dash-side-close {
+  flex: none; place-items: center; width: 42px; height: 42px; padding: 0;
+  border: 1px solid rgba(255, 255, 255, .22); border-radius: 12px;
+  background: rgba(255, 255, 255, .1); color: #fff; font-size: 1.35rem; line-height: 1; cursor: pointer;
+}
+.dash .dash-burger { display: grid; }
+.dash .dash-burger:hover, .dash .dash-side-close:hover { background: rgba(255, 255, 255, .2); }
+.dash .dash-burger:focus-visible, .dash .dash-side-close:focus-visible { outline: 2px solid var(--dash-gold-light); outline-offset: 2px; }
+.dash .dash-side-close { position: absolute; top: 14px; right: 14px; width: 38px; height: 38px; font-size: 1.1rem; }
+.dash .dash-backdrop {
+  position: fixed; inset: 0; z-index: 1050; background: rgba(14, 42, 31, .55);
+  backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+  opacity: 0; visibility: hidden; transition: opacity .2s ease-out, visibility 0s linear .2s;
+}
+@media (max-width: 991.98px) {
+  .dash.is-nav-open .dash-backdrop { opacity: 1; visibility: visible; transition: opacity .2s ease-out; }
+}
+body.is-nav-locked { overflow: hidden; }
+@media (min-width: 992px) { .dash .dash-backdrop, .dash .dash-burger { display: none; } }
+
+/* ---------- Collapsible sidebar group (provider "Help & info", student / scholar "Explore") ----------
+   2026-11-18: the summary now reads exactly like a plain .dash-nav-label (same gold caps, same left
+   edge, no leading icon), with only a chevron added, so collapsible and plain sections line up. */
+.dash .dash-side .dash-nav-group { margin: .85rem 0 0; }
+.dash .dash-side .dash-nav-group > summary {
+  list-style: none; display: flex; align-items: center; gap: .5rem; min-height: 34px;
+  margin: 0 0 .1rem; padding: .3rem .9rem; border-radius: var(--dash-radius-sm); cursor: pointer;
+  color: rgba(246, 223, 160, .7); font: 600 var(--text-xs)/1.3 var(--dash-font); letter-spacing: .12em; text-transform: uppercase;
+  transition: background .15s ease, color .15s ease;
+}
+.dash .dash-side .dash-nav-group > summary::-webkit-details-marker { display: none; }
+.dash .dash-side .dash-nav-group > summary:hover { background: rgba(255, 255, 255, .08); color: var(--dash-gold-light); }
+.dash .dash-side .dash-nav-group > summary:focus-visible { outline: 2px solid var(--dash-gold-light); outline-offset: 2px; }
+.dash .dash-side .dash-nav-chev { margin-left: auto; font-size: var(--text-xs); letter-spacing: 0; transition: transform .18s ease-out; }
+.dash .dash-side .dash-nav-group[open] > summary .dash-nav-chev { transform: rotate(180deg); }
+.dash .dash-side .dash-nav-group > .dash-nav { margin-top: .1rem; }
+/* A section label right after a group, or a group after a nav: the same rhythm as label → nav */
+.dash .dash-side .dash-nav + .dash-nav-group, .dash .dash-side .dash-nav-group + .dash-nav-label { margin-top: .85rem; }
+
+/* Nav labels never push the badge out: long labels end in "…" */
+.dash .dash-side .dash-nav .dash-nav-text { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dash .dash-side .dash-nav :is(em, .badge, .dash-count) { flex: none; }
+
+/* ---------- Sidebar foot: who is signed in + Sign out (partials/dash-side-foot), every portal ---------- */
+.dash .dash-side-foot { margin-top: auto; padding-top: .9rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: .5rem; }
+.dash .dash-side-foot > * { min-width: 0; }
+/* Always visible (owner, 2026-11-19): when the menu is taller than the screen, the sidebar scrolls but the
+   signed-in user + Sign out stay pinned to its bottom edge. Its solid background (the sidebar gradient's bottom
+   colour) simply covers links scrolling underneath: no fade or glow, so the last visible link is never dimmed.
+   The sidebar has no bottom padding of its own (the foot carries it), so scrolled to the end the last link
+   sits fully ABOVE the foot and the foot is shown whole: nothing is hidden under it or cut off below it. */
+.dash .dash-side-foot { position: sticky; bottom: 0; z-index: 3; padding-bottom: 16px; background: #143a2b; }
+:root[data-theme="dark"] .dash .dash-side-foot { background: #0c1812; }
+@media (max-width: 991.98px) { .dash .dash-side-foot { padding-bottom: 20px; } }
+.dash .dash-side, .dash .dash-panel .dash-side.is-native { padding-bottom: 0; }
+.dash .dash-side-foot .dash-user { margin-top: 0; padding: .85rem .5rem 0; border-top: 1px solid rgba(255, 255, 255, .12); }
+.dash .dash-side-foot .dash-user-text { min-width: 0; }
+.dash .dash-side-foot .dash-user strong { overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+/* Fixed square: a logo <img> at width:100% would otherwise stretch the auto-width avatar to the image's own width */
+.dash .dash-side-foot .dash-avatar { flex: none; width: 44px; min-width: 44px; padding: 0; overflow: hidden; }
+.dash .dash-side-foot .dash-avatar:has(> img) { background: #fff; }
+.dash .dash-side-foot .dash-avatar img { display: block; width: 100%; height: 100%; object-fit: contain; border-radius: inherit; background: #fff; padding: 4px; }
+.dash .dash-signout {
+  display: flex; align-items: center; justify-content: center; gap: .55rem; min-height: 40px;
+  padding: .45rem .9rem; border-radius: var(--dash-radius-sm);
+  border: 1px solid rgba(255, 160, 150, .45); background: rgba(180, 35, 24, .2);
+  color: #ffc9c3; font: 600 var(--text-sm)/1.2 var(--dash-font); text-decoration: none;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+.dash .dash-signout i { font-size: 1.05rem; }
+.dash .dash-signout:hover { background: var(--dash-danger); border-color: var(--dash-danger); color: #fff; }
+.dash .dash-signout:focus-visible { outline: 2px solid var(--dash-gold-light); outline-offset: 2px; }
+@media (min-width: 992px) and (max-height: 700px) {
+  .dash .dash-side-foot { padding-top: .5rem; gap: .35rem; }
+  .dash .dash-signout { min-height: 34px; padding-block: .3rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dash .dash-side .dash-nav-chev, .dash .dash-panel .dash-side.is-native, .dash .dash-backdrop,
+  .dash .dash-side .dash-nav-group > summary, .dash .dash-signout { transition: none; }
+}
+
+/* ---------- Danger actions: the root --dash-danger red ---------- */
+.dash .dash-btn.is-danger, .dash-dialog .dash-btn.is-danger {
+  background: var(--dash-danger, #b42318); color: #fff; border: 1px solid var(--dash-danger, #b42318);
+  box-shadow: 0 8px 18px -10px rgba(180, 35, 24, .7);
+}
+.dash .dash-btn.is-danger:hover, .dash-dialog .dash-btn.is-danger:hover { background: #942018; border-color: #942018; color: #fff; }
+.dash .dash-btn.is-danger:focus-visible, .dash-dialog .dash-btn.is-danger:focus-visible { outline: 2px solid var(--dash-danger, #b42318); outline-offset: 2px; }
+.dash .dash-btn.is-danger-soft { background: #fde8e7; color: var(--dash-danger); border: 1px solid rgba(180, 35, 24, .28); box-shadow: none; }
+.dash .dash-btn.is-danger-soft:hover { background: var(--dash-danger); color: #fff; }
+/* In the green sidebar: red-tinted so it reads as "leave", solid red on hover */
+.dash .dash-side .dash-nav :is(a, button).is-danger { color: #ffc9c3 !important; }
+.dash .dash-side .dash-nav :is(a, button).is-danger:hover { background: var(--dash-danger) !important; color: #fff !important; }
+.dash .dash-hero .dash-icon-btn.is-danger:hover, .dash .dash-icon-btn.is-danger:hover { background: var(--dash-danger); border-color: var(--dash-danger); color: #fff; }
+
+/* ---------- Confirmation dialog (sign out, and any other dangerous action) ---------- */
+.dash-confirm { max-width: 420px; }
+.dash-confirm .dash-dialog-body { text-align: center; padding-top: 1.75rem; }
+.dash-confirm h2 { font-size: var(--text-title); font-weight: 700; color: var(--dash-text-strong, #143a2b); margin: .75rem 0 .35rem; }
+.dash-confirm p { margin: 0; font-size: var(--text-sm); color: var(--dash-ink-soft, #5b564f); }
+.dash-confirm-icon { display: inline-grid; place-items: center; width: 52px; height: 52px; border-radius: 16px; background: #fde8e7; color: var(--dash-danger, #b42318); font-size: 1.4rem; }
+/* Informational modal (e.g. "Finish your matching form first"): not a dangerous action, so gold, not red */
+.dash-confirm-icon.is-info { background: var(--dash-gold-tint, #fbf1dc); color: var(--dash-gold-text, #7d5f17); }
+/* Success modal ("Message sent", partials/portal/sent-dialog): the "good" green */
+.dash-confirm-icon.is-ok { background: #e3f3ea; color: #2f8f5b; }
+.dash-confirm .dash-dialog-foot { justify-content: center; }
+.dash-confirm .dash-dialog-foot form { margin: 0; }
+.dash-confirm:target { display: block; position: static; margin: 1rem auto; }   /* no-JS fallback */
+
+
+/* ============================================================
+   Overflow safety net (2026-11-19). Applies to every portal that uses the shared shell.
+   Rule of thumb: a flex/grid child may shrink (min-width: 0) and long text wraps instead of
+   spilling out of its container (long e-mails, program names, file names, scholarship names).
+   ============================================================ */
+.dash .dash-main, .dash .dash-card, .dash .dash-stack, .dash .dash-split > *, .dash .dash-tile,
+.dash .ms-main, .dash .ms-side, .dash .ms-layout > *, .dash .ms-two > *, .dash .sc-profile-grid > *,
+.dash .dash-list li > *, .dash .sc-actions li > * { min-width: 0; }
+.dash .dash-card { max-width: 100%; overflow-wrap: anywhere; }
+.dash .dash-card :is(h2, h3, h4, p, li, dt, dd, small, strong, a, label) { overflow-wrap: anywhere; }
+.dash .dash-card dd, .dash .dash-card dt { min-width: 0; }
+
+/* Pills and buttons keep one line when they fit, wrap when they cannot (never poke out). */
+.dash .dash-pill, .dash .dash-btn, .dash .ms-chip, .dash .dash-tile-chip { max-width: 100%; min-width: 0; }
+.dash .dash-pill { white-space: normal; text-align: left; overflow-wrap: anywhere; }
+.dash .dash-btn { text-align: center; }
+@media (max-width: 575.98px) { .dash .dash-btn { white-space: normal; } }
+
+/* Pills inside tables break at spaces only. "overflow-wrap: anywhere" (above) lets a table squeeze a pill
+   to one letter per line ("A / ct / iv / e"); break-word keeps the word whole and the column wide enough. */
+.dash .dash-table .dash-pill { overflow-wrap: break-word; word-break: normal; }
+.dash .dash-table td:has(> .dash-pill:only-child) { min-width: 6.5rem; }
+
+/* A field never grows wider than its card: the file picker's own width ("Choose File  No file chosen") used to
+   stretch the field's grid track, so the hint under it ran past the card's right edge. */
+.dash .dash-field { min-width: 0; grid-template-columns: minmax(0, 1fr); }
+.dash .dash-field input[type="file"] { width: 100%; max-width: 100%; min-width: 0; }
+.dash .dash-field small, .dash .dash-field .dash-error { overflow-wrap: anywhere; }
+
+/* Selects show "..." instead of a half-cut last letter when an option is longer than the field. */
+.dash .dash-field select { text-overflow: ellipsis; }
+
+/* KPI cards in one row: label on top, number at the bottom, so numbers line up even when a label takes
+   three lines. Four cards share a row as 4 or 2 x 2 (never 3 + 1 alone). */
+.dash .dash-kpi { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; }
+.dash .dash-kpi > span:last-child { flex: 1 1 auto; align-self: stretch; justify-content: space-between; text-align: left; }
+.dash .dash-kpis:has(> :nth-child(4):last-child) { grid-template-columns: repeat(auto-fit, minmax(min(100%, 14.5rem), 1fr)); }
+@media (max-width: 575.98px) {
+  .dash .dash-kpis:has(> :nth-child(4):last-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dash .dash-kpis > :last-child:nth-child(odd) { grid-column: 1 / -1; }   /* an odd card out spans the row instead of sitting alone */
+}
+
+/* Lists: a long title wraps on two lines instead of being cut with "..." in the middle of a name. */
+.dash .dash-list li strong { white-space: normal; overflow: visible; text-overflow: clip; }
+
+/* Label / value rows: the label shrinks a little, the value wraps. */
+.sc-facts > div { align-items: baseline; }
+.sc-facts dt { flex: 0 0 min(9rem, 38%); }
+.sc-facts dd { flex: 1 1 0; overflow-wrap: anywhere; }
+.sc-card-sub { margin-top: -.45rem; }
+
+/* Scholar profile identity card: nothing is wider than the card. */
+.dash .sc-id > * { min-width: 0; }
+.dash .sc-id-program { flex: 1 1 220px; max-width: 100%; overflow-wrap: anywhere; }
+.dash .sc-id-meta, .dash .sc-id-name { overflow-wrap: anywhere; }
+@media (max-width: 575.98px) { .dash .sc-id { align-items: flex-start; } .dash .sc-id-program { flex-basis: 100%; } }
+
+/* Collapsible section header: title wraps, the Edit button never gets pushed outside. */
+.dash .ms-fold > summary { flex-wrap: wrap; }
+.dash .ms-fold > summary .dash-card-title { flex-wrap: nowrap; overflow-wrap: anywhere; }
+.dash .ms-fold-body, .dash .ms-fold-body > * { min-width: 0; }
+.dash .ms-hero-copy h2, .dash .ms-hero-copy > p { overflow-wrap: anywhere; }
+.dash .ms-hero { min-width: 0; }
+
+/* Hero tiles / chips: long scholarship names wrap. */
+.dash .dash-tile strong, .dash .dash-hero h1, .dash .dash-hero p, .dash .dash-topbar h1 { overflow-wrap: anywhere; }
+
+/* Hover contrast (2026-11-19): clearer hover and focus states on the shared shell, light mode. */
+.dash .dash-table tbody tr:hover td { background: #f4efe3; }
+.dash .dash-table tr.is-clickable:hover > td { background: #efe9d9; }
+.dash .dash-side .dash-nav :is(a, button):hover { background: rgba(255, 255, 255, .15); }
+.dash .dash-side .dash-nav-group > summary:hover { background: rgba(255, 255, 255, .15); }
+.dash .dash-btn.is-soft:hover { background: #ebe5d6; color: var(--dash-text-strong); }
+.dash .dash-seg :is(button, a):not([aria-current="true"]):hover { background: #f4efe3; color: var(--dash-text-strong); }
+
+/* Messages (2026-11-20; shared by admin › Messages, provider › Messages and the scholar's correction requests):
+   a "Reply" summary that opens its form, and a sent reply shown under the message. */
+.dash .am-reply > summary { list-style: none; width: fit-content; cursor: pointer; }
+.dash .am-reply > summary::-webkit-details-marker { display: none; }
+.dash .am-reply[open] > summary { margin-bottom: .75rem; }
+.dash .am-reply-form { display: grid; gap: .75rem; max-width: 40rem; }
+.dash .am-sent { margin-top: .9rem; padding: .7rem .9rem; border-left: 4px solid var(--viz-good); border-radius: var(--dash-radius-sm); background: var(--dash-surface); }
+.dash .am-sent .pv-msg { margin-top: .25rem; }
+.dash .am-sent-title { margin: 0; display: flex; align-items: center; gap: .4rem; font-size: var(--text-xs); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--dash-ink-soft); }
+
+/* Details + status (owner, 2026-11-20): instead of "A · B · C" followed by a coloured pill.
+   .dash-meta  = the details, spaced apart (no "·" glyphs), with an optional small icon per item:
+                 <span class="dash-meta"><span><i class="bi bi-…"></i>CHED</span><span>Nov 20, 2026</span></span>
+   .dash-status = the status as a coloured dot + word (no filled pill). Tones = the --viz colours:
+                 is-ok (good) · is-warn · is-info (blue) · is-danger (critical) · no tone = gray. */
+.dash .dash-meta { display: flex; flex-wrap: wrap; align-items: center; gap: .15rem .9rem; margin: .15rem 0 0; font-size: var(--text-xs); font-weight: 400; color: var(--dash-ink-soft); }
+.dash .dash-meta > * { display: inline-flex; align-items: center; gap: .3rem; min-width: 0; overflow-wrap: anywhere; }
+.dash .dash-meta .bi { color: var(--dash-ink-faint); font-size: .95em; margin: 0; }
+.dash .dash-meta.is-id { margin-top: .45rem; font-size: var(--text-caption); }
+.dash .dash-meta.is-id + .dash-meta.is-id { margin-top: .35rem; }
+.dash .ms-meta { margin-top: 10px; font-size: var(--text-caption); }
+/* A card's title on the left, its status on the right (Messages, the scholar's requests). */
+.dash .am-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .35rem 1rem; }
+.dash .am-head > .dash-card-title { margin: 0; }
+.dash .am-head-title { font-size: var(--text-sm); font-weight: 600; color: var(--dash-ink); }
+.dash .am-head + .dash-meta { margin-top: .35rem; }
+.dash .dash-meta a { color: inherit; text-decoration: underline; text-decoration-color: currentColor; text-underline-offset: 2px; }
+.dash .dash-meta a:hover { color: var(--dash-accent); }
+.dash .dash-meta .is-attn { color: var(--dash-danger, #b42318); font-weight: 600; }
+.dash .dash-status { display: inline-flex; align-items: center; gap: .45rem; flex: none; font-size: var(--text-caption); font-weight: 600; line-height: 1.3; color: var(--dash-ink); white-space: nowrap; }
+.dash .dash-status::before { content: ""; width: 8px; height: 8px; flex: none; border-radius: 50%; background: var(--viz-gray); box-shadow: 0 0 0 3px color-mix(in srgb, var(--viz-gray) 22%, transparent); }
+.dash .dash-status.is-ok::before { background: var(--viz-good); box-shadow: 0 0 0 3px color-mix(in srgb, var(--viz-good) 20%, transparent); }
+.dash .dash-status.is-warn::before { background: var(--viz-warn); box-shadow: 0 0 0 3px color-mix(in srgb, var(--viz-warn) 22%, transparent); }
+.dash .dash-status.is-info::before { background: var(--viz-blue); box-shadow: 0 0 0 3px color-mix(in srgb, var(--viz-blue) 20%, transparent); }
+.dash .dash-status.is-danger::before { background: var(--viz-critical); box-shadow: 0 0 0 3px color-mix(in srgb, var(--viz-critical) 20%, transparent); }
+.dash .dash-status-group { display: inline-flex; flex-wrap: wrap; align-items: center; gap: .3rem .9rem; }
+
+/* ==========================================================================
+   PHONES (owner, 2026-11-21): calmer, lighter screens in every portal. The type scale itself is fluid
+   (--text-md and up, :root above); this block only tightens the big pieces that filled the screen.
+   Nothing is removed: long texts are clamped or tucked away, never deleted.
+   ========================================================================== */
+
+/* Never wider than the screen: a stray wide child is clipped instead of letting the phone zoom out.
+   clip (not hidden) keeps position: sticky working. */
+html, body { max-width: 100%; overflow-x: clip; }
+.dash img, .dash svg, .dash video, .dash iframe { max-width: 100%; }
+.dash :is(pre, code) { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* Taps: no double-tap zoom delay on controls. */
+.dash :is(a, button, summary, label, select, [role="button"]) { touch-action: manipulation; }
+
+/* Touch screens have no hover. On iPhone a hover style that moves or grows something can swallow the first
+   tap (it only shows the hover; a second tap opens the link), so buttons and tiles seemed not to work. */
+@media (hover: none) {
+  .dash :is(.dash-btn, a.dash-kpi, a.dash-tile, a.dash-stat-card, .dash-photo-card, .dash-icon-btn):hover { transform: none; filter: none; }
+  .dash a.dash-kpi:hover::after { width: 36px; }
+}
+
+/* Every heading above the token scale also shrinks on phones. */
+.dash .dash-hero h1 { font-size: clamp(1.3rem, .7rem + 2.6vw, 2.35rem); }
+
+@media (max-width: 575.98px) {
+  .dash { --dash-gap: 12px; }
+  .dash .dash-main { padding: 14px 12px 28px; }
+
+  /* Page header: shorter, the breadcrumb is already in the mobile bar, the subtitle keeps two lines. */
+  .dash .dash-hero { min-height: 0; padding: 16px 16px 18px; margin-bottom: 12px; gap: .75rem; border-radius: 16px; }
+  .dash .dash-hero::after { left: 16px; width: 44px; height: 3px; }
+  .dash .dash-hero .bk-crumbs { display: none; }
+  .dash .dash-hero h1 { margin: 0 0 .3rem; }
+  .dash .dash-hero p { font-size: var(--text-sm); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .dash .dash-hero-actions { margin-top: .75rem; gap: .5rem; }
+  .dash .dash-hero-actions .dash-btn { flex: 1 1 auto; justify-content: center; min-height: 42px; }
+  .dash .dash-hero-aside { gap: .45rem; }
+
+  /* KPI tiles: no forced tall labels; the number and the label sit close together. */
+  .dash .dash-kpi { min-height: 0; padding: 12px 12px 14px; }
+  .dash .dash-kpi > span:last-child > span { min-height: 0; letter-spacing: .04em; }
+  .dash .dash-kpi strong { font-size: var(--text-xl); }
+
+  /* Cards and their titles */
+  .dash .dash-card-title { font-size: var(--text-md); }
+  .dash .ms-fold > summary { min-height: 52px; padding: 10px var(--dash-pad); }
+  .dash .dash-empty { font-size: var(--text-sm); }
+  .dash .sc-hint { font-size: var(--text-xs); }
+
+  /* Lists: avatar codes do not eat the row */
+  .dash .dash-list li { gap: .65rem; }
+  .dash .dash-section-title { font-size: var(--text-lg); }
+
+  /* Dialogs use the whole width */
+  .dash-dialog { width: min(640px, calc(100vw - 16px)); border-radius: 18px; }
+}

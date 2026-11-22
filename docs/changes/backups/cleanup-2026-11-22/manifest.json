@@ -1,0 +1,27 @@
+{
+  "id": "./app",
+  "name": "BAKR",
+  "short_name": "BAKR",
+  "description": "BAKR - DNSC Scholarship Matching and Monitoring System: find scholarships that fit you, follow your scholarship as a scholar, and manage scholars as a provider.",
+  "lang": "en",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "theme_color": "#143a2b",
+  "background_color": "#fdfbf8",
+  "categories": ["education"],
+  "icons": [
+    { "src": "images/app/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "images/app/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "images/app/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "images/app/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Student sign in", "short_name": "Student", "url": "./studentLogin", "icons": [{ "src": "images/app/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Scholar sign in", "short_name": "Scholar", "url": "./scholarLogin", "icons": [{ "src": "images/app/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Provider sign in", "short_name": "Provider", "url": "./providerLogin", "icons": [{ "src": "images/app/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

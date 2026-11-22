@@ -1,0 +1,15 @@
+@include('partials.staff-login', [
+    'role' => 'scholar',
+    'portal' => 'Scholar Portal',
+    'title' => 'Scholar login',
+    'help' => 'Sign in to view your scholarship status and upload your requirements.',
+    'eyebrow' => 'BAKR Scholar Portal',
+    'headline' => 'Your scholarship, <em>all in one place.</em>',
+    'lead' => 'Check your status, follow your stipend releases and keep your requirements complete each term.',
+    'points' => [
+        ['bi-patch-check', 'See your scholarship status and what you need to keep it.'],
+        ['bi-cash-coin', 'Track each stipend release, from pending to received.'],
+        ['bi-cloud-arrow-up', 'Upload the documents your provider asks for each term.'],
+    ],
+    'script' => 'js/bakr-scholar-login.js',
+])

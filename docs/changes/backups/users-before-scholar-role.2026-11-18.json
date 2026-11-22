@@ -1,0 +1,58 @@
+[
+    {
+        "id": 1,
+        "email": "ched.provider@bakr.test",
+        "role": "provider",
+        "status": "active",
+        "must_change_password": 0
+    },
+    {
+        "id": 2,
+        "email": "dost.provider@bakr.test",
+        "role": "provider",
+        "status": "active",
+        "must_change_password": 0
+    },
+    {
+        "id": 3,
+        "email": "cebuana.provider@bakr.test",
+        "role": "provider",
+        "status": "active",
+        "must_change_password": 0
+    },
+    {
+        "id": 4,
+        "email": "dnsc.provider@bakr.test",
+        "role": "provider",
+        "status": "active",
+        "must_change_password": 0
+    },
+    {
+        "id": 5,
+        "email": "grab.provider@bakr.test",
+        "role": "provider",
+        "status": "active",
+        "must_change_password": 0
+    },
+    {
+        "id": 7,
+        "email": "gabaes.karlangelo@dnsc.edu.ph",
+        "role": "student",
+        "status": "active",
+        "must_change_password": 0
+    },
+    {
+        "id": 8,
+        "email": "gabaeskarlangelo@gmail.com",
+        "role": "student",
+        "status": "active",
+        "must_change_password": 0
+    },
+    {
+        "id": 9,
+        "email": "hakdoggie678@gmail.com",
+        "role": "student",
+        "status": "active",
+        "must_change_password": 0
+    }
+]

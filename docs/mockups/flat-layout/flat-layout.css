@@ -1,0 +1,276 @@
+/* BAKR — Flat Creative Layout concept (MOCKUP ONLY)
+   Editorial design: geometric accents, diagonal shapes, subtle patterns.
+   No glass, no skeuomorphism — personality through shape and type, not decoration. */
+
+/* ---- Page background ---- */
+html, body, #main, .sp-page { background: #f5f3ef !important; }
+body::before { display: none !important; }
+
+/* ---- Top navbar: sharp green bar with gold underline ---- */
+.bk-navbar, .bk-navbar.is-scrolled {
+  background: #143a2b !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+  border-bottom: 3px solid #c9a443 !important;
+  border-radius: 0 !important;
+}
+
+/* ---- Shell: narrow sidebar ---- */
+.sd-shell {
+  grid-template-columns: 220px 1fr !important;
+  gap: 0 !important;
+  align-items: start;
+}
+
+/* ---- Sidebar strip: dark green with a very faint diagonal-line texture ---- */
+.sd-side {
+  background:
+    repeating-linear-gradient(
+      -55deg,
+      transparent,
+      transparent 18px,
+      rgba(255,255,255,.025) 18px,
+      rgba(255,255,255,.025) 19px
+    ),
+    #143a2b !important;
+  min-height: calc(100vh - 64px);
+  padding: 1.75rem 1.25rem !important;
+  border-right: 3px solid #c9a443 !important;
+}
+
+/* Profile card: no rounded box, just text on the dark bg */
+.sd-me {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  border-radius: 0 !important;
+  padding: 0 0 1.5rem !important;
+  margin: 0 !important;
+  border-bottom: 1px solid rgba(255,255,255,.12) !important;
+}
+.sd-me::before, .sd-me::after { display: none !important; }
+
+/* Avatar circle */
+.sd-me .rounded-circle { border: 3px solid #c9a443 !important; box-shadow: none !important; }
+
+.sd-me-name { color: #fff !important; font-size: 1rem !important; font-weight: 700 !important; margin-top: .5rem !important; }
+.sd-prog { color: rgba(255,255,255,.65) !important; font-size: .78rem !important; }
+.sd-prog small { color: rgba(255,255,255,.5) !important; }
+
+/* Stats tiles */
+.sd-tiles { margin-top: 1.25rem !important; }
+.sd-tiles a {
+  background: rgba(255,255,255,.07) !important;
+  border: 1px solid rgba(255,255,255,.1) !important;
+  color: #fff !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+  border-radius: 6px !important;
+}
+.sd-tiles a:hover { background: rgba(255,255,255,.13) !important; }
+.sd-tiles span { color: #fff !important; font-weight: 700 !important; font-size: 1.3rem !important; }
+.sd-tiles small { color: rgba(255,255,255,.6) !important; font-size: .7rem !important; }
+
+/* Score summary: big number with a gold ring behind it */
+.sd-big {
+  position: relative !important;
+  display: inline-block !important;
+}
+.sd-big::before {
+  content: "" !important;
+  position: absolute !important;
+  top: 50% !important; left: -6px !important;
+  transform: translateY(-55%) !important;
+  width: 48px !important; height: 48px !important;
+  border: 2px solid rgba(201,164,67,.35) !important;
+  border-radius: 50% !important;
+  pointer-events: none !important;
+}
+.sd-big strong { color: #fff !important; font-size: 2rem !important; font-weight: 900 !important; }
+.sd-big span { color: rgba(255,255,255,.55) !important; font-size: .7rem !important; text-transform: uppercase; letter-spacing: .06em; }
+
+/* Progress bar */
+.progress { background: rgba(255,255,255,.12) !important; }
+.progress-bar { background: #c9a443 !important; }
+
+/* ---- Sidebar nav ---- */
+.sd-nav {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  margin-top: 1.25rem !important;
+  padding: 0 !important;
+}
+.sd-nav::before, .sd-nav::after { display: none !important; }
+.sd-nav a, .sd-nav button {
+  color: rgba(255,255,255,.75) !important;
+  font-weight: 500 !important;
+  font-size: .84rem !important;
+  border-radius: 5px !important;
+  padding: .45rem .6rem !important;
+}
+.sd-nav a i, .sd-nav button i { color: #c9a443 !important; }
+.sd-nav a:hover { background: rgba(255,255,255,.08) !important; color: #fff !important; }
+.sd-nav a[aria-current="page"] {
+  background: rgba(201,164,67,.15) !important;
+  color: #fff !important;
+  border: 1px solid rgba(201,164,67,.3) !important;
+  box-shadow: none !important;
+  padding-left: .9rem !important;
+  position: relative !important;
+}
+/* small diamond marker on the active nav item */
+.sd-nav a[aria-current="page"]::before {
+  content: "" !important;
+  position: absolute !important;
+  left: -1px !important; top: 50% !important;
+  transform: translateY(-50%) rotate(45deg) !important;
+  width: 7px !important; height: 7px !important;
+  background: #c9a443 !important;
+  border-radius: 1px !important;
+}
+.sd-nav em {
+  background: #c9a443 !important;
+  color: #143a2b !important;
+  font-size: .68rem !important;
+  font-weight: 700 !important;
+  border-radius: 20px !important;
+}
+.sd-nav button { opacity: 1 !important; }
+
+/* Help panel in sidebar */
+.sd-help {
+  background: rgba(255,255,255,.07) !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  color: rgba(255,255,255,.75) !important;
+  margin-top: 1.25rem !important;
+}
+.sd-help::before, .sd-help::after { display: none !important; }
+.sd-help * { color: rgba(255,255,255,.75) !important; }
+
+/* ---- Main content area ---- */
+.sd-main {
+  background: transparent !important;
+  padding: 0 !important;
+}
+.sp-main, .sd-page {
+  background: transparent !important;
+  padding: 2rem 2.25rem !important;
+}
+
+/* ---- Section headings: skewed gold accent mark + bold text ---- */
+.sd-head {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  margin-bottom: 1.5rem !important;
+  padding-bottom: .75rem !important;
+  border-bottom: 1.5px solid #d6d1c9 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: .75rem !important;
+}
+/* the skewed accent bar before the heading text */
+.sd-head h2 {
+  display: flex !important;
+  align-items: center !important;
+  gap: .6rem !important;
+  color: #143a2b !important;
+  font-size: 1.3rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -.02em !important;
+  text-shadow: none !important;
+  margin: 0 !important;
+}
+.sd-head h2::before {
+  content: "" !important;
+  display: inline-block !important;
+  width: 5px !important;
+  height: 1.1em !important;
+  background: #c9a443 !important;
+  transform: skewX(-14deg) !important;
+  flex-shrink: 0 !important;
+  border-radius: 1px !important;
+}
+.sd-head a { color: #143a2b !important; font-size: .82rem !important; }
+
+/* ---- Match cards: flat, white, colour-coded left border ---- */
+.sd-cards { gap: 1rem !important; }
+.sd-card {
+  background: #fff !important;
+  border: 1.5px solid #e2ddd6 !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  overflow: hidden;
+}
+.sd-card::before, .sd-card::after { display: none !important; }
+
+/* angled corner tab: a rotated rectangle clipped into the top-left corner */
+.sd-card { position: relative !important; }
+.sd-card::before {
+  content: "" !important;
+  position: absolute !important;
+  top: 0 !important; left: 0 !important;
+  width: 42px !important; height: 42px !important;
+  clip-path: polygon(0 0, 100% 0, 0 100%) !important;
+  pointer-events: none !important;
+  z-index: 1 !important;
+}
+.sd-card[data-status="eligible"]::before     { background: #3d7a58 !important; }
+.sd-card[data-status="possible"]::before     { background: #c9a443 !important; }
+.sd-card[data-status="not_eligible"]::before { background: #c8c4be !important; opacity: .6; }
+.sd-card[data-status="needs_info"]::before   { background: #5b8ed4 !important; }
+/* no top border needed with the corner tab */
+.sd-card[data-status] { border-top: 1.5px solid #e2ddd6 !important; }
+
+.sd-card-cover { border-radius: 0 !important; height: 80px !important; object-fit: cover !important; }
+.sd-card-body { background: #fff !important; color: #111 !important; padding: .8rem 1rem !important; }
+.sd-card-body > strong { font-size: .92rem !important; font-weight: 700 !important; color: #111 !important; }
+.sd-card-body > span, .sd-card-body small { color: #666 !important; font-weight: 400 !important; font-size: .76rem !important; }
+.sd-card-foot {
+  background: #faf8f5 !important;
+  border-top: 1px solid #edeae5 !important;
+  color: #333 !important;
+  padding: .55rem 1rem !important;
+  font-size: .76rem !important;
+}
+.sd-card-foot b { color: #111 !important; }
+.sd-card-foot a { color: #143a2b !important; font-weight: 700 !important; }
+
+/* ---- AI / overview panel ---- */
+.sd-ai, .sd-todo {
+  background: #fff !important;
+  border: 1.5px solid #e2ddd6 !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+.sd-ai::before, .sd-ai::after,
+.sd-todo::before, .sd-todo::after { display: none !important; }
+
+/* ---- Banner: keep image, clean up ring shadows ---- */
+.sd-banner {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  border: none !important;
+  margin-bottom: 0 !important;
+}
+
+/* ---- Responsive mobile ---- */
+@media (max-width: 768px) {
+  .sd-shell { grid-template-columns: 1fr !important; }
+  .sd-side {
+    min-height: auto !important;
+    padding: 1.25rem !important;
+    border-right: none !important;
+    border-bottom: 3px solid #c9a443 !important;
+  }
+  .sp-main, .sd-page { padding: 1.25rem !important; }
+}

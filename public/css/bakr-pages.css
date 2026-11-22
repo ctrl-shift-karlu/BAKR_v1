@@ -1,0 +1,57 @@
+/* ==========================================================================
+   BAKR — inner pages (About, Contact): title banner and small shared pieces.
+   ========================================================================== */
+
+.bk-page-hero {
+  --hero-wash-left: .34; --hero-wash-mid: .2; --hero-wash-right: .06;   /* ~20% green wash: tune here */
+  position: relative; overflow: hidden; color: #fff;
+  padding: calc(var(--nav-offset) + 56px) 0 72px;
+  /* Light tint (about 20-25% overall) so the photo stays visible; a touch more on the
+     left keeps the white text readable. */
+  background:
+    linear-gradient(90deg, rgba(14, 42, 31, var(--hero-wash-left)) 0%, rgba(14, 42, 31, var(--hero-wash-mid)) 55%, rgba(14, 42, 31, var(--hero-wash-right)) 100%),
+    var(--page-hero-image, none) center / cover no-repeat,
+    var(--green-900);
+}
+.bk-page-hero::after {            /* soft gold glow */
+  content: ""; position: absolute; right: -120px; top: -140px; width: 420px; height: 420px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(184, 145, 47, .28), transparent 65%); pointer-events: none;
+}
+.bk-page-hero .container { position: relative; z-index: 1; }
+.bk-crumbs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; padding: 0; list-style: none; font-size: var(--text-sm); color: rgba(255, 255, 255, .9); }
+.bk-crumbs a { color: var(--gold-light); text-decoration: none; }
+.bk-crumbs a:hover { color: #fff; }
+.bk-crumbs li + li::before { content: "/"; margin-right: 8px; opacity: .5; }
+.bk-page-hero h1 { margin: 0 0 12px; font-weight: 700; font-size: clamp(1.6rem, 1rem + 2.8vw, 3rem); line-height: 1.15; color: #fff; text-shadow: 0 2px 16px rgba(0, 0, 0, .55); }
+body .bk-page-hero h1, body .bk-page-hero h1 span { color: #fff !important; }
+.bk-page-hero h1 em { font-style: normal; color: var(--gold-light); }
+.bk-page-hero h1, .bk-page-hero p, .bk-crumbs { text-shadow: 0 2px 14px rgba(0, 0, 0, .6), 0 1px 2px rgba(0, 0, 0, .5); }
+.bk-page-hero p { max-width: 42rem; margin: 0; font-size: var(--text-md); line-height: 1.7; color: #fff; }
+
+/* Content sits slightly over the banner */
+.bk-page-body { position: relative; z-index: 2; margin-top: -36px; }
+
+/* Contact details */
+.bk-contact-cards { display: grid; gap: 16px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: 8px; }
+.bk-contact-card {
+  display: flex; gap: 14px; align-items: flex-start; padding: 20px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card);
+  box-shadow: 0 8px 26px rgba(20, 58, 43, .08); color: var(--ink); text-decoration: none;
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+a.bk-contact-card:hover { transform: translateY(-3px); border-color: rgba(184, 145, 47, .6); box-shadow: 0 16px 34px rgba(20, 58, 43, .14); color: var(--ink); }
+.bk-contact-card > i {
+  display: grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: 12px;
+  background: linear-gradient(145deg, var(--gold-light), var(--gold)); color: var(--green-900); font-size: 1.15rem;
+}
+.bk-contact-card strong { display: block; margin-bottom: 2px; font-size: var(--text-md); color: var(--text-strong); }
+.bk-contact-card span { font-size: var(--text-sm); line-height: 1.55; color: var(--ink-soft); }
+@media (max-width: 767.98px) { .bk-contact-cards { grid-template-columns: 1fr; } .bk-page-hero { padding-bottom: 60px; } }
+
+/* Contact form honeypot */
+.bk-hp { position: absolute !important; left: -9999px; width: 1px; height: 1px; overflow: hidden; }   /* honeypot */
+
+/* Closing call-to-action strip on inner pages */
+.bk-cta-strip { padding: 56px 0; text-align: center; background: var(--sage-tint); }
+.bk-cta-strip h2 { margin: 0 0 8px; font-weight: 700; color: var(--text-strong); }
+.bk-cta-strip p { max-width: 36rem; margin: 0 auto 22px; color: var(--ink-soft); }

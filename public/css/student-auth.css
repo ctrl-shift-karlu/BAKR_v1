@@ -1,0 +1,168 @@
+/* BAKR — student login and register pages (campus photo background). */
+/* BAKR type scale (same values as bakr-core.css: md and up are fluid, a step smaller on phones). */
+:root {
+  --text-xs: 0.75rem;
+  --text-caption: 0.8125rem;
+  --text-sm: 0.875rem;
+  --text-md: clamp(0.9375rem, 0.9107rem + 0.119vw, 1rem);
+  --text-title: clamp(1.03125rem, 0.991rem + 0.179vw, 1.125rem);
+  --text-lg: clamp(1.125rem, 1.071rem + 0.238vw, 1.25rem);
+  --text-xl: clamp(1.25rem, 1.143rem + 0.476vw, 1.5rem);
+  --text-2xl: clamp(1.5625rem, 1.375rem + 0.833vw, 2rem);
+}
+
+:root {
+  --vanilla: #fdfbf8;
+  /* Role colours (dark mode redefines these in bakr-dark.css; light values are unchanged). */
+  --text-strong: var(--green-900);
+  --text-accent: var(--green-700);
+  --page-bg: var(--vanilla);
+  --page-bg-deep: var(--vanilla-deep);
+  --surface: #ffffff;
+  --green-900: #143a2b;
+  --green-700: #1f4d3a;
+  --sage-tint: #e7efe9;
+  --gold: #b8912f;
+  --gold-light: #f6dfa0;
+  --gold-tint: #fbf1dc;
+  --ink: #2b2925;
+  --ink-soft: #635e57;         /* 5.4:1+ on every cream/sage surface */
+  --gold-text: #7d5f17;        /* gold used AS text on light surfaces (5:1+) */
+  --gold-fill: #c9a443;        /* gold behind green-900 text (5.3:1) */
+  --border: #eeece8;
+  --danger: #b42318;
+}
+
+body.sa-body {
+  font-family: "Poppins", system-ui, sans-serif;
+  background: var(--page-bg);
+  color: var(--ink);
+}
+
+.sa-notice {
+  background: var(--gold-tint);
+  border: 1px solid var(--gold-light);
+  border-left: 4px solid var(--gold);
+  border-radius: 12px;
+  padding: .9rem 1.1rem;
+  font-size: var(--text-sm);
+}
+
+.form-label { font-weight: 500; font-size: var(--text-sm); }
+.form-control { border-radius: 10px; border-color: #e3dfd8; font-size: var(--text-md); }
+.form-control:focus, .form-check-input:focus {
+  border-color: var(--green-700);
+  box-shadow: 0 0 0 .2rem rgba(31, 77, 58, .15);
+}
+.form-check-input:checked { background-color: var(--green-700); border-color: var(--green-700); }
+.invalid-feedback { font-size: var(--text-caption); }
+
+.sa-btn-gold {
+  background: linear-gradient(160deg, var(--gold-light) 0%, var(--gold-fill) 100%); color: var(--green-900); border: 0; border-radius: 999px;
+  padding: .7rem 1.8rem; font-weight: 600; transition: background .15s, transform .15s;
+}
+.sa-btn-gold:hover { background: var(--gold-fill); color: var(--green-900); transform: translateY(-1px); }
+.sa-btn-gold:focus-visible { outline: 3px solid var(--green-900); outline-offset: 2px; }
+
+@media (max-width: 575.98px) {
+  .sa-btn-gold { width: 100%; }
+}
+
+/* ---------- Student login / register ---------- */
+body.sa-auth {
+  min-height: 100vh;
+  background:
+    linear-gradient(115deg, rgba(14, 42, 31, .94) 0%, rgba(20, 58, 43, .82) 45%, rgba(20, 58, 43, .55) 100%),
+    var(--auth-bg, none) center / cover no-repeat fixed,
+    var(--green-900);
+}
+.sa-auth-wrap { min-height: 100vh; display: flex; align-items: center; padding: 2rem 0; }
+
+.sa-auth-intro { color: #fff; }
+.sa-auth-intro .sa-eyebrow { color: var(--gold-light); letter-spacing: .14em; font-size: var(--text-xs); font-weight: 600; text-transform: uppercase; }
+.sa-auth-intro h2 { font-weight: 700; font-size: clamp(2rem, 3.4vw, 2.9rem); line-height: 1.15; margin: .6rem 0 1rem; }
+.sa-auth-intro h2 em { font-style: normal; color: var(--gold-light); }
+.sa-auth-intro p { color: rgba(255, 255, 255, .82); max-width: 30rem; }
+.sa-auth-points { list-style: none; padding: 0; margin: 1.75rem 0 0; display: grid; gap: .9rem; }
+.sa-auth-points li { display: flex; gap: .8rem; align-items: flex-start; color: rgba(255, 255, 255, .9); font-size: var(--text-sm); }
+.sa-auth-points i {
+  flex: none; width: 2.1rem; height: 2.1rem; display: grid; place-items: center; border-radius: 10px;
+  background: rgba(246, 223, 160, .16); color: var(--gold-light); font-size: 1rem;
+}
+
+.sa-auth-card {
+  position: relative;
+  background: rgba(253, 251, 248, .97);
+  border: 1px solid rgba(255, 255, 255, .5);
+  border-radius: 22px;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, .35);
+  padding: 2.2rem 2rem 1.8rem;
+  overflow: hidden;
+}
+.sa-auth-card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 5px; background: linear-gradient(90deg, var(--gold), var(--gold-light)); }
+.sa-auth-brand { display: flex; align-items: center; gap: .7rem; text-decoration: none; color: var(--text-strong); font-weight: 700; font-size: var(--text-lg); line-height: 1.1; margin-bottom: 1.3rem; }
+.sa-auth-brand img { height: 42px; width: auto; }
+.sa-auth-brand span { display: block; font-size: var(--text-xs); font-weight: 600; letter-spacing: .08em; color: var(--gold-text); text-transform: uppercase; margin-top: .2rem; }
+.sa-auth-card h1 { font-size: var(--text-xl); font-weight: 700; color: var(--text-strong); margin-bottom: .2rem; }
+.sa-auth-card a { color: var(--text-accent); font-weight: 600; }
+.sa-auth-card a:hover { color: var(--gold); }
+
+.sa-auth-card .input-group-text { background: #fff; border-color: #e3dfd8; color: var(--text-accent); border-radius: 10px 0 0 10px; }
+.sa-auth-card .input-group .form-control { border-left: 0; border-radius: 0 10px 10px 0; }
+.sa-auth-card .input-group:focus-within .input-group-text { border-color: var(--green-700); }
+.sa-auth-card .input-group .sa-toggle { border: 1px solid #e3dfd8; border-left: 0; background: #fff; color: var(--ink-soft); border-radius: 0 10px 10px 0; }
+.sa-auth-card .input-group .sa-toggle + .invalid-feedback { display: block; }
+.sa-auth-card .input-group:has(.sa-toggle) .form-control { border-radius: 0; border-right: 0; }
+.sa-auth-card .input-group > .form-control.is-invalid ~ .sa-toggle { border-color: var(--danger); }
+.sa-auth-card .invalid-feedback { display: block; }
+
+.sa-auth-back { position: absolute; top: 1.2rem; right: 1.4rem; z-index: 2; }
+.sa-auth-back a { color: var(--gold-light); text-decoration: none; font-size: var(--text-sm); font-weight: 500; }
+.sa-auth-back a:hover { color: #fff; }
+
+@media (max-width: 991.98px) {
+  body.sa-auth { background:
+    linear-gradient(180deg, rgba(14, 42, 31, .9), rgba(20, 58, 43, .8)),
+    var(--auth-bg, none) center / cover no-repeat fixed, var(--green-900); }
+  .sa-auth-card { padding: 1.8rem 1.4rem 1.5rem; }
+}
+
+.sa-forgot { color: var(--text-accent); font-weight: 600; text-underline-offset: 3px; padding: .35rem 0; }
+.sa-forgot:hover { color: var(--text-strong); }
+/* Small text links: at least a 24px-tall tap target. */
+.sa-auth-back a { display: inline-flex; align-items: center; min-height: 32px; }
+
+/* ---------- One card for every portal (layouts/auth); only the background photo changes ---------- */
+body.sa-auth.is-student  { --auth-bg: url("../images/img/dnsc_campus.jpg"); }
+body.sa-auth.is-scholar  { --auth-bg: url("../images/img/opt/students2.jpg"); }
+body.sa-auth.is-provider { --auth-bg: url("../images/img/dnsc_gate.jpg"); }
+body.sa-auth.is-admin    { --auth-bg: url("../images/img/opt/gate2.jpg"); }
+body.sa-auth.is-forgot   { --auth-bg: url("../images/img/dnsc_campus.jpg"); }
+
+/* Links under the form (layouts/auth 'foot') */
+.sa-auth-foot { margin-top: 1rem; text-align: center; font-size: var(--text-sm); color: var(--ink-soft); }
+.sa-auth-foot p { margin: 0; }
+.sa-auth-foot p + p { margin-top: .4rem; }
+.sa-auth-privacy { margin: .9rem 0 0; text-align: center; font-size: var(--text-xs); color: var(--ink-soft); }
+.sa-auth-privacy a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+
+.sa-btn-gold:disabled { opacity: .7; transform: none; cursor: progress; }
+
+/* ==========================================================================
+   Smooth page changes (2026-11-13). Every BAKR page opts in to the browser's
+   cross-document view transitions, so clicking a link cross-fades to the next
+   page instead of blanking and repainting. The sidebar and the top navbar keep
+   their place (no fade), so only the content changes. Browsers without support
+   simply load the page as before. Same block in bakr-core.css,
+   bakr-dashboard.css and student-auth.css: both pages must opt in.
+   ========================================================================== */
+@view-transition { navigation: auto; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 160ms; animation-timing-function: ease-out; }
+.dash .dash-side { view-transition-name: bakr-side; }
+.bk-navbar { view-transition-name: bakr-nav; }
+::view-transition-group(bakr-side), ::view-transition-group(bakr-nav) { animation-duration: 0s; }
+::view-transition-old(bakr-side), ::view-transition-old(bakr-nav) { display: none; }
+::view-transition-new(bakr-side), ::view-transition-new(bakr-nav) { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+}

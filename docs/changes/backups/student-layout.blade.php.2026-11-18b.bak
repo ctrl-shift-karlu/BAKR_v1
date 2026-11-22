@@ -1,0 +1,182 @@
+{{-- Student area: same site footer as the public pages, inside the shared dashboard shell
+     (public/css/bakr-dashboard.css — the same shell every BAKR dashboard uses).
+     Two modes on one layout (Scholar::heldBy):
+       student  matching menu (Dashboard, My matches, My profile, My matching form)
+       scholar  scholar portal menu (Overview, My scholarship, Requirements, Explore ▸, Profile); no matching --}}
+@extends('layouts.app')
+
+@section('page', 'student')
+@section('no_navbar', '1')
+@section('no_footer', '1')
+
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('css/bakr-pages.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/student-portal.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/bakr-dashboard.css') }}">
+@endpush
+
+@section('content')
+@php
+    $uid = auth()->id();
+    $me = auth()->user();
+    $isScholar = \App\Models\Scholar::heldBy((int) $uid);
+    // Scholars have no matching: no match summary for them.
+    $current = $isScholar ? null : \App\Models\ScholarshipApplication::where('user_id', $uid)->where('is_current', true)->first();
+    $tally = $current ? $current->matches()->selectRaw('status, count(*) as n')->groupBy('status')->pluck('n', 'status') : collect();
+    $nElig = (int) ($tally['eligible'] ?? 0);
+    $nPoss = (int) ($tally['possible'] ?? 0);
+    $nInfo = (int) ($tally['needs_info'] ?? 0);
+    $nNot  = (int) ($tally['not_eligible'] ?? 0);
+    $nAll  = $nElig + $nPoss + $nInfo + $nNot;
+    $w     = fn ($n) => $nAll ? round($n / $nAll * 100, 1) : 0;
+    $answers = $current?->answers ?? [];
+    $initials = collect(preg_split('/\s+/', trim($me->name)))->filter()->take(2)->map(fn ($p) => mb_strtoupper(mb_substr($p, 0, 1)))->implode('');
+    $banner = match (true) {
+        request()->routeIs('student.results') => 'opt/students2.jpg',
+        request()->routeIs('student.profile', 'scholar.profile') => 'opt/dnsc_gate.jpg',
+        request()->routeIs('student.application.*', 'scholar.requirements') => 'opt/lib.jpg',
+        request()->routeIs('scholar.scholarship') => 'graduates.jpg',
+        default => 'dnsc_campus.jpg',
+    };
+    if ($isScholar) {
+        $myScholars = \App\Models\Scholar::where('user_id', $uid)->with('scholarship')->get();
+        $term = \App\Support\AcademicTerm::current();
+        // Sidebar badge: this term's requirements still to upload or to fix.
+        $todo = \App\Models\ScholarRequirement::whereIn('scholar_id', $myScholars->filter(fn ($s) => $s->scholarship->offers('requirements'))->pluck('id'))
+            ->where('term', $term)->whereIn('status', ['missing', 'needs_revision'])->count();
+        $exploreOpen = request()->routeIs('student.scholarships', 'student.help');
+        $home = route('scholar.overview');
+    } else {
+        $home = route('student.dashboard');
+    }
+@endphp
+
+<div class="dash is-app sp-page sd">
+    <div class="dash-panel{{ request()->routeIs('student.dashboard') ? ' is-dashboard' : '' }}">
+
+        @include('partials.dash-mobilebar', ['home' => $home, 'portal' => $isScholar ? 'Scholar Portal' : 'Student Portal'])
+
+        {{-- ============ SIDEBAR (drawer on phones) ============ --}}
+        <aside class="dash-side is-native" id="dash-side" aria-label="{{ $isScholar ? 'Scholar menu' : 'Student menu' }}">
+            <button type="button" class="dash-side-close" aria-label="Close menu" data-dash-close><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+            <a class="dash-brand" href="{{ $home }}" aria-label="{{ $isScholar ? 'BAKR scholar overview' : 'BAKR student dashboard' }}">
+                <img src="{{ asset('images/logo/bakr-logo.png') }}" alt="" width="30" height="30">
+                <span>BAKR<small>{{ $isScholar ? 'Scholar Portal' : 'Student Portal' }}</small></span>
+            </a>
+
+            @if ($isScholar)
+            {{-- ============ SCHOLAR MENU ============ --}}
+            <div class="dash-nav-label">Main</div>
+            <nav class="dash-nav" aria-label="Scholar pages">
+                <a href="{{ route('scholar.overview') }}" @if (request()->routeIs('scholar.overview')) aria-current="page" @endif><i class="bi bi-grid-1x2" aria-hidden="true"></i> Overview</a>
+                <a href="{{ route('scholar.scholarship') }}" @if (request()->routeIs('scholar.scholarship')) aria-current="page" @endif><i class="bi bi-award" aria-hidden="true"></i> My scholarship</a>
+                <a href="{{ route('scholar.requirements') }}" @if (request()->routeIs('scholar.requirements')) aria-current="page" @endif><i class="bi bi-folder-check" aria-hidden="true"></i> Requirements @if ($todo)<em aria-label="{{ $todo }} to do">{{ $todo }}</em>@endif</a>
+            </nav>
+
+            <details class="dash-nav-group" @if ($exploreOpen) open @endif>
+                <summary><i class="bi bi-compass" aria-hidden="true"></i> Explore <i class="bi bi-chevron-down dash-nav-chev" aria-hidden="true"></i></summary>
+                <nav class="dash-nav" aria-label="Explore">
+                    <a href="{{ route('student.scholarships') }}" @if (request()->routeIs('student.scholarships')) aria-current="page" @endif><i class="bi bi-mortarboard" aria-hidden="true"></i> All scholarships</a>
+                    <a href="{{ route('student.help') }}" @if (request()->routeIs('student.help')) aria-current="page" @endif><i class="bi bi-question-circle" aria-hidden="true"></i> Help &amp; contact</a>
+                    <a href="{{ route('student.help') }}#about" data-open-dialog="about-bakr"><i class="bi bi-info-circle" aria-hidden="true"></i> About BAKR</a>
+                    <a href="{{ url('/') }}"><i class="bi bi-house" aria-hidden="true"></i> Public site</a>
+                </nav>
+            </details>
+
+            <div class="dash-nav-label">Account</div>
+            <nav class="dash-nav" aria-label="Account">
+                <a href="{{ route('scholar.profile') }}" @if (request()->routeIs('scholar.profile')) aria-current="page" @endif><i class="bi bi-person-circle" aria-hidden="true"></i> Profile</a>
+            </nav>
+
+            <div class="dash-user">
+                <span class="dash-avatar is-lg is-1" aria-hidden="true">{{ $initials ?: 'S' }}</span>
+                <span>
+                    <strong>{{ $me->name }}</strong>
+                    <small>{{ $myScholars->first()?->scholarship->shortName() }} scholar</small>
+                </span>
+            </div>
+            @else
+            {{-- ============ STUDENT MENU (matching) ============ --}}
+            <div class="dash-nav-label">Main</div>
+            <nav class="dash-nav" aria-label="Student pages">
+                <a href="{{ route('student.dashboard') }}" @if (request()->routeIs('student.dashboard')) aria-current="page" @endif><i class="bi bi-grid-1x2" aria-hidden="true"></i> Dashboard</a>
+                <a href="{{ route('student.results') }}" @if (request()->routeIs('student.results')) aria-current="page" @endif><i class="bi bi-list-check" aria-hidden="true"></i> My matches @if ($nElig + $nPoss)<em>{{ $nElig + $nPoss }}</em>@endif</a>
+                <a href="{{ route('student.profile') }}" @if (request()->routeIs('student.profile')) aria-current="page" @endif><i class="bi bi-person-vcard" aria-hidden="true"></i> My profile</a>
+                <a href="{{ route('student.application.show') }}" @if (request()->routeIs('student.application.show')) aria-current="page" @endif><i class="bi bi-pencil-square" aria-hidden="true"></i> My matching form</a>
+            </nav>
+
+            <div class="dash-nav-label">Explore</div>
+            <nav class="dash-nav" aria-label="Explore">
+                <a href="{{ route('student.help') }}" @if (request()->routeIs('student.help')) aria-current="page" @endif><i class="bi bi-question-circle" aria-hidden="true"></i> Help &amp; contact</a>
+                <a href="{{ route('student.help') }}#about" data-open-dialog="about-bakr"><i class="bi bi-info-circle" aria-hidden="true"></i> About BAKR</a>
+                <a href="{{ url('/') }}"><i class="bi bi-house" aria-hidden="true"></i> Public site</a>
+                <a href="#confirm-signout" class="is-danger" data-open-dialog="confirm-signout"><i class="bi bi-box-arrow-right" aria-hidden="true"></i> Sign out</a>
+            </nav>
+
+            @if ($current)
+                <section class="sd-me dash-side-extra" aria-label="Match summary">
+                    <div class="sd-big"><strong>{{ $nElig + $nPoss }}</strong><span>of {{ $nAll }} scholarships fit you so far</span></div>
+                    <div class="sd-split" aria-hidden="true">
+                        <i style="width: {{ $w($nElig) }}%; background: #2f8f5b"></i><i style="width: {{ $w($nPoss) }}%; background: var(--gold)"></i><i style="width: {{ $w($nInfo) }}%; background: #6f93bd"></i><i style="width: {{ $w($nNot) }}%; background: #cfc9bd"></i>
+                    </div>
+                    <div class="sd-tiles">
+                        <a href="{{ route('student.results', ['status' => 'eligible']) }}"><b class="g"><i class="bi bi-patch-check-fill"></i></b><strong>{{ $nElig }}</strong><span>Eligible</span></a>
+                        <a href="{{ route('student.results', ['status' => 'possible']) }}"><b class="y"><i class="bi bi-hourglass-split"></i></b><strong>{{ $nPoss }}</strong><span>Nearly</span></a>
+                        <a href="{{ route('student.results', ['status' => 'needs_info']) }}"><b class="b"><i class="bi bi-question-circle-fill"></i></b><strong>{{ $nInfo }}</strong><span>Need info</span></a>
+                    </div>
+                </section>
+            @endif
+
+            <div class="dash-user">
+                <span class="dash-avatar is-lg is-1" aria-hidden="true">{{ $initials ?: 'S' }}</span>
+                <span>
+                    <strong>{{ $me->name }}</strong>
+                    <small>{{ $answers['program_name'] ?? 'Student' }}</small>
+                </span>
+            </div>
+            @endif
+        </aside>
+
+        {{-- ============ MAIN ============ --}}
+        <div class="dash-main">
+            <header class="dash-hero">
+                <img class="dash-hero-photo" src="{{ asset('images/img/'.$banner) }}" alt="" decoding="async">
+                <div class="dash-hero-copy">
+                    <ol class="bk-crumbs" aria-label="Breadcrumb">
+                        <li><a href="{{ $home }}">{{ $isScholar ? 'Scholar portal' : 'Student portal' }}</a></li>
+                        <li aria-current="page">{{ trim(strtok(View::yieldContent('title'), '|')) }}</li>
+                    </ol>
+                    <h1>@yield('hero_title', 'My <em>BAKR</em>')</h1>
+                    @hasSection('hero_sub')<p>@yield('hero_sub')</p>@endif
+                    @hasSection('hero_actions')<div class="dash-hero-actions">@yield('hero_actions')</div>@endif
+                </div>
+                <div class="dash-hero-aside">
+                    @include('partials.theme-toggle', ['class' => 'is-hero'])
+                    <a class="dash-icon-btn" href="{{ route('student.scholarships') }}" aria-label="All scholarships" title="All scholarships"><i class="bi bi-mortarboard" aria-hidden="true"></i></a>
+                    <a class="dash-icon-btn" href="{{ route('student.help') }}#about" data-open-dialog="about-bakr" aria-label="About BAKR" title="About BAKR"><i class="bi bi-info-lg" aria-hidden="true"></i></a>
+                    <a class="dash-icon-btn" href="{{ route('student.help') }}" aria-label="Help and contact" title="Help and contact"><i class="bi bi-question-lg" aria-hidden="true"></i></a>
+                    <a class="dash-icon-btn" href="{{ $isScholar ? route('scholar.profile') : route('student.profile') }}" aria-label="{{ $isScholar ? 'Profile' : 'My profile' }}" title="{{ $isScholar ? 'Profile' : 'My profile' }}"><i class="bi bi-person" aria-hidden="true"></i></a>
+                </div>
+            </header>
+
+            <div class="sp-main" id="portal">
+                @if (session('status'))
+                    <div class="sp-flash ok" role="status"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> {{ session('status') }}</div>
+                @endif
+                @if (session('notice'))
+                    <div class="sp-flash warn" role="status"><i class="bi bi-info-circle-fill" aria-hidden="true"></i> {{ session('notice') }}</div>
+                @endif
+                @yield('portal')
+            </div>
+        </div>
+    </div>
+</div>
+
+@include('partials.about-dialog', ['audience' => 'student', 'helpRoute' => 'student.help'])
+@include('partials.signout-dialog', ['logoutRoute' => 'student.logout'])
+@endsection
+
+@push('scripts')
+    <script src="{{ asset('js/bakr-dashboard.js') }}"></script>
+    <script src="{{ asset('js/student-ai.js') }}"></script>
+@endpush

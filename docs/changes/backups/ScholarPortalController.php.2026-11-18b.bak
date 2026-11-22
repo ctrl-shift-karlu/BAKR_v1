@@ -1,0 +1,122 @@
+<?php
+
+namespace App\Http\Controllers\Student;
+
+use App\Http\Controllers\Controller;
+use App\Models\Scholar;
+use App\Support\AcademicTerm;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Password;
+use Illuminate\View\View;
+
+/**
+ * Scholar portal (a student account that holds a scholarship; ScholarGate). No matching here.
+ *   Overview         summary of every scholarship held + what needs doing now
+ *   My scholarship   details, benefits, maintaining documents, stipend information
+ *   Requirements     each scholarship's own maintaining documents per term, with uploads that go
+ *                    to that scholarship's provider (only for providers that collect them in BAKR)
+ *   Profile          account, change password, e-mail a reset link, sign out (with confirmation)
+ * Every record is read through the signed-in user's own scholar rows (rule 4).
+ */
+class ScholarPortalController extends Controller
+{
+    public function overview(Request $request): View
+    {
+        $scholars = $this->scholars($request);
+        $term = AcademicTerm::current();
+
+        $actions = [];
+        foreach ($scholars as $sc) {
+            $short = $sc->scholarship->shortName();
+            if ($sc->scholarship->offers('requirements')) {
+                foreach ($sc->requirements->where('term', $term) as $r) {
+                    match ($r->status) {
+                        'needs_revision' => $actions[] = ['danger', 'bi-arrow-repeat', "Revise and re-upload: {$r->name}", $short.($r->review_note ? ' · “'.$r->review_note.'”' : ''), route('scholar.requirements').'#req-'.$r->id],
+                        'missing' => $actions[] = ['warn', 'bi-upload', "Upload: {$r->name}", "{$short} · {$term}", route('scholar.requirements').'#req-'.$r->id],
+                        default => null,
+                    };
+                }
+            }
+            if ($sc->status === 'probation') {
+                $actions[] = ['warn', 'bi-exclamation-circle', "You are on probation for {$short}", 'Check what you need to keep the scholarship under My scholarship, and contact '.$sc->scholarship->provider.'.', route('scholar.scholarship', ['s' => $sc->id])];
+            }
+            if ($sc->scholarship->hasGrantTypes() && ! $sc->grant_type) {
+                $actions[] = ['info', 'bi-hourglass-split', "{$short}: grant type not set yet", $sc->scholarship->provider.' still has to record whether your grant is '.implode(' or ', array_map(fn ($g) => $g['label'], $sc->scholarship->grantOptions())).'.', route('scholar.scholarship', ['s' => $sc->id])];
+            }
+        }
+        // Most urgent first: revisions, then uploads, then the rest.
+        usort($actions, fn ($a, $b) => array_search($a[0], ['danger', 'warn', 'info'], true) <=> array_search($b[0], ['danger', 'warn', 'info'], true));
+
+        return view('scholar.overview', [
+            'scholars' => $scholars,
+            'term' => $term,
+            'actions' => $actions,
+            'reqs' => $this->requirementCounts($scholars, $term),
+        ]);
+    }
+
+    public function scholarship(Request $request): View
+    {
+        $scholars = $this->scholars($request);
+        $selected = $scholars->firstWhere('id', (int) $request->query('s')) ?? $scholars->first();
+
+        return view('scholar.scholarship', ['scholars' => $scholars, 'sc' => $selected]);
+    }
+
+    public function requirements(Request $request): View
+    {
+        $scholars = $this->scholars($request);
+
+        return view('scholar.requirements', [
+            'scholars' => $scholars,
+            'term' => AcademicTerm::current(),
+            'reqs' => $this->requirementCounts($scholars, AcademicTerm::current()),
+        ]);
+    }
+
+    public function profile(Request $request): View
+    {
+        return view('scholar.profile', ['scholars' => $this->scholars($request), 'user' => $request->user()]);
+    }
+
+    /** "Forgot password": e-mails a reset link to the account's own address (Laravel password broker). */
+    public function sendResetLink(Request $request): RedirectResponse
+    {
+        $status = Password::sendResetLink(['email' => $request->user()->email, 'role' => 'student', 'status' => 'active']);
+
+        return back()->with($status === Password::RESET_LINK_SENT ? 'status' : 'notice', match ($status) {
+            Password::RESET_LINK_SENT => 'A password reset link was sent to '.$request->user()->email.'. It works for 60 minutes.',
+            Password::RESET_THROTTLED => 'A reset link was sent less than a minute ago. Check your inbox (and spam folder), or try again shortly.',
+            default => 'The reset link could not be sent. Please try again later.',
+        });
+    }
+
+    /** @return Collection<int, Scholar> the signed-in user's scholarships, with what the pages show */
+    private function scholars(Request $request): Collection
+    {
+        return Scholar::query()->where('user_id', $request->user()->id)
+            ->with([
+                'scholarship',
+                'requirements' => fn ($q) => $q->orderByDesc('term')->orderBy('name'),
+                'disbursements' => fn ($q) => $q->orderByDesc('term')->orderBy('period_month'),
+            ])
+            ->orderBy('id')->get();
+    }
+
+    /** This term's requirement counts over the scholarships whose provider collects them in BAKR. */
+    private function requirementCounts(Collection $scholars, string $term): array
+    {
+        $rows = $scholars->filter(fn ($sc) => $sc->scholarship->offers('requirements'))
+            ->flatMap(fn ($sc) => $sc->requirements->where('term', $term));
+
+        return [
+            'total' => $rows->count(),
+            'approved' => $rows->where('status', 'approved')->count(),
+            'submitted' => $rows->where('status', 'submitted')->count(),
+            'missing' => $rows->where('status', 'missing')->count(),
+            'needs_revision' => $rows->where('status', 'needs_revision')->count(),
+        ];
+    }
+}

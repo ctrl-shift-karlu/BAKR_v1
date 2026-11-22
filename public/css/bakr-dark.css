@@ -1,0 +1,525 @@
+/* ==========================================================================
+   BAKR — light / dark theme.
+   Loaded LAST on every page shell (layouts.app, provider layout, login pages).
+   - .bakr-switch: the theme switch (always on a dark green or photo background).
+   - Everything else applies only under html[data-theme="dark"], set by
+     public/js/bakr-theme.js before the first paint. Light mode is untouched.
+   Dark palette: deep green-black surfaces, warm off-white text, the same gold
+   accents. Brand logos keep their white discs (they are made for white).
+   ========================================================================== */
+
+/* ---------- The switch ----------
+   The knob position follows html[data-theme] (set in <head>), so it is right from the first
+   paint; aria-checked is kept in sync by bakr-theme.js for screen readers. */
+.bakr-switch {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.bakr-switch-track {
+  position: relative; flex: none; width: 58px; height: 30px; border-radius: 999px;
+  display: flex; align-items: center; justify-content: space-between; padding: 0 8px;
+  background: rgba(255, 255, 255, .14);
+  border: 1px solid rgba(255, 255, 255, .28);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, .25);
+  transition: background-color .25s ease, border-color .25s ease;
+}
+.bakr-switch-track i { position: relative; z-index: 1; font-size: 12px; line-height: 1; transition: color .25s ease, opacity .25s ease; }
+.bakr-switch-sun { color: #143a2b; }                       /* sits on the knob in light mode */
+.bakr-switch-moon { color: rgba(255, 255, 255, .7); }
+.bakr-switch-knob {
+  position: absolute; top: 2px; left: 2px; width: 24px; height: 24px; border-radius: 50%;
+  background: linear-gradient(160deg, #f8e6ad, #c9a443);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .35), inset 0 1px 0 rgba(255, 255, 255, .6);
+  transition: transform .28s cubic-bezier(.3, 1.3, .5, 1);
+}
+:root[data-theme="dark"] .bakr-switch .bakr-switch-track { background: rgba(10, 22, 16, .55); border-color: rgba(246, 223, 160, .45); }
+:root[data-theme="dark"] .bakr-switch .bakr-switch-knob { transform: translateX(28px); }
+:root[data-theme="dark"] .bakr-switch .bakr-switch-sun { color: rgba(255, 255, 255, .55); }
+:root[data-theme="dark"] .bakr-switch .bakr-switch-moon { color: #143a2b; }
+.bakr-switch:hover .bakr-switch-track { border-color: rgba(246, 223, 160, .7); }
+.bakr-switch:focus-visible { outline: none; }
+.bakr-switch:focus-visible .bakr-switch-track { outline: 2px solid #f6dfa0; outline-offset: 3px; }
+.bakr-switch-label { font-size: var(--text-sm, .875rem); font-weight: 600; color: #fff; white-space: nowrap; }
+
+/* Navbar: the label only shows inside the phone menu */
+.bk-navbar .nav-theme { display: flex; align-items: center; }
+.bk-navbar .bakr-switch.is-nav { margin: 0 6px; }
+@media (min-width: 1200px) { .bk-navbar .bakr-switch.is-nav .bakr-switch-label { display: none; } }
+@media (max-width: 1199.98px) { .bk-navbar .bakr-switch.is-nav { margin: 8px 12px; } }
+/* Portal heroes: sits in the round icon row */
+.dash .dash-hero-aside .bakr-switch.is-hero { margin-right: 4px; }
+/* Login pages: next to "Back to home" */
+.sa-auth-back { display: flex; justify-content: flex-end; align-items: center; gap: 16px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bakr-switch-track, .bakr-switch-track i, .bakr-switch-knob { transition: none; }
+}
+
+/* ==========================================================================
+   DARK THEME
+   ========================================================================== */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  /* role colours (light values live in bakr-core.css / student-auth.css / bakr-dashboard.css) */
+  --page-bg: #0e1813;
+  --page-bg-deep: #0b140f;
+  --text-strong: #eef3ee;
+  --text-accent: #9ad3b2;
+  --surface: #15221b;
+  --ink: #e7e3da;
+  --ink-soft: #b7b1a6;
+  --border: #2a3b32;
+  --gold-text: #e6c56f;
+  --gold-tint: #2b2516;
+  --sage-tint: #182a20;
+  --teal-tint: #142a2d;
+  --amber-tint: #2f2015;
+  --danger-tint: #3a1c1b;
+  /* scholarships page tokens */
+  --sd-sage-tint: #182a20;
+  --sd-amber-tint: #2f2015;
+  --sd-teal-tint: #142a2d;
+  --sd-border: #2c3d33;
+  --sd-ink: #e7e3da;
+  --sd-ink-soft: #b7b1a6;
+  --modal-ink: #e7e3da;
+}
+/* Dashboard shell tokens (defined on .dash, so they are overridden there) */
+:root[data-theme="dark"] .dash {
+  --dash-surface: #0e1813;
+  --dash-card: #15221b;
+  --dash-ink: #e7e3da;
+  --dash-ink-soft: #b7b1a6;
+  --dash-ink-faint: #8f897e;
+  --dash-line: #2a3b32;
+  --dash-hover: #1d2d25;
+  --dash-text-strong: #eef3ee;
+  --dash-gold-text: #e6c56f;
+  --dash-gold-tint: #2b2516;
+  --dash-sage-tint: #182a20;
+  --dash-teal-tint: #142a2d;
+  /* Teal text (pv-attn, "Waiting for review" tiles, info notes) was #2c6470 on #15221b = 2.5:1 (audit 2026-11-22).
+     Its other uses are dots, bars and borders, which read fine in the lighter teal. */
+  --dash-teal: #7cc4cf;
+  --dash-info: #7cc4cf;
+  --dash-muted: #3a4a41;
+}
+/* Red TEXT on dark cards (--dash-danger stays #b42318 for solid buttons with white text): 2.5:1 → readable. */
+:root[data-theme="dark"] .dash .dash-meta .is-attn { color: #ffb4ab; }
+
+/* ---------- Page ---------- */
+:root[data-theme="dark"] body:not(.sa-auth) { background: var(--page-bg); color: var(--ink); }
+:root[data-theme="dark"] body.sa-auth { color: var(--ink); }
+:root[data-theme="dark"] a:not([class]) { color: #b7e0c6; }
+:root[data-theme="dark"] .dash .dash-panel { background: var(--dash-surface); }
+:root[data-theme="dark"] .dash .dash-main { background: var(--dash-surface); }
+
+/* Translucent cream washes over section photos -> dark washes */
+:root[data-theme="dark"] :is(.nx-section:not(.nx-steps), .bakr-intro-section, .nx-about)::before {
+  background: linear-gradient(180deg, rgba(14, 24, 19, .94), rgba(14, 24, 19, .9));
+}
+
+/* ---------- Cards and surfaces that were plain white ---------- */
+:root[data-theme="dark"] :is(
+  .sp-card, .sd .sp-card, .sd .sp-card.sp-section, .sp-hist li,
+  .sd-me, .sd-card, .sd .sd-card, .sd .sd-card-body, .sd .sd-ai-glass, .sd-ai-glass,
+  .sp-mrow, .sp-near, .sp-stepbar, .sd .sp-stepbar,
+  .dash .dash-card, .dash .dash-kpi, .dash .dash-stat-card, .dash .dash-photo-card,
+  .dash .help-faq details, .dash .pv-reqs > li, .pv-rule,
+  .bk-ledger, .bk-voice, .bk-privacy-note, .bk-msg-form,
+  .scholar-card, .directory-tools, .directory-search,
+  .scholarship-modal .modal-content, .scholarship-modal .modal-body, .scholarship-modal .modal-footer,
+  .scholarship-modal .pv-quals > li, .nx-modal .modal-content
+) {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--ink);
+}
+:root[data-theme="dark"] :is(.sd .sd-card-foot, .sd-tally a, .about-steps li, .sd .sp-finish, .sp-detail-grid > div) {
+  background: #1a2a22; border-color: var(--border); color: var(--ink);
+}
+:root[data-theme="dark"] .sp-card, :root[data-theme="dark"] .sp-mrow,
+:root[data-theme="dark"] .dash .dash-kpi, :root[data-theme="dark"] .dash .dash-stat-card {
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .03) inset, 0 18px 34px -26px rgba(0, 0, 0, .8);
+}
+:root[data-theme="dark"] .sp-mrow:hover { border-color: rgba(201, 164, 67, .5); }
+
+/* Soft tinted panels */
+:root[data-theme="dark"] .sp-ai { background: linear-gradient(180deg, #17291f, #142319); border-color: #26402f; }
+:root[data-theme="dark"] .sp-near-miss { background: #2c1a19; color: var(--ink); }
+:root[data-theme="dark"] :is(.sp-flash.err, .dash .dash-flash.is-error, .bk-msg-alert.is-error) { background: #3a1c1b; color: #ffb4aa; }
+:root[data-theme="dark"] :is(.dash .dash-pill.is-danger, .dash .dash-btn.is-danger) { background: #3a1c1b; color: #ffb4aa; }
+:root[data-theme="dark"] :is(.pv-callout) { background: linear-gradient(90deg, var(--dash-card, #15221b), #2b2516); }
+:root[data-theme="dark"] :is(.pv-sector-private, .pv-quals > li.is-confirm, .scholarship-modal .pv-quals > li.is-confirm) { background: #2b2516; color: var(--ink); }
+:root[data-theme="dark"] :is(.pv-tag-confirm, .scholarship-modal .pv-tag-confirm) { background: #15221b; }
+
+/* Pills keep their meaning; darker fills, lighter text */
+:root[data-theme="dark"] .sp-pill.eligible { background: #1d3a2a; color: #a8e2c0; }
+:root[data-theme="dark"] .sp-pill.possible { background: #3a3016; color: #f3d98a; }
+:root[data-theme="dark"] .sp-pill.needs_info { background: #1c2c40; color: #b4cdf0; }
+:root[data-theme="dark"] .sp-pill.not_eligible { background: #2c2a26; color: #cfc9be; }
+
+/* ---------- Text that was hard-coded dark ---------- */
+:root[data-theme="dark"] :is(.sp-page h1, .sp-page h2, .sp-page h3, .sp-mrow-title, .sp-near-head h4, .sp-near-title,
+  .sp-nomatch-head h2, .dash .dash-section-title, .dash .dash-card-title, .dash .dash-kpi strong,
+  .dash .dash-stat-total, .dash .dash-photo-body h3, .dash .dash-person strong, .about-steps strong,
+  .scholar-card h3, .shelf-heading h2, .directory-head h3, .modal-section-title, .bk-insight-card h3) {
+  color: var(--text-strong);
+}
+:root[data-theme="dark"] .dash .dash-donut-center { fill: #eef3ee; }
+:root[data-theme="dark"] .dash .dash-donut-sub { fill: #b7b1a6; }
+:root[data-theme="dark"] .dash .dash-donut circle:first-child { stroke: #26372e; }
+:root[data-theme="dark"] .dash .dash-hbar { background: #22332a; }
+:root[data-theme="dark"] .sd-card-body small, :root[data-theme="dark"] .sp-sector { color: #e0be62; }
+
+/* ---------- Tables ---------- */
+:root[data-theme="dark"] .dash .dash-table { color: var(--dash-ink); }
+:root[data-theme="dark"] .dash .dash-table :is(th, td) { background: transparent; border-color: var(--dash-line); color: inherit; }
+:root[data-theme="dark"] .dash .dash-table thead th { background: #1a2a22; color: var(--dash-ink-soft); }
+:root[data-theme="dark"] .dash .dash-table tbody tr:hover td { background: #1b2b23; }
+:root[data-theme="dark"] .dash .dash-table-wrap { background: var(--dash-card); border-color: var(--dash-line); }
+
+/* ---------- Forms ---------- */
+:root[data-theme="dark"] :is(
+  .sp-input, .sd .sp-input, .sd select.sp-input, .dash .dash-input,
+  .dash .dash-field :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea),
+  .bk-msg-form :is(input[type="text"], input[type="email"], select, textarea),
+  .directory-search .form-control, .form-control,
+  .sa-auth-card .input-group-text, .sa-auth-card .input-group .sa-toggle
+) {
+  background: #101c16; color: var(--ink); border-color: #33463b;
+}
+:root[data-theme="dark"] :is(.sp-input, .form-control, .dash .dash-input)::placeholder { color: #8f897e; }
+:root[data-theme="dark"] .sp-input:disabled { background: #18241e; color: #8f897e; }
+:root[data-theme="dark"] :is(.sp-choice span, .sd .sp-choice span, .bk-topic span) { background: #15221b; border-color: #33463b; color: var(--ink); }
+:root[data-theme="dark"] .sd .sp-choice:hover span { background: #1b2b23; }
+:root[data-theme="dark"] .sp-choice span::before { background: #101c16; border-color: #4a5d51; }
+:root[data-theme="dark"] .sd .sp-choice span::before { background: #101c16; border-color: #4a5d51; }
+:root[data-theme="dark"] .sp-choice input:checked + span { color: #fff; }
+:root[data-theme="dark"] .directory-search-clear { background: #1b2b23; color: var(--ink); }
+
+/* ---------- Buttons that were white ---------- */
+:root[data-theme="dark"] :is(.sp-btn-line, .sd .sp-btn-line, .sp-filter, .sp-steps button, .sd .sp-steps button) {
+  background: #18271f; border-color: #33463b; color: var(--ink) !important;
+}
+:root[data-theme="dark"] .sp-filter span { color: #b7b1a6; }
+:root[data-theme="dark"] .sp-filter.sp-filter[aria-current="true"], :root[data-theme="dark"] .sp-steps.sp-steps button[aria-current="step"] {
+  background: linear-gradient(180deg, #2a6147, #1f4d3a); border-color: #2a6147; color: #fff !important;
+}
+:root[data-theme="dark"] .sp-btn-green, :root[data-theme="dark"] .sd .sp-btn-green { background: #2a6147; }
+:root[data-theme="dark"] .dash .dash-btn.is-soft { background: #1d2d25; color: var(--dash-ink); }
+:root[data-theme="dark"] .dash-dialog .dash-btn.is-soft { background: #1d2d25; color: var(--ink); }
+:root[data-theme="dark"] .dash .dash-seg a { background: #18271f; color: var(--dash-ink); border-color: var(--dash-line); }
+:root[data-theme="dark"] .dash .dash-seg a[aria-current] { background: #2a6147; color: #fff; }
+
+/* ---------- Dialogs and modals ---------- */
+:root[data-theme="dark"] .dash-dialog { background: #15221b; color: var(--ink); }
+:root[data-theme="dark"] .dash-dialog .sp-lead, :root[data-theme="dark"] .about-bakr { color: var(--ink-soft); }
+:root[data-theme="dark"] .modal-content { background: #15221b; color: var(--ink); }
+
+/* ---------- Navbar dropdown ---------- */
+:root[data-theme="dark"] .bk-navbar .bakr-login-menu { background: #15221b; border-color: #2a3b32; }
+:root[data-theme="dark"] .bk-navbar .bakr-login-menu::after { background: #15221b; }
+:root[data-theme="dark"] .bk-navbar .bakr-login-menu .dropdown-item { color: var(--ink); }
+:root[data-theme="dark"] .bk-navbar .bakr-login-menu .dropdown-item:hover { background: #1d2d25; }
+:root[data-theme="dark"] .bk-navbar .bakr-dd-text strong { color: var(--text-strong); }
+:root[data-theme="dark"] .bk-navbar .bakr-dd-icon { background: #1d2d25; }
+
+/* ---------- Login pages ---------- */
+:root[data-theme="dark"] .sa-auth-card { background: rgba(17, 29, 23, .96); color: var(--ink); border-color: #2a3b32; }
+:root[data-theme="dark"] .sa-auth-card :is(h1, h2, label, .form-label) { color: var(--text-strong); }
+/* Scholar portal */
+:root[data-theme="dark"] .sc-actions li.is-danger .sc-action-icon { background: #3a1d1a; color: #f3a59d; }
+:root[data-theme="dark"] .dash-confirm-icon { background: #3a1d1a; color: #f3a59d; }
+:root[data-theme="dark"] .dash-confirm-icon.is-info { background: #3a3118; color: #f0d48a; }
+:root[data-theme="dark"] .dash-confirm-icon.is-ok { background: #17321f; color: #8fd3a8; }
+:root[data-theme="dark"] .dash .dash-btn.is-danger-soft { background: #3a1d1a; color: #f3a59d; border-color: #6b2c25; }
+:root[data-theme="dark"] :is(.sc-remark, .sc-modal-error) { background: #3a1d1a; color: #f3a59d; border-color: #6b2c25; }
+:root[data-theme="dark"] .sc-doc.is-missing .sc-doc-head .sc-doc-icon { background: #3a2a1a; color: #f0b48a; }
+:root[data-theme="dark"] .sc-doc.is-needs_revision .sc-doc-head .sc-doc-icon { background: #3a1d1a; color: #f3a59d; }
+:root[data-theme="dark"] :is(.sc-docs-alert:not(.is-clear):not(.is-info), .sc-tiles li.is-todo strong) { color: #f0b48a; }
+:root[data-theme="dark"] .sc-tiles li.is-warn { border-color: #6b5a2c; }
+:root[data-theme="dark"] .sc-preview-stage { background: #0e1813; }
+
+/* ---------- Home / public sections ---------- */
+:root[data-theme="dark"] :is(.bk-col-bar, .bk-stack, .bk-bar) { background: #22332a; }
+/* About page (2026-11-21): chart tracks, pooled "not shown" share, legend, team cards, feedback form */
+:root[data-theme="dark"] .bk-donut-track { stroke: #26372e; }
+:root[data-theme="dark"] :is(.bk-axis) { stroke: #3a4a40; }
+:root[data-theme="dark"] :is(.bk-grid) { stroke: #2c3b33; }
+:root[data-theme="dark"] .bk-stack-seg.is-pooled { background: repeating-linear-gradient(45deg, #2a3a31, #2a3a31 6px, #33463b 6px, #33463b 12px); }
+:root[data-theme="dark"] .bk-chart-foot { border-color: var(--border); }
+:root[data-theme="dark"] .bk-team-card { background: var(--surface); border-color: var(--border); }
+:root[data-theme="dark"] .bk-rate-section { background: var(--page-bg); }
+:root[data-theme="dark"] .bk-msg-form { --bk-star-off: #3d4f45; }
+:root[data-theme="dark"] .bk-field-error { color: #ffb4aa; }
+:root[data-theme="dark"] .bk-msg-alert.is-ok { background: #17301f; border-color: #2c4a38; color: #a8e2c0; }
+:root[data-theme="dark"] .bk-msg-form :is(input, textarea)::placeholder { color: #8f897e; }
+:root[data-theme="dark"] .bk-topic.is-check input:checked + span::before { background: #3f8f68 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' d='M3.5 8.5l3 3 6-7'/%3E%3C/svg%3E") center / 12px no-repeat; }
+:root[data-theme="dark"] .bk-photo-slot { background: repeating-linear-gradient(45deg, #15221b, #15221b 12px, #1a2a22 12px, #1a2a22 24px); }
+:root[data-theme="dark"] .bakr-dnsc-image-tag { background: rgba(14, 24, 19, .92); color: var(--ink); }
+:root[data-theme="dark"] .bk-footer { background: #0b140f; }
+
+/* Brand logos stay on white discs (they are drawn for white) */
+:root[data-theme="dark"] :is(.sp-mrow-logo, .dash .dash-photo-logo, .logo-orbit, .bk-provider-logo, .bakr-dnsc-seal, .sd-card-cover img, .sd-todo img, .modal-logo) { background: #fff; }
+:root[data-theme="dark"] .bk-footer-cta { background: linear-gradient(120deg, #15221b, #2b2516); border-color: rgba(201, 164, 67, .45); }
+
+/* Section bands that blend the light page colour */
+:root[data-theme="dark"] :is(.bk-glance, .nx-scholarship-strip, .bk-insights) { background: var(--page-bg); }
+:root[data-theme="dark"] .bk-ledger-cell small { color: #b7b1a6; }
+
+/* Gold story labels and notes: light gold text on a faint gold wash */
+:root[data-theme="dark"] .bk-sample-badge { background: rgba(201, 164, 67, .12); color: #e6c56f; border-color: rgba(201, 164, 67, .45); }
+:root[data-theme="dark"] .bk-sample-badge.bk-live { background: #182a20; color: #9ad3b2; border-color: #2c4a38; }
+
+/* Scholarships directory */
+:root[data-theme="dark"] .sector-tag.internal   { background: #1d3a2a; color: #a8e2c0; }
+:root[data-theme="dark"] .sector-tag.government { background: #142a2d; color: #9fd3dc; }
+:root[data-theme="dark"] .sector-tag.private    { background: #2f2015; color: #f0c79a; }
+:root[data-theme="dark"] .scholar-card .card-body-custom > p { color: var(--ink-soft); }
+
+/* Progress bar track (questionnaire) */
+:root[data-theme="dark"] .sp-bar { background: #22332a; box-shadow: none; }
+:root[data-theme="dark"] .sd-tally strong { color: var(--text-strong); }
+:root[data-theme="dark"] .sp-filter.sp-filter[aria-current="true"] span { color: #f6dfa0; }
+
+/* Keep a visible gold border on the focused field (the dark field rule above is strong) */
+:root[data-theme="dark"] :is(input, select, textarea):focus { border-color: #c9a443 !important; }
+
+/* Dashboard text that used the deep-green accent colour */
+:root[data-theme="dark"] :is(.dash .dash-person a:hover strong,
+  .dash .dash-empty i, .dash .dash-card-title i, .dash .pv-req-meta a,
+  .dash .dash-photo-meta b) { color: #9ad3b2; }
+:root[data-theme="dark"] .dash .dash-kpi strong { color: var(--text-strong); }
+:root[data-theme="dark"] :is(.dash .dash-seg :is(button, a):hover, .dash .dash-btn.is-soft:hover) { color: #fff; }
+
+/* Status pills in the dashboards */
+:root[data-theme="dark"] .dash .dash-pill.is-ok     { background: #1d3a2a; color: #a8e2c0; }
+:root[data-theme="dark"] .dash .dash-pill.is-warn   { background: #3a3016; color: #f3d98a; }
+:root[data-theme="dark"] .dash .dash-pill.is-info   { background: #142a2d; color: #9fd3dc; }
+:root[data-theme="dark"] .dash .dash-pill.is-violet { background: #1b3326; color: #b7e0c6; }
+:root[data-theme="dark"] .dash .dash-pill:not([class*="is-"]) { background: #22332a; color: #cfc9be; }
+
+/* ---------- Heroes (photo headers): deeper, more even tint in dark mode ----------
+   Light mode keeps a light wash so the photo stays bright; dark mode dims the photo
+   and fades the bottom edge into the dark page so nothing glows. */
+:root[data-theme="dark"] .bk-page-hero {
+  --hero-wash-left: .72; --hero-wash-mid: .5; --hero-wash-right: .32;
+  background:
+    linear-gradient(0deg, var(--page-bg) 0%, rgba(14, 24, 19, 0) 26%),
+    linear-gradient(90deg, rgba(8, 18, 13, var(--hero-wash-left)) 0%, rgba(8, 18, 13, var(--hero-wash-mid)) 55%, rgba(8, 18, 13, var(--hero-wash-right)) 100%),
+    var(--page-hero-image, none) center / cover no-repeat,
+    #0b140f;
+}
+:root[data-theme="dark"] .bk-page-hero::after { opacity: .5; }
+
+:root[data-theme="dark"] .bk-hero::before {
+  background:
+    linear-gradient(0deg, var(--page-bg) 0%, rgba(14, 24, 19, 0) 34%),
+    linear-gradient(96deg, rgba(8, 18, 13, .88) 0%, rgba(8, 18, 13, .7) 45%, rgba(8, 18, 13, .5) 100%);
+}
+:root[data-theme="dark"] .bk-hero-bg img { filter: brightness(.8) saturate(.9); }
+
+:root[data-theme="dark"] .dash .dash-hero::before {
+  background: linear-gradient(100deg, rgba(8, 18, 13, .96) 10%, rgba(10, 24, 17, .86) 50%, rgba(10, 24, 17, .66));
+}
+:root[data-theme="dark"] .dash .dash-hero-photo { filter: brightness(.75) saturate(.85); }
+
+@media (max-width: 767.98px) {
+  :root[data-theme="dark"] .bk-hero::before { background: linear-gradient(180deg, rgba(8, 18, 13, .82), rgba(8, 18, 13, .7) 55%, var(--page-bg)); }
+}
+
+/* ---------- Home: featured scholarships heading (was fixed dark green) ---------- */
+:root[data-theme="dark"] #scholarships .nx-h2 { color: var(--text-strong); }
+
+/* ---------- Scholarship details modal (public + student catalogue) ---------- */
+:root[data-theme="dark"] .scholarship-modal { --modal-ink: #e7e3da; }
+:root[data-theme="dark"] .scholarship-modal .modal-body,
+:root[data-theme="dark"] .scholarship-modal .modal-footer { background: #111c16; border-color: #2a3b32; }
+:root[data-theme="dark"] .scholarship-modal .modal-section { background: #15221b; border-color: #2a3b32; }
+:root[data-theme="dark"] .scholarship-modal .modal-section.qualify { background: #15251c; }
+:root[data-theme="dark"] .scholarship-modal .modal-section.requirements { background: #1f1c14; border-color: #3a3220; }
+:root[data-theme="dark"] .scholarship-modal .modal-section.requirements li { border-color: #3a3220; }
+:root[data-theme="dark"] .scholarship-modal .modal-section-title { color: #eef3ee; }
+:root[data-theme="dark"] .scholarship-modal .modal-section-title i { background: #1d3a2a; color: #a8e2c0; }
+:root[data-theme="dark"] .scholarship-modal .modal-section.benefits li,
+:root[data-theme="dark"] .scholarship-modal .modal-section ul { color: var(--modal-ink); }
+:root[data-theme="dark"] .scholarship-modal .benefit-tile { background: #1a2a22; border-color: #2a3b32; }
+:root[data-theme="dark"] .scholarship-modal .pv-quals > li { background: #1a2a22; border-color: #2a3b32; color: var(--modal-ink); }
+:root[data-theme="dark"] .scholarship-modal .pv-quals > li.is-confirm { background: #2b2516; border-color: #4a3f22; }
+:root[data-theme="dark"] .scholarship-modal :is(.pv-qual-note, .pv-anyof, .status-note) { color: #b7b1a6; }
+:root[data-theme="dark"] .scholarship-modal .pv-tag-req { background: #2a6147; }
+:root[data-theme="dark"] .scholarship-modal .pv-tag-opt { background: #1d3a2a; color: #a8e2c0; }
+:root[data-theme="dark"] .scholarship-modal .pv-tag-confirm { background: transparent; color: #e6c56f; border-color: #6b5a2c; }
+:root[data-theme="dark"] .scholarship-modal .pv-missing { color: #f0b48a; }
+:root[data-theme="dark"] .scholarship-modal .modal-logo { background: #fff; }
+
+/* ---------- Scholarships page: sector shelf ---------- */
+:root[data-theme="dark"] .shelf-card { background: linear-gradient(145deg, #1a3426 0%, #12261b 100%); }
+
+/* ---------- Login pages: keep the campus photo, just a deeper tint ---------- */
+:root[data-theme="dark"] body.sa-auth {
+  background:
+    linear-gradient(100deg, rgba(8, 18, 13, .9) 0%, rgba(8, 18, 13, .72) 55%, rgba(8, 18, 13, .55) 100%),
+    var(--auth-bg, none) center / cover no-repeat fixed, #0b140f;
+}
+@media (max-width: 991.98px) {
+  :root[data-theme="dark"] body.sa-auth {
+    background: linear-gradient(180deg, rgba(8, 18, 13, .86), rgba(8, 18, 13, .78)), var(--auth-bg, none) center / cover no-repeat fixed, #0b140f;
+  }
+}
+
+/* ---------- Navbar and portal sidebars ----------
+   Both are dark green in light mode, so in dark mode they go deeper (green-black glass)
+   and keep the gold hairline, matching the dark page instead of standing out. */
+:root[data-theme="dark"] .bk-navbar {
+  background:
+    radial-gradient(600px 220px at 100% 0%, rgba(184, 145, 47, .1), transparent 60%),
+    linear-gradient(190deg, rgba(17, 33, 25, .94) 0%, rgba(10, 21, 15, .94) 70%);
+  border-color: rgba(246, 223, 160, .28);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .45);
+}
+:root[data-theme="dark"] .bk-navbar.is-scrolled { box-shadow: 0 14px 32px rgba(0, 0, 0, .6); }
+@media (max-width: 1199.98px) {
+  :root[data-theme="dark"] .bk-navbar, :root[data-theme="dark"] .bk-navbar.is-scrolled { background: #0d1913; }
+}
+:root[data-theme="dark"] body.dash .dash-side,
+:root[data-theme="dark"] .dash .dash-side {
+  background:
+    repeating-linear-gradient(-55deg, transparent 0 18px, rgba(255, 255, 255, .018) 18px 19px),
+    linear-gradient(185deg, #14281e, #0c1812 70%);
+  box-shadow: inset -1px 0 0 rgba(246, 223, 160, .12);
+}
+
+/* ---------- Scholarship matching form (bakr-form.css) ---------- */
+:root[data-theme="dark"] .bf-student { background: #15221b; border-color: rgba(246, 223, 160, .22); }
+:root[data-theme="dark"] .bf-meta dt, :root[data-theme="dark"] .bf-student dt,
+:root[data-theme="dark"] .bf-date span, :root[data-theme="dark"] .bf-disclaimer,
+:root[data-theme="dark"] .bf-review-lead, :root[data-theme="dark"] .bf-review-part dt { color: var(--ink-soft); }
+/* Student › All scholarships: "your result" line on each card (student-portal.css hard-codes #5b564f). */
+:root[data-theme="dark"] .sch-mine { color: #b7b1a6; }
+:root[data-theme="dark"] .bf-date { border-bottom-color: rgba(246, 223, 160, .3); }
+:root[data-theme="dark"] .bf-sign-input { color: var(--ink); border-bottom-color: rgba(246, 223, 160, .4) !important; }
+:root[data-theme="dark"] .bf-review-part h3 { color: var(--ink); }
+:root[data-theme="dark"] .bf-review-part h3 small { color: #f6dfa0; }
+:root[data-theme="dark"] .bf-review-part dl { border-color: rgba(255, 255, 255, .08); }
+:root[data-theme="dark"] .bf-review-part dl > div:nth-child(even) { background: rgba(255, 255, 255, .03); }
+:root[data-theme="dark"] .bf-review-part dd { color: var(--ink); }
+:root[data-theme="dark"] .bf-review-part dd.is-empty { color: var(--ink-soft); }
+/* Note banners (student portal): were left light in dark mode. */
+:root[data-theme="dark"] .sp-note { background: rgba(61, 122, 88, .14); border-color: rgba(61, 122, 88, .35); color: var(--ink-soft); }
+:root[data-theme="dark"] .sp-note i { color: #f6dfa0; }
+:root[data-theme="dark"] .sp-rules-checked { background: rgba(255, 255, 255, .03); border-color: rgba(255, 255, 255, .08); }
+/* Application call status (partials/call-status) */
+:root[data-theme="dark"] .bk-call.is-open { background: rgba(61, 122, 88, .18); border-color: rgba(61, 122, 88, .45); color: #9fd8b5; }
+:root[data-theme="dark"] .bk-call.is-upcoming { background: rgba(201, 164, 67, .14); border-color: rgba(201, 164, 67, .4); color: #f0d48a; }
+:root[data-theme="dark"] .bk-call.is-closed { background: rgba(255, 255, 255, .05); border-color: rgba(255, 255, 255, .12); color: var(--ink-soft); }
+/* My scholarships (bakr-provider.css .ms-*) */
+:root[data-theme="dark"] .dash .ms-chip { background: rgba(143, 168, 152, .16); color: #b9d3c3; }
+:root[data-theme="dark"] .dash .ms-link { color: #f0d48a; }
+:root[data-theme="dark"] .dash .ms-private { background: rgba(44, 100, 112, .25); color: #9fcfd8; }
+:root[data-theme="dark"] .dash .ms-dates dd.is-empty { color: #9a948a; }
+
+/* Admin charts (bakr-admin.css): the dark steps of the same palette; status colours stay the same */
+:root[data-theme="dark"] .dash { --viz-good: #3d9e68; --viz-blue: #2b9bbf; --viz-gray: #6b6a66; --viz-track: #2c2c2a; }
+/* About BAKR: the bold lead-ins were fixed dark green (#143a2b), unreadable on the dark dialog */
+:root[data-theme="dark"] :is(.about-facts, .about-lead) strong { color: var(--dash-text-strong, #eef3ee); }
+
+/* Provider requirements: accordion, file row, preview, status card (bakr-provider.css, 2026-11-18) */
+:root[data-theme="dark"] .dash .pv-acc { background: var(--dash-card); }
+:root[data-theme="dark"] .dash .pv-file { background: #1a2a22; }
+:root[data-theme="dark"] .dash .pv-acc-link { color: #f0d48a; }
+:root[data-theme="dark"] .dash .pv-overdue li { background: rgba(180, 35, 24, .16); border-color: rgba(255, 150, 140, .28); }
+:root[data-theme="dark"] .dash .pv-overdue small, :root[data-theme="dark"] .dash .pv-attn-danger { color: #ffb4ab; }
+:root[data-theme="dark"] .pv-preview-stage { background-color: #0e1813; }
+:root[data-theme="dark"] .pv-preview-icon { background: rgba(143, 168, 152, .16); color: #b9d3c3; }
+/* My scholarships › Maintaining documents */
+:root[data-theme="dark"] .dash .md-remove { background: rgba(180, 35, 24, .16); border-color: rgba(255, 150, 140, .3); color: #ffb4ab; }
+:root[data-theme="dark"] .dash .md-num, :root[data-theme="dark"] .dash .md-chip input:checked + span, :root[data-theme="dark"] .dash .md-radio:has(input:checked) { background: rgba(143, 168, 152, .16); color: #b9d3c3; }
+:root[data-theme="dark"] .dash .md-tag.is-required { background: rgba(201, 164, 67, .16); color: #f0d48a; }
+:root[data-theme="dark"] .sc-remark.is-info { background: rgba(44, 100, 112, .22); color: #9fcfd8; border-color: rgba(44, 100, 112, .5); }
+:root[data-theme="dark"] .dash .pv-office-note { background: rgba(44, 100, 112, .22); color: var(--dash-ink); }
+
+/* Gemini AI matcher (2026-11-19) */
+:root[data-theme="dark"] .sp-ai-run.is-failed { background: rgba(201, 164, 67, .12); border-color: rgba(201, 164, 67, .35); }
+:root[data-theme="dark"] .sp-ai-run.is-failed > i { color: #f3d98a; }
+:root[data-theme="dark"] .sp-fit.is-high { color: #a8e2c0; border-color: rgba(168, 226, 192, .4); }
+:root[data-theme="dark"] .sp-fit.is-low { color: #cfc9be; }
+
+:root[data-theme="dark"] .sp-reminders { background: rgba(61, 122, 88, .14); border-color: rgba(143, 168, 152, .35); }
+
+/* Provider pages (2026-11-19): text that is drawn in the dark-green accent in light mode, lifted to the light
+   accent in dark mode so "Columns BAKR reads", "Filled in for you" and the note icons can be read. */
+:root[data-theme="dark"] .dash :is(.pv-columns > summary, .pv-auto-title, .pv-account-note i, .pv-privacy i, .dash-card-title i, .pv-form-group i) { color: var(--text-accent); }
+
+/* Contact topics (same look as the matching form's choices) in dark mode */
+:root[data-theme="dark"] .bk-topic span::before { background: #101c16; border-color: #4a5d51; }
+:root[data-theme="dark"] .bk-topic:hover span { background: #1b2b23; }
+:root[data-theme="dark"] .bk-topic input:checked + span { color: #fff; border-color: #3f8f68; background: #1d3a2a; }
+:root[data-theme="dark"] .bk-topic input:checked + span::before { border-color: #3f8f68; background: #3f8f68 radial-gradient(circle, #fff 30%, transparent 32%); }
+
+/* Dark-mode fixes found in the 2026-11-19 audit: text that kept a light-mode colour on a dark card. */
+:root[data-theme="dark"] .about-lead { color: var(--dash-ink, #e7e3da); }
+:root[data-theme="dark"] .about-steps span, :root[data-theme="dark"] .about-facts li { color: var(--dash-ink-soft, #b7b1a6); }
+:root[data-theme="dark"] .about-facts i { color: var(--text-accent); }
+:root[data-theme="dark"] .about-steps strong { color: var(--dash-text-strong, #eef3ee); }
+:root[data-theme="dark"] .dash .pv-tag-confirm { color: #e6c56f; border-color: #6b5a2c; }
+:root[data-theme="dark"] .sa-auth .form-text { color: var(--ink-soft); }
+
+/* Hover contrast (2026-11-19): a hovered row, menu item or button must read clearly brighter than its resting
+   state, in dark mode too (the sign-in menu's icon used to go dark-on-dark and vanish). */
+:root[data-theme="dark"] .bk-navbar .bakr-login-menu .dropdown-item:hover,
+:root[data-theme="dark"] .bk-navbar .bakr-login-menu .dropdown-item:focus-visible { background: #223829; border-color: rgba(230, 197, 111, .55); color: #fff; }
+:root[data-theme="dark"] .bakr-login-menu .dropdown-item:hover .bakr-dd-icon,
+:root[data-theme="dark"] .bakr-login-menu .dropdown-item:focus-visible .bakr-dd-icon { background: linear-gradient(145deg, #f6dfa0, #c9a443); color: #143a2b; }
+:root[data-theme="dark"] .bakr-login-menu .dropdown-item:hover .bakr-dd-text small,
+:root[data-theme="dark"] .bakr-login-menu .dropdown-item:focus-visible .bakr-dd-text small { color: #d9d3c6; }
+:root[data-theme="dark"] .bakr-login-menu .dropdown-item:hover .bakr-dd-arrow { color: #f6dfa0; }
+:root[data-theme="dark"] .dash .dash-table tbody tr:hover td { background: #243a2d; }
+:root[data-theme="dark"] .dash .dash-btn.is-soft:hover { background: #2a4333; }
+:root[data-theme="dark"] .dash .dash-seg :is(button, a):not([aria-current="true"]):hover { background: #243a2d; color: #fff; }
+
+/* Dark-mode contrast (2026-11-19 audit). The confirm dialogs (sign out, terminate) sit outside `.dash` on the
+   student and scholar pages, so the --dash-* colours they use were undefined and fell back to light-mode
+   text on the dark card. Colours are set here directly. */
+:root[data-theme="dark"] .dash-confirm h2 { color: #eef3ee; }
+:root[data-theme="dark"] .dash-confirm p { color: #b7b1a6; }
+/* Initials on the gold avatars: dark green on gold instead of white on gold. */
+:root[data-theme="dark"] .dash .dash-avatar.is-1 { color: #143a2b; }   /* is-2 / is-4 are dark green and keep their light text */
+/* is-3 is the light gold fill in both themes: dark text (scholar Overview codes "TDP", "CLFI" were 1.3:1). */
+:root[data-theme="dark"] .dash :is(.is-3 > .dash-avatar, .dash-avatar.is-3) { color: #143a2b; }
+/* Red "required" asterisk, lifted so it reads on the dark card. */
+:root[data-theme="dark"] .sp-req { color: #ff8f80; }
+/* Privacy Policy agreement on the matching form + the Privacy Policy page (2026-11-21) */
+:root[data-theme="dark"] .bf-privacy { background: #101c16; border-color: #2a3b32; border-left-color: #3f8f68; }
+:root[data-theme="dark"] .bf-privacy > .sp-label > i { color: #7fc79f; }
+:root[data-theme="dark"] .bf-privacy-text { color: var(--ink); }
+:root[data-theme="dark"] .bf-privacy .sp-help a { color: #e6c56f; }
+:root[data-theme="dark"] .pp-card { background: #15221b; border-color: #2a3b32; color: var(--ink); }
+:root[data-theme="dark"] .pp-toc { background: #101c16; }
+:root[data-theme="dark"] .pp-list > div { background: #101c16; }
+:root[data-theme="dark"] .pp-card section + section { border-top-color: #2a3b32; }
+:root[data-theme="dark"] :is(.pp-card a, .pp-toc a) { color: #e6c56f; }
+/* Question info "i" and its note (2026-11-21) */
+:root[data-theme="dark"] .sp-info { color: #e6c56f; }
+:root[data-theme="dark"] .sp-info:hover, :root[data-theme="dark"] .sp-info[aria-expanded="true"] { background: #2a2615; }
+:root[data-theme="dark"] .sp-tip { background: #1f1c10; border-left-color: #c9a443; color: #ece6d8; }
+
+/* Matching form: a picked choice (radio / tick box) must look picked in dark mode. The dark card rules above
+   (more specific than the light "checked" rules) used to paint a selected choice exactly like an unselected one. */
+:root[data-theme="dark"] :is(.sp-choice, .sd .sp-choice) input:checked + span { background: #1d3a2a; border-color: #3f8f68; color: #fff; }
+:root[data-theme="dark"] :is(.sp-choice, .sd .sp-choice) input:checked + span::before { border-color: #3f8f68; background: #3f8f68 radial-gradient(circle, #fff 30%, transparent 32%); }
+:root[data-theme="dark"] :is(.sp-choice.box, .sd .sp-choice.box) input:checked + span::before { background: #3f8f68; box-shadow: inset 0 0 0 3px #1d3a2a; }
+:root[data-theme="dark"] :is(.sp-choice, .sd .sp-choice) input:focus-visible + span { outline: 3px solid rgba(230, 197, 111, .6); outline-offset: 2px; }
+
+/* My profile in dark mode */
+:root[data-theme="dark"] .sp-prof-part { background: #101c16; border-color: #2a3b32; }
+:root[data-theme="dark"] .sp-prof-chips li { background: #1b2b23; border-color: #2a3b32; color: var(--ink); }
+:root[data-theme="dark"] .sp-hist li.is-current { background: #1d3a2a; border-color: #3f8f68; }
+:root[data-theme="dark"] .sp-hist li.is-current i { color: #8fd4ac; }
+:root[data-theme="dark"] .sp-hist li > a:hover { background: #1b2b23; }
+:root[data-theme="dark"] .sp-hist li.is-viewing { border-color: #e6c56f; box-shadow: 0 0 0 1px #e6c56f inset; }
+:root[data-theme="dark"] .sp-prof-part dl > div.is-changed { background: rgba(230, 197, 111, .12); }
+:root[data-theme="dark"] .sp-changed-tag { background: #e6c56f; color: #142a1f; }
+:root[data-theme="dark"] .sp-now { color: #e6c56f; }

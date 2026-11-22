@@ -1,0 +1,96 @@
+@extends('student.layout')
+@section('title', 'My scholarship | BAKR')
+
+@section('hero_title')
+My <em>scholarship</em>
+@endsection
+@section('hero_sub')
+Your scholar status, stipends and the requirements to upload each term.
+@endsection
+
+@section('portal')
+@php
+    $statusPill = ['active' => 'is-ok', 'probation' => 'is-warn', 'on_leave' => 'is-info', 'graduated' => 'is-violet', 'terminated' => 'is-danger'];
+    $reqPill = ['approved' => 'is-ok', 'submitted' => 'is-info', 'needs_revision' => 'is-warn', 'missing' => ''];
+    $payPill = ['released' => 'is-ok', 'pending' => 'is-warn', 'on_hold' => 'is-danger'];
+@endphp
+
+@if ($errors->any())
+    <div class="dash-flash is-error" role="alert"><i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i><ul>@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>
+@endif
+
+@foreach ($scholars as $i => $sc)
+    @php
+        // A provider may not use BAKR for stipends or renewal uploads (config/providers.php 'features').
+        $hasReqs = $sc->scholarship->offers('requirements');
+        $hasPay = $sc->scholarship->offers('disbursements');
+    @endphp
+    <section class="sch-block" aria-labelledby="sch-{{ $sc->id }}">
+        <div class="dash-tile is-{{ ($i % 4) + 1 }} sch-hero">
+            <img class="dash-tile-photo" src="{{ asset($sc->scholarship->photoPath()) }}" alt="" loading="lazy">
+            <span class="dash-tile-top"><span class="dash-tile-chip">{{ $sc->scholarship->provider }}</span><span class="dash-pill {{ $statusPill[$sc->status] ?? '' }}">{{ $sc->statusLabel() }}</span></span>
+            <strong id="sch-{{ $sc->id }}">{{ $sc->scholarship->name }}</strong>
+            <span class="dash-tile-sub">Scholar since {{ $sc->started_term ?: '—' }}@if ($hasPay && $sc->stipend_amount) · ₱{{ number_format($sc->stipend_amount, 2) }} per release @endif</span>
+        </div>
+
+        @if (! $hasReqs && ! $hasPay)
+            <div class="dash-card pv-gap">
+                <p class="dash-empty"><i class="bi bi-info-circle" aria-hidden="true"></i>{{ $sc->scholarship->provider }} handles stipends and renewal documents directly with you. Contact them for updates.</p>
+            </div>
+        @endif
+
+        <div class="dash-split pv-gap">
+            @if ($hasReqs)
+            <div class="dash-card">
+                <h3 class="dash-card-title"><i class="bi bi-folder-check" aria-hidden="true"></i>Requirements</h3>
+                @forelse ($sc->requirements->groupBy('term') as $term => $items)
+                    <h4 class="pv-term">{{ $term }} <small>{{ $items->where('status', 'approved')->count() }}/{{ $items->count() }} approved</small></h4>
+                    <ul class="pv-reqs">
+                        @foreach ($items as $r)
+                            <li>
+                                <div class="pv-req-main"><strong>{{ $r->name }}</strong><span class="dash-pill {{ $reqPill[$r->status] ?? '' }}">{{ $r->statusLabel() }}</span></div>
+                                <div class="pv-req-meta">
+                                    @if ($r->hasFile())
+                                        <a href="{{ route('student.requirements.file', $r->id) }}"><i class="bi bi-paperclip" aria-hidden="true"></i>{{ $r->original_name }}</a>
+                                        <span>· {{ $r->submitted_at?->format('M j, Y') }}</span>
+                                    @endif
+                                    @if ($r->review_note)<span class="pv-note"><i class="bi bi-chat-left-text" aria-hidden="true"></i> {{ $r->review_note }}</span>@endif
+                                </div>
+                                @if ($r->status !== 'approved')
+                                    <form method="POST" action="{{ route('student.requirements.upload', $r->id) }}" enctype="multipart/form-data" class="dash-inline-form sch-upload">
+                                        @csrf
+                                        <label class="visually-hidden" for="file-{{ $r->id }}">File for {{ $r->name }}</label>
+                                        <input id="file-{{ $r->id }}" type="file" name="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required>
+                                        <button type="submit" class="dash-btn is-sm"><i class="bi bi-upload" aria-hidden="true"></i>{{ $r->hasFile() ? 'Replace' : 'Upload' }}</button>
+                                    </form>
+                                @endif
+                            </li>
+                        @endforeach
+                    </ul>
+                @empty
+                    <p class="dash-empty"><i class="bi bi-calendar-check" aria-hidden="true"></i>No requirements yet. Your provider opens a checklist each term.</p>
+                @endforelse
+                <p class="sch-help"><i class="bi bi-shield-lock" aria-hidden="true"></i> PDF, JPG or PNG, up to 5 MB. Files are private: only you and {{ $sc->scholarship->provider }} can open them.</p>
+            </div>
+            @endif
+
+            @if ($hasPay)
+            <div class="dash-card">
+                <h3 class="dash-card-title"><i class="bi bi-cash-coin" aria-hidden="true"></i>Stipends</h3>
+                @forelse ($sc->disbursements as $d)
+                    @if ($loop->first)<ul class="dash-list">@endif
+                    <li>
+                        <span class="dash-avatar {{ $d->status === 'released' ? 'is-1' : ($d->status === 'on_hold' ? 'is-4' : 'is-3') }}" aria-hidden="true"><i class="bi {{ $d->status === 'released' ? 'bi-check2' : ($d->status === 'on_hold' ? 'bi-pause' : 'bi-hourglass') }}"></i></span>
+                        <div><strong>₱{{ number_format($d->amount, 2) }}</strong><small>{{ $d->term }}@if ($d->release_type === 'monthly') · {{ $d->periodLabel() }}@endif @if ($d->released_at) · released {{ $d->released_at->format('M j, Y') }}@endif</small></div>
+                        <span class="dash-pill {{ $payPill[$d->status] ?? '' }}">{{ $d->statusLabel() }}</span>
+                    </li>
+                    @if ($loop->last)</ul>@endif
+                @empty
+                    <p class="dash-empty">No stipend records yet.</p>
+                @endforelse
+            </div>
+            @endif
+        </div>
+    </section>
+@endforeach
+@endsection

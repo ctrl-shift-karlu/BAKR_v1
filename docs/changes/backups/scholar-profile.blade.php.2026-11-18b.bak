@@ -1,0 +1,76 @@
+@extends('student.layout')
+@section('title', 'Profile | BAKR')
+
+{{-- Scholar portal › Profile: account details, change password (current + new), "forgot password"
+     (e-mails a reset link to the account's address), and sign out behind the shared red
+     confirmation dialog (partials/signout-dialog, opened by public/js/bakr-dashboard.js). --}}
+
+@section('hero_title')Your <em>profile</em>@endsection
+@section('hero_sub', 'Your account, your password, and signing out.')
+
+@section('portal')
+<div class="dash-split">
+    <div class="dash-stack">
+        {{-- ============ ACCOUNT ============ --}}
+        <section class="dash-card" aria-labelledby="acct-title">
+            <h2 class="dash-card-title" id="acct-title"><i class="bi bi-person-circle" aria-hidden="true"></i>Account</h2>
+            <dl class="sc-facts">
+                <div><dt>Name</dt><dd>{{ $user->name }}</dd></div>
+                <div><dt>Sign-in e-mail</dt><dd>{{ $user->email }}</dd></div>
+                <div><dt>Member since</dt><dd>{{ $user->created_at?->format('M j, Y') }}</dd></div>
+                @foreach ($scholars as $sc)
+                    <div><dt>{{ $loop->first ? 'Scholarships' : '' }}</dt><dd>{{ $sc->scholarship->name }} <span class="pv-muted">({{ $sc->statusLabel() }})</span></dd></div>
+                @endforeach
+            </dl>
+            <p class="sc-hint"><i class="bi bi-info-circle" aria-hidden="true"></i> Your name, e-mail and scholar details are kept by your provider. To correct them, contact your provider or use <a href="{{ route('student.help') }}#message">Help &amp; contact</a>.</p>
+        </section>
+
+        {{-- ============ SIGN OUT ============ --}}
+        <section class="dash-card" aria-labelledby="out-title">
+            <h2 class="dash-card-title" id="out-title"><i class="bi bi-box-arrow-right" aria-hidden="true"></i>Sign out</h2>
+            <p class="sc-hint">Sign out when you are done, especially on a shared or school computer.</p>
+            {{-- Without JavaScript the link opens the confirmation as a normal form below. --}}
+            <a class="dash-btn is-danger" href="#confirm-signout" data-open-dialog="confirm-signout"><i class="bi bi-box-arrow-right" aria-hidden="true"></i>Sign out</a>
+        </section>
+    </div>
+
+    <div class="dash-stack">
+        {{-- ============ CHANGE PASSWORD ============ --}}
+        <section class="dash-card" id="password" aria-labelledby="pw-title">
+            <h2 class="dash-card-title" id="pw-title"><i class="bi bi-key" aria-hidden="true"></i>Change password</h2>
+            <form method="POST" action="{{ route('student.password.change.update') }}" class="dash-stack" novalidate>
+                @csrf
+                @method('PUT')
+                <div class="dash-field">
+                    <label for="current_password">Current password</label>
+                    <input id="current_password" name="current_password" type="password" required autocomplete="current-password">
+                    @error('current_password')<p class="dash-error">{{ $message }}</p>@enderror
+                </div>
+                <div class="dash-field">
+                    <label for="password">New password</label>
+                    <input id="password" name="password" type="password" required minlength="8" autocomplete="new-password" aria-describedby="pw-help">
+                    <small id="pw-help">At least 8 characters, with letters and numbers.</small>
+                    @error('password')<p class="dash-error">{{ $message }}</p>@enderror
+                </div>
+                <div class="dash-field">
+                    <label for="password_confirmation">Confirm new password</label>
+                    <input id="password_confirmation" name="password_confirmation" type="password" required autocomplete="new-password">
+                </div>
+                <div><button type="submit" class="dash-btn"><i class="bi bi-check2-circle" aria-hidden="true"></i>Save new password</button></div>
+            </form>
+        </section>
+
+        {{-- ============ FORGOT PASSWORD ============ --}}
+        <section class="dash-card" aria-labelledby="forgot-title">
+            <h2 class="dash-card-title" id="forgot-title"><i class="bi bi-envelope-arrow-up" aria-hidden="true"></i>Forgot your password?</h2>
+            <p class="sc-hint">Don't remember your current password? We'll e-mail a reset link to <b>{{ $user->email }}</b>. Open it within 60 minutes to choose a new password, then sign in again.</p>
+            <form method="POST" action="{{ route('scholar.profile.reset-link') }}">
+                @csrf
+                <button type="submit" class="dash-btn is-soft"><i class="bi bi-send" aria-hidden="true"></i>E-mail me a reset link</button>
+            </form>
+        </section>
+    </div>
+</div>
+
+{{-- The sign-out confirmation is the shared partials/signout-dialog (included by student.layout). --}}
+@endsection

@@ -1,0 +1,1585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Officer Dashboard | DNSC Scholarship System</title>
+
+<link rel="icon" type="image/png" href="{{ asset('images/logo/bakr-logo.png') }}">
+<!-- Bootstrap 5.3 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="{{ asset('css/bakr-officer-dashboard.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/bakr-dashboard.css') }}">
+</head>
+<body class="dash">
+
+<div id="chartFloatTooltip" role="tooltip" aria-hidden="true"></div>
+
+<!-- ============================================================
+     MOBILE TOP BAR
+     ============================================================ -->
+<div class="mobile-topbar d-lg-none">
+  <div class="mobile-topbar-left">
+    <button class="btn btn-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar" aria-label="Open navigation">
+      <i class="bi bi-list fs-4" style="color: var(--sd-ink);"></i>
+    </button>
+    <div class="d-flex align-items-center gap-2">
+      <div class="brand-badge" style="width:32px;height:32px;font-size:0.95rem;background: linear-gradient(135deg, var(--sd-sage), var(--sd-green-700));"><i class="bi bi-person-badge-fill"></i></div>
+      <span class="fw-semibold" style="font-family:'Poppins',sans-serif; font-size:0.95rem;">Officer Portal</span>
+    </div>
+  </div>
+  <button type="button" class="mobile-topbar-notif" aria-label="Open notifications" title="Notifications" onclick="showPage('activity-log')">
+    <i class="bi bi-bell"></i>
+  </button>
+</div>
+
+<!-- ============================================================
+     OFFCANVAS SIDEBAR (mobile / tablet)
+     ============================================================ -->
+<div class="offcanvas offcanvas-start" tabindex="-1" id="mobileSidebar">
+  <div class="offcanvas-header border-bottom" style="border-color: var(--sd-border) !important;">
+    <div class="brand" style="border:none; padding-bottom:0; margin-bottom:0;">
+      <div class="brand-badge" style="background: linear-gradient(135deg, var(--sd-sage), var(--sd-green-700));">
+        <i class="bi bi-person-badge-fill"></i>
+      </div>
+      <div class="brand-text">
+        <div class="brand-title">Officer Portal</div>
+        <div class="brand-sub">BAKR Scholarship Management System</div>
+        <span class="role-badge" style="color: var(--sd-sage); border-color: rgba(126,156,134,0.4); background: rgba(126,156,134,0.16);">OFFICER ACCESS</span>
+      </div>
+    </div>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+    <div class="nav-section-label">MENU</div>
+    <nav class="sidebar-nav" id="mobileNavMenu">
+      <a href="#" class="nav-link" data-page="dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a>
+      <a href="#" class="nav-link" data-page="analytics"><i class="bi bi-bar-chart-line"></i> Analytics</a>
+      <a href="#" class="nav-link" data-page="scholars"><i class="bi bi-people"></i> Scholars</a>
+      <a href="#" class="nav-link" data-page="add-scholar"><i class="bi bi-person-plus"></i> Add New Scholar</a>
+      <a href="#" class="nav-link" data-page="document-verification"><i class="bi bi-file-earmark-check"></i> Document Verification</a>
+      <a href="#" class="nav-link" data-page="stipend-release"><i class="bi bi-cash-coin"></i> Stipend Disbursement</a>
+      <a href="#" class="nav-link" data-page="disbursement-history"><i class="bi bi-clock-history"></i> Disbursement History</a>
+    </nav>
+    <div class="nav-section-label">SYSTEM</div>
+    <nav class="sidebar-nav flex-grow-1" id="mobileNavSystem">
+      <a href="#" class="nav-link" data-page="activity-log"><i class="bi bi-bell"></i> Notifications</a>
+      <a href="#" class="nav-link" data-page="profile"><i class="bi bi-person"></i> Profile</a>
+      <a href="#" class="nav-link" data-page="settings"><i class="bi bi-gear"></i> Settings</a>
+    </nav>
+  </div>
+</div>
+
+<!-- ============================================================
+     APP SHELL
+     ============================================================ -->
+<div class="app-shell dash-panel">
+
+  <!-- ---------- DESKTOP SIDEBAR ---------- -->
+  <aside class="sidebar dash-side d-none d-lg-flex flex-column">
+    <div class="brand">
+      <div class="brand-badge" style="background: linear-gradient(135deg, var(--sd-sage), var(--sd-green-700));">
+        <i class="bi bi-person-badge-fill"></i>
+      </div>
+      <div class="brand-text">
+        <div class="brand-title">Officer Portal</div>
+        <div class="brand-sub">BAKR Scholarship Management System</div>
+        <span class="role-badge" style="color: var(--sd-sage); border-color: rgba(126,156,134,0.4); background: rgba(126,156,134,0.16);">OFFICER ACCESS</span>
+      </div>
+    </div>
+
+    <div class="nav-section-label">MENU</div>
+    <nav class="sidebar-nav dash-nav" id="desktopNavMenu">
+      <a href="#" class="nav-link" data-page="dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a>
+      <a href="#" class="nav-link" data-page="analytics"><i class="bi bi-bar-chart-line"></i> Analytics</a>
+      <a href="#" class="nav-link" data-page="scholars"><i class="bi bi-people"></i> Scholars</a>
+      <a href="#" class="nav-link" data-page="add-scholar"><i class="bi bi-person-plus"></i> Add New Scholar</a>
+      <a href="#" class="nav-link" data-page="document-verification"><i class="bi bi-file-earmark-check"></i> Document Verification</a>
+      <a href="#" class="nav-link" data-page="stipend-release"><i class="bi bi-cash-coin"></i> Stipend Disbursement</a>
+      <a href="#" class="nav-link" data-page="disbursement-history"><i class="bi bi-clock-history"></i> Disbursement History</a>
+    </nav>
+
+    <div class="nav-section-label">SYSTEM</div>
+    <nav class="sidebar-nav dash-nav flex-grow-1" id="desktopNavSystem">
+      <a href="#" class="nav-link" data-page="activity-log"><i class="bi bi-bell"></i> Notifications</a>
+      <a href="#" class="nav-link" data-page="profile"><i class="bi bi-person"></i> Profile</a>
+      <a href="#" class="nav-link" data-page="settings"><i class="bi bi-gear"></i> Settings</a>
+    </nav>
+  </aside>
+
+  <!-- ---------- MAIN CONTENT ---------- -->
+  <main class="main-content dash-main">
+
+    <!-- ============================================================
+         PAGE: DASHBOARD
+         ============================================================ -->
+    <section class="page-section" id="page-dashboard">
+
+      <!-- Top Bar -->
+      <div class="page-header sd-header-row">
+        <div>
+          <h1>Hello, Officer Juan!</h1>
+          <p class="text-muted-custom mb-0">Today's scholar, document, and stipend workload at a glance.</p>
+        </div>
+        <div class="sd-date-pill">
+          <i class="bi bi-calendar3"></i>
+          <strong id="officerDatePill" class="js-officer-date">SEPTEMBER 24, 2026</strong> · <span id="officerTimePill" class="js-officer-time">12:00AM</span>
+        </div>
+      </div>
+
+      <!-- Hero Operational Banner -->
+      <div class="sd-hero">
+        <div>
+          <h2>These things need your action</h2>
+          <p class="sd-sub">There are currently pending document verification submissions that require approval before stipend disbursement.</p>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="button" class="quick-action-btn quick-action-btn-primary" onclick="showPage('document-verification')">
+            <i class="bi bi-file-earmark-check"></i> Review Verification Queue
+          </button>
+          <button type="button" class="quick-action-btn" onclick="showPage('stipend-release')">
+            <i class="bi bi-cash-stack"></i> Process Disbursements
+          </button>
+        </div>
+      </div>
+
+      <!-- Primary dashboard summaries: aligned Scholars and Stipends cards. -->
+      <div class="row g-3 mb-3 dashboard-primary-row">
+        <div class="col-lg-7 dashboard-primary-left">
+        <div class="action-overview-container card-panel">
+          <div class="section-title overview-section-title">
+            <h3><i class="bi bi-people-fill me-2"></i>Scholars Summary</h3>
+          </div>
+          <div class="triage-filter-bar" aria-label="Action needed filters">
+            <div><label class="visually-hidden" for="triageScholarshipFilter">Scholarship type</label><select aria-label="Scholarship type" id="triageScholarshipFilter" class="form-select form-select-sm"><option value="">All scholarship types</option></select></div>
+            <div><label class="visually-hidden" for="triageSchoolFilter">School</label><select aria-label="School" id="triageSchoolFilter" class="form-select form-select-sm"><option value="">All schools</option></select></div>
+          </div>
+
+          <div class="triage-summary-grid" id="triageSummaryCards">
+            <div class="triage-metric-card triage-metric-total">
+              <div class="triage-metric-icon"><i class="bi bi-people-fill"></i></div>
+              <div><div class="triage-metric-label">Total Scholars</div><div class="triage-metric-value">0</div></div>
+            </div>
+            <div class="triage-metric-card triage-metric-pending">
+              <div class="triage-metric-icon"><i class="bi bi-person-check-fill"></i></div>
+              <div><div class="triage-metric-label">Pending Admin Approval</div><div class="triage-metric-value">0</div></div>
+            </div>
+          </div>
+        </div>
+        </div>
+
+        <div class="col-lg-5 dashboard-primary-right">
+        <div class="payout-progress-container card-panel">
+          <div class="section-title">
+            <h3><i class="bi bi-cash-coin me-2"></i>Stipends Summary</h3>
+          </div>
+          <div class="dq-filter-bar" aria-label="Stipends summary filters">
+            <div class="dq-filter-group">
+              <label class="visually-hidden" for="dqTermFilter">Semester</label>
+              <select aria-label="Semester" id="dqTermFilter" class="form-select form-select-sm" onchange="updateDisbursementQueueFilters()">
+                <option value="all">All semesters</option>
+                <option value="2026–2027|1st Semester">1st Semester 2026–2027</option>
+                <option value="2025–2026|2nd Semester">2nd Semester 2025–2026</option>
+                <option value="2025–2026|1st Semester">1st Semester 2025–2026</option>
+              </select>
+            </div>
+            <div class="dq-filter-group">
+              <label class="visually-hidden" for="dqScholarshipFilter">Scholarship type</label>
+              <select aria-label="Scholarship type" id="dqScholarshipFilter" class="form-select form-select-sm" onchange="updateDisbursementQueueFilters()">
+                <option value="all">All scholarship types</option>
+              </select>
+            </div>
+            <div class="dq-filter-group">
+              <label class="visually-hidden" for="dqSchoolFilter">School</label>
+              <select aria-label="School" id="dqSchoolFilter" class="form-select form-select-sm" onchange="updateDisbursementQueueFilters()"><option value="all">All schools</option></select>
+            </div>
+          </div>
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="small text-muted-custom" id="dqDisbursedLine">Disbursed: <strong style="color:var(--sd-ink);">0</strong> of 0 Scholars</span>
+              <span class="small fw-semibold" style="color:var(--sd-green-700);" id="dqPercentLine">0% Complete</span>
+            </div>
+            <div class="budget-progress">
+              <div class="budget-progress-bar" id="dqProgressBar" style="width: 0%;"></div>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <!-- Secondary dashboard summaries: Documents and recent Notifications. -->
+      <div class="row g-3 mb-3 dashboard-secondary-row">
+        <div class="col-lg-7 dashboard-secondary-left">
+        <div class="action-needed-container card-panel">
+          <div class="section-title">
+            <div class="action-heading-copy">
+              <h3><i class="bi bi-exclamation-triangle-fill me-2" style="color:var(--sd-gold);"></i>Documents Summary</h3>
+            </div>
+            <span class="badge-attention">Action Needed</span>
+          </div>
+          <div class="triage-content-label"><i class="bi bi-list-check me-2"></i>Items requiring attention</div>
+          <div class="aq-list" id="attentionList">
+            <div class="aq-row"><div class="aq-left"><span class="aq-dot aq-dot-amber"></span><span class="aq-text"><span class="aq-num">3</span> documents waiting for verification</span></div><button class="aq-btn" type="button" onclick="showPage('document-verification')">Process Queue</button></div>
+            <div class="aq-row"><div class="aq-left"><span class="aq-dot aq-dot-red"></span><span class="aq-text"><span class="aq-num">2</span> documents have been resubmitted</span></div><button class="aq-btn" type="button" onclick="showPage('document-verification')">Review</button></div>
+            <div class="aq-row"><div class="aq-left"><span class="aq-dot aq-dot-amber"></span><span class="aq-text"><span class="aq-num">4</span> scholars ready for stipend disbursement</span></div><button class="aq-btn" type="button" onclick="showPage('stipend-release')">Disburse Funds</button></div>
+          </div>
+        </div>
+        </div>
+        <div class="col-lg-5 dashboard-secondary-right">
+          <div class="card-panel h-100">
+            <div class="section-title">
+              <h3><i class="bi bi-bell me-2"></i>Activities / Notifications</h3>
+              <button type="button" class="btn btn-sm btn-outline-scholarship" onclick="showPage('activity-log')">
+                View All Notifications <i class="bi bi-arrow-right ms-1"></i>
+              </button>
+            </div>
+            <div class="d-flex flex-column gap-3" id="recentActivityList"></div>
+            <div class="demo-note mt-2">Latest 3 notifications · sample / demo data</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         PAGE: PENDING ADMIN APPROVAL
+         ============================================================ -->
+    <section class="page-section" id="page-pending-approvals">
+      <div class="page-header">
+        <div class="eyebrow">Officer / Scholars / Pending Approval</div>
+        <h1>Pending Admin Approval</h1>
+        <p class="text-muted-custom mb-0">Review scholar submissions awaiting admin approval.</p>
+      </div>
+      <div class="card-panel">
+        <div class="section-title">
+          <div class="st-left"><i class="bi bi-person-check"></i><span>Students Pending Approval</span></div>
+          <span class="small text-muted-custom" id="paResultCount"></span>
+        </div>
+        <div class="filter-bar filter-bar-search filter-bar-inline">
+          <div class="row g-2 align-items-end">
+            <div class="col-md-3">
+              <label class="form-label mb-0" for="paSearch">Search scholar / Student ID / Scholar ID</label>
+              <input type="text" class="form-control" id="paSearch" placeholder="Search pending submissions">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label mb-0" for="paScholarship">Scholarship type</label>
+              <select class="form-select" id="paScholarship"><option value="">All scholarship types</option></select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label mb-0" for="paProgram">Program</label>
+              <select class="form-select" id="paProgram"><option value="">All programs</option></select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label mb-0" for="paSchool">School</label>
+              <select class="form-select" id="paSchool"><option value="">All schools</option></select>
+            </div>
+          </div>
+        </div>
+        <div class="table-app-wrap table-responsive-wrap">
+          <table class="table-app">
+            <thead><tr id="paTableHeadRow">
+              <th tabindex="0" role="button" class="th-sortable" data-sort-key="name">Scholar Name <i class="bi bi-arrow-down-up sort-icon"></i></th>
+              <th tabindex="0" role="button" class="th-sortable" data-sort-key="student_id">Student ID <i class="bi bi-arrow-down-up sort-icon"></i></th>
+              <th tabindex="0" role="button" class="th-sortable" data-sort-key="scholarId">Scholar ID <i class="bi bi-arrow-down-up sort-icon"></i></th>
+              <th tabindex="0" role="button" class="th-sortable" data-sort-key="course">Program <i class="bi bi-arrow-down-up sort-icon"></i></th>
+              <th tabindex="0" role="button" class="th-sortable" data-sort-key="scholarship">Scholarship Type <i class="bi bi-arrow-down-up sort-icon"></i></th>
+              <th tabindex="0" role="button" class="th-sortable" data-sort-key="school">School <i class="bi bi-arrow-down-up sort-icon"></i></th>
+              <th class="text-end">Actions</th>
+            </tr></thead>
+            <tbody id="paTableBody"></tbody>
+          </table>
+        </div>
+        <div id="paMobileCards"></div>
+        <div class="table-footer-bar">
+          <div class="tf-pagesize"><label class="form-label mb-0 small text-muted-custom" for="paPageSize">Rows per page</label><select class="form-select form-select-sm" id="paPageSize"><option value="10">10</option><option value="25">25</option><option value="50">50</option></select></div>
+          <div class="tf-counter small text-muted-custom" id="paPageCounter">Showing 0 of 0 scholars</div>
+          <div class="tf-pagebtns"><button type="button" class="btn btn-outline-scholarship btn-sm" id="paPrevPage"><i class="bi bi-chevron-left"></i> Previous</button><span id="paPageNumbers" class="d-flex gap-1 align-items-center"></span><button type="button" class="btn btn-outline-scholarship btn-sm" id="paNextPage">Next <i class="bi bi-chevron-right"></i></button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         PAGE: ANALYTICS
+         Split out from the Dashboard: scholar distribution by type
+         and the system activity stream. Same visual treatment as the
+         Dashboard page (re-skinned header, date pill, card-panel).
+         ============================================================ -->
+    <section class="page-section" id="page-analytics">
+
+      <div class="page-header sd-header-row">
+        <div>
+          <h1>Analytics</h1>
+          <p class="text-muted-custom mb-0">Scholar demographics, payout pipeline status, and disbursement activity.</p>
+        </div>
+        <div class="analytics-export-cluster" role="group" aria-label="Export analytics report"> <span class="analytics-control-label">Export Report</span> <button type="button" class="btn btn-sm btn-outline-scholarship" onclick="exportAnalyticsReport('csv')"><i class="bi bi-filetype-csv"></i> CSV</button> <button type="button" class="btn btn-sm btn-scholarship-green" onclick="exportAnalyticsReport('pdf')"><i class="bi bi-filetype-pdf"></i> PDF</button> </div>
+      </div>
+
+      <div class="analytics-period-banner" role="status">
+        <i class="bi bi-people-fill" aria-hidden="true"></i>
+        <span>Showing data for <strong>all scholars</strong> across every institute, program, and year level.</span>
+      </div>
+
+      <!-- Sub-tabs: Overview (day-to-day demographics/funding, for exec stakeholders)
+           vs. Operations & Finance (payout bottlenecks, for staff troubleshooting). -->
+      <div class="analytics-subtabs" role="tablist" aria-label="Analytics view">
+        <button type="button" class="btn btn-outline-scholarship active" id="anTabOverview" role="tab" tabindex="0" aria-selected="true" aria-controls="analyticsPaneOverview" onclick="setAnalyticsTab('overview')">
+          <i class="bi bi-people-fill me-1"></i>Overview
+        </button>
+        <button type="button" class="btn btn-outline-scholarship" id="anTabOperations" role="tab" tabindex="-1" aria-selected="false" aria-controls="analyticsPaneOperations" onclick="setAnalyticsTab('operations')">
+          <i class="bi bi-gear-fill me-1"></i>Operations &amp; Finance
+        </button>
+      </div>
+
+      <!-- ============ OVERVIEW: exact demographic analytics ============ -->
+      <div class="analytics-tab-pane" id="analyticsPaneOverview" role="tabpanel" aria-labelledby="anTabOverview" data-analytics-variable-panel="demographics">
+
+        <div class="row g-3 mt-1 demographic-overview-row">
+          <div class="col-lg-4">
+            <div class="card-panel h-100">
+              <div class="section-title">
+                <div class="st-left"><i class="bi bi-bar-chart-line me-2"></i><h3 class="mb-0">Scholar Distribution by Year Level</h3></div>
+              </div>
+              <div class="small text-muted-custom mb-3">Enrolled scholars spread across each year level.</div>
+              <div class="chart-wrap" role="group" aria-label="Scholar distribution by year level" aria-describedby="analyticsScholarshipChartDescription">
+                <div class="chart-y-axis" id="analyticsYAxis"></div>
+                <div class="chart-plot-col">
+                  <div class="chart-plot">
+                    <div class="chart-gridlines" id="analyticsGridlines"></div>
+                    <div class="chart-bars" id="analyticsBars"></div>
+                  </div>
+                  <div class="chart-x-labels" id="analyticsXLabels"></div>
+                </div>
+              </div>
+              <p id="analyticsScholarshipChartDescription" class="visually-hidden">A responsive bar chart showing the number and percentage of enrolled scholars in each year level. Exact values are available in the hidden data table.</p>
+              <table class="visually-hidden"><caption>Scholar distribution by year level</caption><thead><tr><th>Year level</th><th>Scholars</th><th>Share</th></tr></thead><tbody id="analyticsScholarshipTableBody"></tbody></table>
+            </div>
+          </div>
+
+          <div class="col-lg-8">
+            <div class="card-panel h-100">
+              <div class="section-title">
+                <div class="st-left"><i class="bi bi-mortarboard me-2"></i><h3 class="mb-0">Scholars by Institute &amp; Program</h3></div>
+                <div class="btn-group btn-group-sm" role="group" aria-label="Institute or program view">
+                  <button type="button" class="btn btn-outline-scholarship active" id="cyToggleInstitute" onclick="setCourseYearView('institute')">Per Institute</button>
+                  <button type="button" class="btn btn-outline-scholarship" id="cyTogglePrograms" onclick="setCourseYearView('program')">Per Program</button>
+                </div>
+              </div>
+              <div class="small text-muted-custom mb-3" id="cySubtext">Enrolled scholars grouped by institute.</div>
+              <div class="doughnut-wrap">
+                <div class="doughnut-svg-holder" role="group" aria-label="Scholars by institute or program" aria-describedby="cyDoughnutDescription">
+                  <div id="cyDoughnutSvg"></div>
+                  <div class="doughnut-center"><div class="doughnut-center-value" id="cyCenterValue">0</div><div class="doughnut-center-label">Scholars</div></div>
+                </div>
+                <div class="doughnut-legend" id="cyLegend"></div>
+              </div>
+              <p id="cyDoughnutDescription" class="visually-hidden">A doughnut chart showing the distribution of scholars by the selected institute or program view. Exact values are available in the hidden data table.</p>
+              <table class="visually-hidden"><caption id="cyDoughnutTableCaption">Scholars by institute</caption><thead><tr><th>Category</th><th>Scholars</th><th>Share</th></tr></thead><tbody id="cyDoughnutTableBody"></tbody></table>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3 mt-1">
+          <div class="col-12">
+            <div class="card-panel">
+              <div class="section-title">
+                <div class="st-left"><i class="bi bi-graph-up me-2"></i><h3 class="mb-0">Disbursement Distribution</h3></div>
+                <div class="btn-group btn-group-sm" role="group" aria-label="Disbursement distribution period toggle">
+                  <button type="button" class="btn btn-outline-scholarship active" id="tsToggleMonthly" onclick="setTimeSeriesView('monthly')">Monthly</button>
+                  <button type="button" class="btn btn-outline-scholarship" id="tsToggleTerm" onclick="setTimeSeriesView('term')">Semester</button>
+                </div>
+              </div>
+              <div class="small text-muted-custom mb-3" id="tsSubtext">Scholars credited per month — regular stipend pacing, most recent 6 months.</div>
+              <div class="ts-line-wrap" id="tsLineChart" role="group" aria-label="Scholars credited over time" aria-describedby="timeSeriesChartDescription"></div>
+              <p id="timeSeriesChartDescription" class="visually-hidden">A line chart showing how many scholars were credited each month or each semester. Exact values are available in each point's tooltip.</p>
+              <div class="demo-note mt-2" id="tsDemoNote">Monthly cadence is sample / demo data</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ============ OPERATIONS & FINANCE: payout speed, pipeline, bank failures ============ -->
+      <div class="analytics-tab-pane" id="analyticsPaneOperations" role="tabpanel" aria-labelledby="anTabOperations" data-analytics-variable-panel="applications" style="display:none;">
+
+        <div class="row g-3 mt-1">
+          <div class="col-12">
+            <div class="card-panel">
+              <div class="section-title"><div class="st-left"><i class="bi bi-people me-2"></i><h3 class="mb-0">Scholars by Payout Stage</h3></div></div>
+              <div class="small text-muted-custom mb-3">How many scholars are currently at each stage, from document submission to stipend disbursement.</div>
+              <div class="pipeline-kpi-strip" id="disbursementPipelineStates" aria-label="Scholars per payout stage">
+                <div class="pipeline-status-step pending"><div class="pipeline-status-label"><i class="bi bi-hourglass-split"></i>Pending</div><div class="pipeline-status-value" id="pkPendingValue">–</div><div class="pipeline-status-sub" id="pkPendingSub">Waiting for submission</div></div>
+                <div class="pipeline-status-step submitted"><div class="pipeline-status-label"><i class="bi bi-send-fill"></i>Submitted</div><div class="pipeline-status-value" id="pkSubmittedValue">–</div><div class="pipeline-status-sub" id="pkSubmittedSub">Waiting for verification</div></div>
+                <div class="pipeline-status-step verified"><div class="pipeline-status-label"><i class="bi bi-patch-check-fill"></i>Verified</div><div class="pipeline-status-value" id="pkVerifiedValue">–</div><div class="pipeline-status-sub" id="pkVerifiedSub">Waiting for stipend disbursement</div></div>
+                <div class="pipeline-status-step credited"><div class="pipeline-status-label"><i class="bi bi-check-circle-fill"></i>Credited</div><div class="pipeline-status-value" id="pkCreditedValue">–</div><div class="pipeline-status-sub" id="pkCreditedSub">Stipend credited</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <section class="page-section" id="page-document-verification">
+      <div class="page-header sd-header-row">
+        <div>
+        <div class="eyebrow">Officer / Document Verification</div>
+        <h1>Document Verification</h1>
+        <p class="text-muted-custom mb-0">Review submitted documents and verify each requirement.</p>
+        </div>
+        <div class="sd-date-pill">
+          <i class="bi bi-calendar3"></i>
+          <strong id="dvPeriodPill">1st Semester 2026–2027</strong>
+        </div>
+      </div>
+
+      <div class="dv-kpi-strip" id="dvKpiStrip" aria-label="Document verification summary">
+        <div class="dv-kpi-card">
+          <div class="dv-kpi-label">Total Scholars</div>
+          <div class="dv-kpi-value" id="dvKpiTotal">0</div>
+        </div>
+        <div class="dv-kpi-card">
+          <div class="dv-kpi-label">Verified</div>
+          <div class="dv-kpi-value" id="dvKpiVerified">0</div>
+        </div>
+        <div class="dv-kpi-card">
+          <div class="dv-kpi-label">Pending Review</div>
+          <div class="dv-kpi-value" id="dvKpiPending">0</div>
+        </div>
+        <div class="dv-kpi-card">
+          <div class="dv-kpi-label">Eligible for Disbursement</div>
+          <div class="dv-kpi-value" id="dvKpiEligible">0</div>
+        </div>
+      </div>
+
+      <div class="card-panel">
+        <div class="section-title">
+          <div class="st-left"><i class="bi bi-file-earmark-check"></i><span>Submitted Scholars</span></div>
+          <span id="dvStaleBadge" class="status-pill pill-red d-none"><i class="bi bi-alarm-fill"></i></span>
+        </div>
+        <div class="filter-bar filter-bar-search filter-bar-inline">
+          <div class="row g-2 align-items-end">
+            <div class="col-md-6 col-lg-3">
+              <label class="form-label mb-0" for="dvSearch">Search scholar / Student ID</label>
+              <input type="text" class="form-control" id="dvSearch" placeholder="Name or Student ID">
+            </div>
+            <div class="col-6 col-lg-2">
+              <label class="form-label mb-0" for="dvSemester">AY / Semester</label>
+              <select class="form-select" id="dvSemester"><option value="2026–2027|1st Semester" selected>1st Semester 2026–2027 (current)</option><option value="2025–2026|2nd Semester">2nd Semester 2025–2026</option><option value="2025–2026|1st Semester">1st Semester 2025–2026</option><option value="">All semesters</option></select>
+            </div>
+            <div class="col-6 col-lg-2">
+              <label class="form-label mb-0" for="dvScholarship">Scholarship</label>
+              <select class="form-select" id="dvScholarship"><option value="">All scholarships</option><optgroup label="DNSC Internal (no stipend)"><option value="__internal">All DNSC Internal</option><option value="DNSC Academic Scholarship">DNSC Academic Scholarship</option><option value="DNSC GIA Category A">DNSC Grant-in-Aid (GIA) – Category A</option><option value="DNSC GIA Category B">DNSC Grant-in-Aid (GIA) – Category B</option><option value="DNSC SA Category C">DNSC Student Assistant (SA) – Category C</option></optgroup><optgroup label="External scholarships (with stipend)"><option value="__external">All external</option><option value="CHED TDP">CHED TDP</option><option value="DOST-SEI">DOST-SEI Scholarship</option><option value="CHED TES">CHED TES</option><option value="Bagong Pilipinas Scholarship Program">Bagong Pilipinas (BPMSP)</option><option value="CHED Merit Scholarship Program">CHED Merit (CMSP)</option><option value="GrabScholar">GrabScholar</option><option value="cebuana">Cebuana Lhuillier (CLFI)</option></optgroup></select>
+            </div>
+            <div class="col-6 col-lg-2">
+              <label class="form-label mb-0" for="dvSchool">School</label>
+              <select class="form-select" id="dvSchool"><option value="">All schools</option></select>
+            </div>
+            <div class="col-6 col-lg-2">
+              <label class="form-label mb-0" for="dvStatus">Status</label>
+              <select class="form-select" id="dvStatus">
+                <option value="">All statuses</option>
+                <option value="Verified">Verified</option>
+                <option value="Needs Review">Needs Review</option>
+                <option value="Pending">Pending</option>
+              </select>
+            </div>
+            <div class="col-6 col-lg-auto dv-stale-row">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="dvStaleOnly">
+                <label class="form-check-label small" for="dvStaleOnly" title="Show only scholars queued for 48 hours or more">
+                  <i class="bi bi-alarm-fill" style="color:var(--sd-green-700);"></i>
+                  Stale 48h+ only
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="table-app-wrap table-responsive-wrap">
+          <table class="table-app">
+            <thead>
+              <tr id="dvTableHeadRow">
+                <th tabindex="0" role="button" class="th-sortable" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" data-sort-key="name">Scholar <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                <th tabindex="0" role="button" class="th-sortable" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" data-sort-key="student_id">Student ID <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                <th tabindex="0" role="button" class="th-sortable" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" data-sort-key="scholarship">Scholarship <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                <th tabindex="0" role="button" class="th-sortable" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" data-sort-key="documents">Documents <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                <th tabindex="0" role="button" class="th-sortable" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" data-sort-key="submitted">Submitted <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                <th tabindex="0" role="button" class="th-sortable" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" data-sort-key="queue">Time in Queue <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                <th tabindex="0" role="button" class="th-sortable" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" data-sort-key="status">Status <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="dvTableBody"></tbody>
+          </table>
+        </div>
+        <div id="dvMobileCards"></div>
+        <div class="table-footer-bar">
+          <div class="tf-pagesize">
+            <label class="form-label mb-0 small text-muted-custom" for="dvPageSize">Rows per page</label>
+            <select class="form-select form-select-sm" id="dvPageSize">
+              <option value="5">5</option>
+              <option value="10" selected>10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+          <div class="tf-counter small text-muted-custom" id="dvPageCounter">Showing 0 of 0 scholars</div>
+          <div class="tf-pagebtns">
+            <button type="button" class="btn btn-outline-scholarship btn-sm" id="dvPrevPage" onclick="changeListPage('dv', -1)">
+              <i class="bi bi-chevron-left"></i> Previous
+            </button>
+            <span id="dvPageNumbers" class="d-flex gap-1 align-items-center"></span>
+            <button type="button" class="btn btn-outline-scholarship btn-sm" id="dvNextPage" onclick="changeListPage('dv', 1)">
+              Next <i class="bi bi-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         PAGE: SCHOLARS
+         ============================================================ -->
+    <section class="page-section" id="page-scholars">
+      <div class="page-header d-flex flex-wrap justify-content-between align-items-start gap-2">
+        <div>
+          <div class="eyebrow">Officer / Scholars</div>
+          <h1>Scholars</h1>
+          <p class="text-muted-custom mb-0">Browse all scholars, their verification status, and stipend status.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+          <div class="dropdown">
+            <button class="btn btn-outline-scholarship dropdown-toggle" type="button" id="scExportBtn" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-download"></i> Export Roster
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="scExportBtn">
+              <li><a class="dropdown-item" href="#" onclick="exportScholarsRoster('csv'); return false;"><i class="bi bi-filetype-csv me-2"></i>Export as CSV</a></li>
+              <li><a class="dropdown-item" href="#" onclick="exportScholarsRoster('pdf'); return false;"><i class="bi bi-filetype-pdf me-2"></i>Export as PDF</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div id="scChartFilterChip" class="mb-2 d-none"></div>
+      <div class="card-panel">
+        <div class="section-title">
+          <div class="st-left"><i class="bi bi-people"></i><span>All Scholars</span></div>
+        </div>
+        <div class="filter-bar filter-bar-search filter-bar-inline">
+          <div class="row g-2 align-items-end">
+            <div class="col-md-6 col-lg-4">
+              <label class="form-label mb-0">Search scholar / Scholar ID / Student ID / Program</label>
+              <input type="text" class="form-control" id="scSearch" placeholder="Search scholars...">
+            </div>
+            <div class="col-6 col-lg-2">
+              <label class="form-label mb-0">Scholarship</label>
+              <select class="form-select" id="scScholarship"><option value="">All programs</option><optgroup label="DNSC Internal (no stipend)"><option value="__internal">All DNSC Internal</option><option value="DNSC Academic Scholarship">DNSC Academic Scholarship</option><option value="DNSC GIA Category A">DNSC Grant-in-Aid (GIA) – Category A</option><option value="DNSC GIA Category B">DNSC Grant-in-Aid (GIA) – Category B</option><option value="DNSC SA Category C">DNSC Student Assistant (SA) – Category C</option></optgroup><optgroup label="External scholarships (with stipend)"><option value="__external">All external</option><option value="CHED TDP">CHED TDP</option><option value="DOST-SEI">DOST-SEI Scholarship</option><option value="CHED TES">CHED TES</option><option value="Bagong Pilipinas Scholarship Program">Bagong Pilipinas (BPMSP)</option><option value="CHED Merit Scholarship Program">CHED Merit (CMSP)</option><option value="GrabScholar">GrabScholar</option><option value="cebuana">Cebuana Lhuillier (CLFI)</option></optgroup></select>
+            </div>
+            <div class="col-6 col-lg-2">
+              <label class="form-label mb-0">School</label>
+              <select class="form-select" id="scSchool"><option value="">All schools</option></select>
+            </div>
+            <div class="col-6 col-lg-2">
+              <label class="form-label mb-0">Academic Term</label>
+              <select class="form-select" id="scTerm">
+                <option value="">All terms</option>
+                <option value="2026–2027|1st Semester">2026–2027 · 1st Sem</option>
+                <option value="2025–2026|2nd Semester">2025–2026 · 2nd Sem</option>
+                <option value="2025–2026|1st Semester">2025–2026 · 1st Sem</option>
+              </select>
+            </div>
+            <div class="col-6 col-lg-2">
+              <label class="form-label mb-0">Verification Status</label>
+              <select class="form-select" id="scStatus">
+                <option value="">All statuses</option>
+                <option value="Verified">Verified</option>
+                <option value="Needs Review">Needs Review</option>
+                <option value="Pending">Pending</option>
+              </select>
+            </div>
+            <div class="col-6 col-lg-2">
+              <label class="form-label mb-0">Stipend Status</label>
+              <select class="form-select" id="scStipend">
+                <option value="">All</option>
+                <option value="Released">Disbursed</option>
+                <option value="Ready">Ready</option>
+                <option value="Not Eligible">Not Eligible</option>
+                <option value="Not Applicable">Not Applicable</option>
+                <option value="Completed">Marked Complete</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="table-app-wrap table-responsive-wrap">
+          <table class="table-app">
+            <thead>
+              <tr id="scTableHeadRow">
+                <th tabindex="0" role="button" class="th-sortable" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" data-sort-key="scholarId">Scholar ID <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                <th tabindex="0" role="button" class="th-sortable" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" data-sort-key="name">Scholar <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                <th tabindex="0" role="button" class="th-sortable" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" data-sort-key="student_id">Student ID <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                <th tabindex="0" role="button" class="th-sortable" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" data-sort-key="course">Program <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                <th tabindex="0" role="button" class="th-sortable" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" data-sort-key="scholarship">Scholarship <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                <th tabindex="0" role="button" class="th-sortable" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" data-sort-key="verification">Verification <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                <th tabindex="0" role="button" class="th-sortable" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" data-sort-key="stipend">Stipend <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="scTableBody"></tbody>
+          </table>
+        </div>
+        <div id="scMobileCards"></div>
+        <div class="table-footer-bar">
+          <div class="tf-pagesize">
+            <label class="form-label mb-0 small text-muted-custom" for="scPageSize">Rows per page</label>
+            <select class="form-select form-select-sm" id="scPageSize">
+              <option value="10">10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+          <div class="tf-counter small text-muted-custom" id="scPageCounter">Showing 0 of 0 scholars</div>
+          <div class="tf-pagebtns">
+            <button type="button" class="btn btn-outline-scholarship btn-sm" id="scPrevPage" onclick="changeScholarsPage(-1)">
+              <i class="bi bi-chevron-left"></i> Previous
+            </button>
+            <button type="button" class="btn btn-outline-scholarship btn-sm" id="scNextPage" onclick="changeScholarsPage(1)">
+              Next <i class="bi bi-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         PAGE: ADD NEW SCHOLAR (minimal — just exists for now)
+         ============================================================ -->
+    <section class="page-section" id="page-add-scholar">
+      <div class="page-header">
+        <div class="eyebrow">Officer / Scholars / Add New</div>
+        <h1>Add New Scholar</h1>
+        <p class="text-muted-custom mb-0">Walk through all four steps to onboard a new scholar to the roster.</p>
+      </div>
+
+      <div class="card-panel as-wizard-card">
+
+        <!-- Step indicator -->
+        <div class="as-wizard-progress" id="scholarWizardProgressLabel">Step 1 of 4</div>
+        <div class="as-req-legend"><span class="req-star" aria-hidden="true">*</span> Required field</div>
+        <div class="as-stepper" id="scholarWizardStepper">
+          <div class="as-step" data-step="1">
+            <div class="as-step-circle"><span class="as-step-num">1</span></div>
+            <div class="as-step-label">Basic Identity</div>
+          </div>
+          <div class="as-step" data-step="2">
+            <div class="as-step-circle"><span class="as-step-num">2</span></div>
+            <div class="as-step-label">Academic Details</div>
+          </div>
+          <div class="as-step" data-step="3">
+            <div class="as-step-circle"><span class="as-step-num">3</span></div>
+            <div class="as-step-label">Scholarship Details</div>
+          </div>
+          <div class="as-step" data-step="4">
+            <div class="as-step-circle"><span class="as-step-num">4</span></div>
+            <div class="as-step-label">Review &amp; Verify</div>
+          </div>
+        </div>
+
+        <form id="addScholarForm" onsubmit="return false;">
+
+          <!-- STEP 1: Basic Identity -->
+          <div class="wizard-pane active" id="wizardPane1" data-pane="1">
+            <div class="wizard-pane-title">Basic Identity</div>
+            <div class="wizard-pane-sub">Enter the scholar's personal, contact, and address details.</div>
+            <div class="as-information-grid">
+              <section class="as-information-card">
+                <div class="as-information-card-head"><h3>Personal Information</h3><p>Who the scholar is</p></div>
+                <div class="as-information-rows">
+                  <div class="as-information-row"><label for="nasFirstName">First Name</label><input type="text" class="form-control" id="nasFirstName" placeholder="e.g. Angelo Karl" autocomplete="given-name" required></div>
+                  <div class="as-information-row"><label for="nasLastName">Last Name</label><input type="text" class="form-control" id="nasLastName" placeholder="e.g. Santos" autocomplete="family-name" required></div>
+                  <div class="as-information-row"><label for="nasMiddleName">Middle Name</label><input type="text" class="form-control" id="nasMiddleName" placeholder="e.g. Reyes" autocomplete="additional-name"><input type="hidden" id="nasName"></div>
+                  <div class="as-information-row"><label for="nasSex">Sex</label><select class="form-select" id="nasSex" required><option value="">Select…</option><option value="Female">Female</option><option value="Male">Male</option></select></div>
+                  <div class="as-information-row"><label for="nasDob">Birth Date</label><input type="text" class="form-control" id="nasDob" inputmode="numeric" placeholder="yyyy-mm-dd" maxlength="10" pattern="[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])" autocomplete="bday" required></div>
+                  <div class="as-information-row"><label for="nasNationality">Nationality</label><input type="text" class="form-control" id="nasNationality" value="Filipino" required></div>
+                </div>
+              </section>
+              <section class="as-information-card">
+                <div class="as-information-card-head"><h3>Contact Information</h3><p>How the scholarship office reaches the scholar</p></div>
+                <div class="as-information-subhead">Contact</div>
+                <div class="as-information-rows">
+                  <div class="as-information-row"><label for="nasEmail">Email</label><input type="email" class="form-control" id="nasEmail" placeholder="e.g. angelo.santos@gmail.com" required></div>
+                  <div class="as-information-row"><label for="nasAltEmail">Alternative Email</label><input type="email" class="form-control" id="nasAltEmail" placeholder="Not provided"></div>
+                  <div class="as-information-row"><label for="nasContact">Phone Number</label><input type="tel" class="form-control" id="nasContact" placeholder="e.g. 0917 123 4567" required></div>
+                </div>
+                <div class="as-information-subhead">Address</div>
+                <div class="as-information-rows">
+                  <div class="as-information-row"><label for="nasSpecificAddress">Home Address</label><input type="text" class="form-control" id="nasSpecificAddress" placeholder="House / street / barangay" required></div>
+                  <div class="as-information-row"><label for="nasCity">City</label><input type="text" class="form-control" id="nasCity" placeholder="e.g. Malolos City" required></div>
+                  <div class="as-information-row"><label for="nasProvince">Province</label><input type="text" class="form-control" id="nasProvince" placeholder="e.g. Bulacan" required></div>
+                  <div class="as-information-row"><label for="nasZip">ZIP Code</label><input type="text" class="form-control" id="nasZip" placeholder="e.g. 3000" required></div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <!-- STEP 2: Academic Details -->
+          <div class="wizard-pane" id="wizardPane2" data-pane="2">
+            <div class="wizard-pane-title">Academic Details</div>
+            <div class="wizard-pane-sub">Set the scholar's school, program, student ID, and current academic standing.</div>
+            <div class="as-information-grid">
+              <section class="as-information-card">
+                <div class="as-information-card-head"><h3>School Information</h3><p>The scholar's current academic information</p></div>
+                <div class="as-information-rows">
+                  <div class="as-information-row"><label for="nasInstitute">Campus</label><select class="form-select" id="nasInstitute" required><option value="">Select campus…</option><option value="Main (Panabo Campus)">Main (Panabo Campus)</option><option value="Carmen Campus">Carmen Campus</option><option value="Samal Campus">Samal Campus</option><option value="Talaingod Campus">Talaingod Campus</option><option value="Asuncion Campus">Asuncion Campus</option></select></div>
+                  <div class="as-information-row"><label for="nasProgram">Program</label><select class="form-select" id="nasProgram" required><option value="">Select degree program…</option></select></div>
+                  <div class="as-information-row"><label for="nasYearLevel">Year Level</label><select class="form-select" id="nasYearLevel" required><option value="">Select year…</option><option value="1">1st Year</option><option value="2">2nd Year</option><option value="3">3rd Year</option><option value="4">4th Year</option><option value="5">5th Year</option></select></div>
+                  <div class="as-information-row"><label for="nasStudentId">Student ID</label><input type="text" class="form-control" id="nasStudentId" placeholder="2026-0000" required></div>
+                </div>
+              </section>
+              <section class="as-information-card">
+                <div class="as-information-card-head"><h3>Academic Period</h3><p>Current term and standing</p></div>
+                <div class="as-information-rows">
+                  <div class="as-information-row"><label for="nasAcademicYear">Academic Year</label><select class="form-select" id="nasAcademicYear" required><option value="">Select AY…</option><option>2026–2027</option><option>2025–2026</option><option>2027–2028</option></select></div>
+                  <div class="as-information-row"><label for="nasSemester">Semester</label><select class="form-select" id="nasSemester" required><option value="">Select semester…</option><option>1st Semester</option><option>2nd Semester</option><option>Summer</option></select></div>
+                  <div class="as-information-row"><label for="nasGwa">Previous GWA</label><input type="number" step="0.01" min="1" max="5" class="form-control" id="nasGwa" placeholder="e.g. 1.75" required></div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <!-- STEP 3: Grant & Disbursement Setup -->
+          <div class="wizard-pane" id="wizardPane3" data-pane="3">
+            <div class="wizard-pane-title">Scholarship Details</div>
+            <div class="wizard-pane-sub">Choose the grant, supported classification, and where the stipend will be sent.</div>
+            <div class="row g-3">
+              <div class="col-md-6"><label class="form-label mb-0" for="nasScholarId">Scholar Number</label><input type="text" class="form-control" id="nasScholarId" value="" readonly disabled aria-readonly="true"></div>
+              <div class="col-md-6"><label class="form-label mb-0" for="nasScholarship">Scholarship</label><select class="form-select" id="nasScholarship" required><option value="">Select scholarship type…</option><optgroup label="DNSC Internal (no stipend)"><option value="DNSC Academic Scholarship">DNSC Academic Scholarship</option><option value="DNSC GIA Category A">DNSC Grant-in-Aid (GIA) – Category A</option><option value="DNSC GIA Category B">DNSC Grant-in-Aid (GIA) – Category B</option><option value="DNSC SA Category C">DNSC Student Assistant (SA) – Category C</option></optgroup><optgroup label="External scholarships (with stipend)"><option value="CHED TDP">CHED TDP</option><option value="DOST-SEI">DOST-SEI Scholarship</option><option value="CHED TES">CHED TES</option><option value="Bagong Pilipinas Scholarship Program">Bagong Pilipinas (BPMSP)</option><option value="CHED Merit Scholarship Program">CHED Merit (CMSP)</option><option value="GrabScholar">GrabScholar</option><option value="cebuana">Cebuana Lhuillier (CLFI)</option></optgroup></select></div>
+              <div class="col-md-6"><label class="form-label mb-0" for="nasClassification">Classification</label><select class="form-select" id="nasClassification" required><option value="">Select classification…</option><option value="half">Half</option><option value="full">Full</option><option value="na">N/A</option></select></div>
+              <div class="col-md-6"><label class="form-label mb-0" for="nasChannel">Payment Channel</label><select class="form-select" id="nasChannel" required></select><div class="form-text" id="nasChannelHelp"></div></div>
+              <div class="col-md-6"><label class="form-label mb-0" for="nasAccountNumber">Account Number</label><input type="text" class="form-control" id="nasAccountNumber" placeholder="Type card or account number" required><div class="form-text" id="nasAccountHelp"></div></div>
+              <div class="col-12"><label class="form-label mb-0" for="nasStipend">Calculated Stipend</label><input type="text" class="form-control" id="nasStipend" value="Select a grant program" readonly aria-describedby="nasStipendHelp"><div class="form-text" id="nasStipendHelp">Calculated from the selected grant and classification.</div></div>
+              <div class="col-12"><div class="as-scholarship-config" id="nasScholarshipConfig" aria-live="polite"><div class="as-config-empty">Select a grant program to view non-monetary benefits and requirements.</div></div></div>
+            </div>
+          </div>
+
+          <!-- STEP 4: Profile Review & Final Verification -->
+          <div class="wizard-pane" id="wizardPane4" data-pane="4">
+            <div class="wizard-pane-title">Review &amp; Verify</div>
+            <div class="wizard-pane-sub">Confirm everything below is correct before adding this scholar to the roster.</div>
+            <div id="asReviewContent"></div>
+            <div class="remark-note mt-2">
+              <i class="bi bi-info-circle-fill mt-1"></i>
+              <div>Required documents are loaded from the selected scholarship configuration. Upload and verify them from the Document Verification page once the profile is saved.</div>
+            </div>
+            <div class="as-verify-box">
+              <input type="checkbox" id="nasVerifyCheck">
+              <label for="nasVerifyCheck">I have verified that all information provided above is accurate and complete.</label>
+            </div>
+          </div>
+
+          <!-- Wizard footer navigation: sticky to the bottom of the wizard card
+               so Previous/Next/Save stay reachable without scrolling back down. -->
+          <div class="scholar-wizard-footer" id="scholarWizardFooter">
+            <button type="button" class="btn btn-outline-scholarship" id="scholarWizardPrevBtn" onclick="navigateWizard(-1)" style="visibility:hidden;">
+              <i class="bi bi-arrow-left"></i> Previous Step
+            </button>
+            <button type="button" class="btn btn-scholarship-green" id="scholarWizardNextBtn" onclick="navigateWizard(1)">
+              Next Step <i class="bi bi-arrow-right"></i>
+            </button>
+            <button type="button" class="btn btn-scholarship-green" id="scholarWizardSaveBtn" onclick="submitNewScholar()" style="display:none;" disabled>
+              <i class="bi bi-person-plus-fill"></i> Save Scholar Profile
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         PAGE: STIPEND DISBURSEMENT
+         ============================================================ -->
+    <section class="page-section" id="page-stipend-release">
+      <div class="page-header">
+        <div class="eyebrow">Officer / Stipend Disbursement</div>
+        <h1>Stipend Disbursement</h1>
+        <p class="text-muted-custom mb-0" id="stipendPeriodSubtitle">Disburse stipends to scholars whose required documents are fully verified.</p>
+      </div>
+
+      <div class="dv-kpi-strip" id="stipendSummaryRow" aria-label="Stipend disbursement summary"></div>
+
+      <div class="card-panel">
+        <div class="section-title">
+          <div class="st-left"><i class="bi bi-cash-coin"></i><span id="stipendTableTitle">Eligible Scholars</span></div>
+          <button type="button" class="btn btn-sm btn-academic-red" id="batchReleaseBtn" disabled title="Select at least one scholar to enable" onclick="openBatchReleaseModal()">
+            <i class="bi bi-cash-stack me-1"></i><span>Disburse Selected (<span id="batchReleaseCount">0</span>)</span>
+          </button>
+        </div>
+        <div class="filter-bar filter-bar-search filter-bar-inline" aria-label="Stipend disbursement filters">
+          <div class="row g-2 align-items-end">
+            <div class="col-md-6 col-lg-4"><label class="form-label mb-0" for="srSearch">Search scholar / Student ID</label><input type="text" class="form-control" id="srSearch" placeholder="Name or Student ID"></div>
+            <div class="col-6 col-lg-3"><label class="form-label mb-0" for="srTerm">AY / Semester</label><select class="form-select" id="srTerm"><option value="2026–2027|1st Semester" selected>1st Semester 2026–2027 (current)</option><option value="2025–2026|2nd Semester">2nd Semester 2025–2026</option><option value="2025–2026|1st Semester">1st Semester 2025–2026</option><option value="">All semesters</option></select></div>
+            <div class="col-6 col-lg-3"><label class="form-label mb-0" for="srScholarship">Scholarship type</label><select class="form-select" id="srScholarship"><option value="">All scholarship types</option></select></div>
+            <div class="col-6 col-lg-2"><label class="form-label mb-0" for="srSchool">School</label><select class="form-select" id="srSchool"><option value="">All schools</option></select></div>
+            <div class="col-12 col-lg-2"><label class="form-label mb-0" for="srStatus">Disbursement status</label><select class="form-select" id="srStatus"><option value="">All eligible</option><option value="ready">Ready for disbursement</option><option value="released">Already disbursed</option><option value="dnsc_pending">DNSC – awaiting completion</option><option value="dnsc_complete">DNSC – marked complete</option></select></div>
+          </div>
+        </div>
+        <div class="table-app-wrap table-responsive-wrap">
+          <table class="table-app">
+            <thead>
+              <tr id="srTableHeadRow">
+                <th style="width:2.2rem;"><input type="checkbox" class="form-check-input" id="stipendSelectAll" onchange="toggleSelectAllStipend(this.checked)" aria-label="Select all ready-for-disbursement scholars across all pages"></th>
+                <th tabindex="0" role="button" class="th-sortable" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" data-sort-key="name">Scholar <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                <th tabindex="0" role="button" class="th-sortable" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" data-sort-key="student_id">Student ID <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                <th tabindex="0" role="button" class="th-sortable" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" data-sort-key="scholarship">Scholarship <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                <th tabindex="0" role="button" class="th-sortable" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" data-sort-key="channel">Channel <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                <th tabindex="0" role="button" class="th-sortable cell-amount" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" data-sort-key="amount">Amount <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="stipendTableBody"></tbody>
+          </table>
+        </div>
+        <div id="stipendMobileCards"></div>
+        <div class="table-footer-bar">
+          <div class="tf-pagesize">
+            <label class="form-label mb-0 small text-muted-custom" for="srPageSize">Rows per page</label>
+            <select class="form-select form-select-sm" id="srPageSize">
+              <option value="5">5</option>
+              <option value="10" selected>10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+          <div class="tf-counter small text-muted-custom" id="srPageCounter">Showing 0 of 0 scholars</div>
+          <div class="tf-pagebtns">
+            <button type="button" class="btn btn-outline-scholarship btn-sm" id="srPrevPage" onclick="changeListPage('sr', -1)">
+              <i class="bi bi-chevron-left"></i> Previous
+            </button>
+            <span id="srPageNumbers" class="d-flex gap-1 align-items-center"></span>
+            <button type="button" class="btn btn-outline-scholarship btn-sm" id="srNextPage" onclick="changeListPage('sr', 1)">
+              Next <i class="bi bi-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+        <div class="demo-note mt-2">Only stipend-paying scholars whose required documents are verified appear as eligible. DNSC scholarship scholars are listed for completion marking instead of disbursement.</div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         PAGE: DISBURSEMENT HISTORY
+         ============================================================ -->
+    <section class="page-section" id="page-disbursement-history">
+      <div class="page-header">
+        <div class="eyebrow">Officer / Disbursement History</div>
+        <h1>Disbursement History</h1>
+        <p class="text-muted-custom mb-0">A filterable record of all stipends disbursed to scholars.</p>
+      </div>
+
+      <div class="filter-bar">
+        <div class="row g-2 align-items-end">
+          <div class="col-md-4">
+            <label class="form-label mb-0" for="dhTerm">Semester</label>
+            <select class="form-select" id="dhTerm">
+              <option value="">All terms</option>
+              <option value="2026–2027|1st Semester">2026–2027 · 1st Semester</option>
+              <option value="2025–2026|2nd Semester">2025–2026 · 2nd Semester</option>
+              <option value="2025–2026|1st Semester">2025–2026 · 1st Semester</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label mb-0" for="dhChannel">Disbursement Channel</label>
+            <select class="form-select" id="dhChannel">
+              <option value="">All channels</option>
+              <option value="landbank">LandBank</option>
+              <option value="ewallet">E-Wallet</option>
+              <option value="other">Others</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label mb-0" for="dhSchool">School</label>
+            <select class="form-select" id="dhSchool"><option value="">All schools</option></select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label mb-0" for="dhScholarship">Scholarship type</label>
+            <select class="form-select" id="dhScholarship"><option value="">All scholarship types</option></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-panel">
+        <div class="section-title">
+          <div class="st-left"><i class="bi bi-clock-history"></i><span>Disbursement Records</span></div>
+        </div>
+        <div class="table-app-wrap table-responsive-wrap">
+          <table class="table-app">
+            <thead>
+              <tr id="dhTableHeadRow">
+                <th tabindex="0" role="button" class="th-sortable" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" data-sort-key="name">Scholar <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                <th tabindex="0" role="button" class="th-sortable" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" data-sort-key="student_id">Student ID <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                <th tabindex="0" role="button" class="th-sortable" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" data-sort-key="term">Semester <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                <th>Academic Year</th>
+                <th tabindex="0" role="button" class="th-sortable" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" data-sort-key="channel">Channel <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                <th tabindex="0" role="button" class="th-sortable cell-amount" data-sort-key="amount" aria-sort="none">Amount <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                <th tabindex="0" role="button" class="th-sortable" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" data-sort-key="verified">Verified Date <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                <th tabindex="0" role="button" class="th-sortable" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" data-sort-key="date">Disbursement Date <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                <th>Disbursed By</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody"></tbody>
+          </table>
+        </div>
+        <div id="historyMobileCards"></div>
+        <div class="table-footer-bar">
+          <div class="tf-pagesize">
+            <label class="form-label mb-0 small text-muted-custom" for="dhPageSize">Rows per page</label>
+            <select class="form-select form-select-sm" id="dhPageSize">
+              <option value="10">10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+          <div class="tf-counter small text-muted-custom" id="dhPageCounter">Showing 0 of 0 disbursements</div>
+          <div class="tf-pagebtns">
+            <button type="button" class="btn btn-outline-scholarship btn-sm" id="dhPrevPage" onclick="changeHistoryPage(-1)">
+              <i class="bi bi-chevron-left"></i> Previous
+            </button>
+            <span id="dhPageNumbers" class="d-flex gap-1 align-items-center"></span>
+            <button type="button" class="btn btn-outline-scholarship btn-sm" id="dhNextPage" onclick="changeHistoryPage(1)">
+              Next <i class="bi bi-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+        <div class="demo-note mt-2">Sample / demo data</div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         PAGE: NOTIFICATIONS
+         Dedicated, filterable notification sidebar reached from the Dashboard.
+         ============================================================ -->
+    <section class="page-section" id="page-activity-log">
+      <div class="page-header notifications-page-header">
+        <div class="eyebrow">Officer / Notifications</div>
+        <h1>Notifications</h1>
+        <p class="text-muted-custom mb-0">Stay up to date with submissions, verifications, corrections, and disbursements.</p>
+      </div>
+
+      <div class="filter-bar filter-bar-search">
+        <div class="row g-2 align-items-end">
+          <div class="col-md-7">
+            <label class="form-label mb-0">Search notifications</label>
+            <input type="text" class="form-control" id="alSearch" placeholder="e.g. Maria Santos or Certificate of Registration" oninput="renderActivityLogPage()">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label mb-0" for="alSchool">School</label>
+            <select class="form-select" id="alSchool"><option value="">All schools</option></select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label mb-0">Notification type</label>
+            <select class="form-select" id="alType" onchange="renderActivityLogPage()">
+              <option value="">All notifications</option>
+              <option value="submission">Submissions</option>
+              <option value="verification">Verifications</option>
+              <option value="correction">Corrections</option>
+              <option value="disbursement">Disbursement</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-panel notification-sidebar">
+        <div class="section-title">
+          <div class="st-left"><i class="bi bi-bell"></i><span>All Notifications</span></div>
+          <span class="small text-muted-custom" id="alResultCount"></span>
+        </div>
+        <div class="d-flex flex-column gap-3" id="activityLogList"></div>
+        <div id="alEmptyState" class="small text-muted-custom d-none">No notification matches these filters.</div>
+        <div class="demo-note mt-2">Most recent 30 notifications · sample / demo data</div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         PAGE: PROFILE
+         ============================================================ -->
+    <section class="page-section" id="page-profile">
+      <div class="page-header">
+        <div class="eyebrow">Officer / Profile</div>
+        <h1>Profile</h1>
+        <p class="text-muted-custom mb-0">Your officer account information.</p>
+      </div>
+
+      <div class="card-panel sd-account-card">
+        <div class="sd-account-row">
+          <div class="sd-account-avatar">JD</div>
+          <div>
+            <div class="sd-account-name">Juan Dela Cruz</div>
+            <div class="sd-account-role">Scholarship Officer</div>
+          </div>
+        </div>
+        <dl class="sd-account-fields">
+          <div>
+            <dt>Full Name</dt>
+            <dd>Juan Dela Cruz</dd>
+          </div>
+          <div>
+            <dt>Email Address</dt>
+            <dd>juan.delacruz@dnsc.edu.ph</dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         PAGE: SETTINGS
+         ============================================================ -->
+    <section class="page-section" id="page-settings">
+      <div class="page-header">
+        <div class="eyebrow">Officer / Settings</div>
+        <h1>Settings</h1>
+        <p class="text-muted-custom mb-0">Manage your account security.</p>
+      </div>
+
+      <div class="pwc-card mb-3" id="password-card" aria-labelledby="password-title">
+        <div class="pwc-head">
+          <div>
+            <h3 id="password-title">Edit Password</h3>
+            <div class="pwc-sub">Optional. Change your password only if you want to.</div>
+          </div>
+          <button type="button" class="pwc-btn quiet sm" id="password-toggle" aria-expanded="false" aria-controls="password-form">Change Password</button>
+        </div>
+        <div class="pwc-msg" id="password-msg" role="alert" hidden></div>
+        <form id="password-form" class="pwc-form" novalidate hidden>
+          <div class="pwc-field">
+            <label for="current-password">Current Password</label>
+            <input class="pwc-input" type="password" id="current-password" autocomplete="current-password" />
+          </div>
+          <div class="pwc-field">
+            <label for="new-password">New Password</label>
+            <input class="pwc-input" type="password" id="new-password" autocomplete="new-password" />
+          </div>
+          <div class="pwc-field">
+            <label for="confirm-password">Confirm New Password</label>
+            <input class="pwc-input" type="password" id="confirm-password" autocomplete="new-password" />
+          </div>
+          <div class="pwc-actions">
+            <button type="submit" class="pwc-btn primary" id="password-submit">Update Password</button>
+            <button type="button" class="pwc-btn quiet" id="password-cancel">Cancel</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card-panel sd-account-card sd-logout-card">
+        <div>
+          <div class="section-title" style="margin-bottom:0.25rem;">
+            <div class="st-left"><i class="bi bi-box-arrow-right"></i><span>Log Out</span></div>
+          </div>
+          <p class="small text-muted-custom mb-0">End your current session on this device.</p>
+        </div>
+        <button type="button" class="btn btn-academic-red" onclick="handleLogout()">
+          <i class="bi bi-box-arrow-right me-2"></i>Log Out
+        </button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ============================================================
+     LOGOUT CONFIRMATION MODAL (same design as the Scholar Dashboard)
+     ============================================================ -->
+<!-- Logout preloader: shown after the logout is confirmed -->
+<div id="nxPreloader" class="nx-preloader nx-preloader-hide" role="status" aria-live="polite" aria-hidden="true">
+  <div class="nx-preloader-mark"></div>
+  <span>BAKR</span>
+</div>
+
+<div class="lgo-backdrop" id="logout-backdrop" hidden>
+  <div class="lgo-modal" id="logout-modal" role="dialog" aria-modal="true" aria-labelledby="logout-modal-title">
+    <div class="lgo-head">
+      <h3 id="logout-modal-title">Log out?</h3>
+      <button type="button" class="lgo-close" id="logout-close" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M18 6 6 18M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    <div class="lgo-body">
+      <p class="lgo-current">You will be signed out of your officer account on this device.</p>
+    </div>
+    <div class="lgo-foot">
+      <button type="button" class="lgo-btn quiet" id="logout-cancel">Cancel</button>
+      <button type="button" class="lgo-btn danger" id="logout-confirm"> <a href="{{ url('/officerLogin') }}">Log out</a></button>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- ============================================================
+     DOCUMENT REVIEW MODAL
+     ============================================================ -->
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title mb-0"><i class="bi bi-file-earmark-check me-2" style="color:var(--sd-green-700);"></i><span id="reviewScholarName">Scholar Name</span></h5>
+          <div class="small text-muted-custom" id="reviewScholarId">0000-00000</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <div class="info-item" style="padding-top:0;">
+              <div class="info-label">Scholarship</div>
+              <div class="info-value" id="reviewScholarship">DNSC Academic Scholarship</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="info-item" style="padding-top:0;">
+              <div class="info-label">Academic Year</div>
+              <div class="info-value">2026–2027</div>
+            </div>
+          </div>
+        </div>
+        <div id="reviewDocListContainer"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-scholarship" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     EDIT PENDING SCHOLAR MODAL (same design as Add New Scholar)
+     ============================================================ -->
+<div class="modal fade" id="editPendingModal" tabindex="-1" aria-hidden="true" aria-labelledby="editPendingModalTitle" data-bs-backdrop="static">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title mb-0" id="editPendingModalTitle"><i class="bi bi-pencil-square me-2" style="color:var(--sd-green-700);"></i>Edit Pending Scholar</h5>
+          <div class="epm-readonly-note mt-1">Update this scholar's details while awaiting admin approval. The Scholar ID cannot be changed.</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="as-wizard-card">
+          <div class="as-wizard-progress" id="epmProgressLabel">Step 1 of 4</div>
+          <div class="as-req-legend"><span class="req-star" aria-hidden="true">*</span> Required field</div>
+          <div class="as-stepper" id="epmStepper">
+            <div class="as-step" data-step="1"><div class="as-step-circle"><span class="as-step-num">1</span></div><div class="as-step-label">Basic Identity</div></div>
+            <div class="as-step" data-step="2"><div class="as-step-circle"><span class="as-step-num">2</span></div><div class="as-step-label">Academic Details</div></div>
+            <div class="as-step" data-step="3"><div class="as-step-circle"><span class="as-step-num">3</span></div><div class="as-step-label">Scholarship Details</div></div>
+            <div class="as-step" data-step="4"><div class="as-step-circle"><span class="as-step-num">4</span></div><div class="as-step-label">Review &amp; Verify</div></div>
+          </div>
+          <form id="editPendingForm" onsubmit="return false;" novalidate>
+
+          <!-- STEP 1: Basic Identity -->
+          <div class="wizard-pane active" id="epmPane1" data-pane="1">
+            <div class="wizard-pane-title">Basic Identity</div>
+            <div class="wizard-pane-sub">Enter the scholar's personal, contact, and address details.</div>
+            <div class="as-information-grid">
+              <section class="as-information-card">
+                <div class="as-information-card-head"><h3>Personal Information</h3><p>Who the scholar is</p></div>
+                <div class="as-information-rows">
+                  <div class="as-information-row"><label for="epmFirstName">First Name</label><input type="text" class="form-control" id="epmFirstName" placeholder="e.g. Angelo Karl" autocomplete="given-name" required></div>
+                  <div class="as-information-row"><label for="epmLastName">Last Name</label><input type="text" class="form-control" id="epmLastName" placeholder="e.g. Santos" autocomplete="family-name" required></div>
+                  <div class="as-information-row"><label for="epmMiddleName">Middle Name</label><input type="text" class="form-control" id="epmMiddleName" placeholder="e.g. Reyes" autocomplete="additional-name"><input type="hidden" id="epmName"></div>
+                  <div class="as-information-row"><label for="epmSex">Sex</label><select class="form-select" id="epmSex" required><option value="">Select…</option><option value="Female">Female</option><option value="Male">Male</option></select></div>
+                  <div class="as-information-row"><label for="epmDob">Birth Date</label><input type="text" class="form-control" id="epmDob" inputmode="numeric" placeholder="yyyy-mm-dd" maxlength="10" pattern="[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])" autocomplete="bday" required></div>
+                  <div class="as-information-row"><label for="epmNationality">Nationality</label><input type="text" class="form-control" id="epmNationality" value="Filipino" required></div>
+                </div>
+              </section>
+              <section class="as-information-card">
+                <div class="as-information-card-head"><h3>Contact Information</h3><p>How the scholarship office reaches the scholar</p></div>
+                <div class="as-information-subhead">Contact</div>
+                <div class="as-information-rows">
+                  <div class="as-information-row"><label for="epmEmail">Email</label><input type="email" class="form-control" id="epmEmail" placeholder="e.g. angelo.santos@gmail.com" required></div>
+                  <div class="as-information-row"><label for="epmAltEmail">Alternative Email</label><input type="email" class="form-control" id="epmAltEmail" placeholder="Not provided"></div>
+                  <div class="as-information-row"><label for="epmContact">Phone Number</label><input type="tel" class="form-control" id="epmContact" placeholder="e.g. 0917 123 4567" required></div>
+                </div>
+                <div class="as-information-subhead">Address</div>
+                <div class="as-information-rows">
+                  <div class="as-information-row"><label for="epmSpecificAddress">Home Address</label><input type="text" class="form-control" id="epmSpecificAddress" placeholder="House / street / barangay" required></div>
+                  <div class="as-information-row"><label for="epmCity">City</label><input type="text" class="form-control" id="epmCity" placeholder="e.g. Malolos City" required></div>
+                  <div class="as-information-row"><label for="epmProvince">Province</label><input type="text" class="form-control" id="epmProvince" placeholder="e.g. Bulacan" required></div>
+                  <div class="as-information-row"><label for="epmZip">ZIP Code</label><input type="text" class="form-control" id="epmZip" placeholder="e.g. 3000" required></div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <!-- STEP 2: Academic Details -->
+          <div class="wizard-pane" id="epmPane2" data-pane="2">
+            <div class="wizard-pane-title">Academic Details</div>
+            <div class="wizard-pane-sub">Set the scholar's school, program, student ID, and current academic standing.</div>
+            <div class="as-information-grid">
+              <section class="as-information-card">
+                <div class="as-information-card-head"><h3>School Information</h3><p>The scholar's current academic information</p></div>
+                <div class="as-information-rows">
+                  <div class="as-information-row"><label for="epmInstitute">Campus</label><select class="form-select" id="epmInstitute" required><option value="">Select campus…</option><option value="Main (Panabo Campus)">Main (Panabo Campus)</option><option value="Carmen Campus">Carmen Campus</option><option value="Samal Campus">Samal Campus</option><option value="Talaingod Campus">Talaingod Campus</option><option value="Asuncion Campus">Asuncion Campus</option></select></div>
+                  <div class="as-information-row"><label for="epmProgram">Program</label><select class="form-select" id="epmProgram" required><option value="">Select degree program…</option></select></div>
+                  <div class="as-information-row"><label for="epmYearLevel">Year Level</label><select class="form-select" id="epmYearLevel" required><option value="">Select year…</option><option value="1">1st Year</option><option value="2">2nd Year</option><option value="3">3rd Year</option><option value="4">4th Year</option><option value="5">5th Year</option></select></div>
+                  <div class="as-information-row"><label for="epmStudentId">Student ID</label><input type="text" class="form-control" id="epmStudentId" placeholder="2026-0000" required></div>
+                </div>
+              </section>
+              <section class="as-information-card">
+                <div class="as-information-card-head"><h3>Academic Period</h3><p>Current term and standing</p></div>
+                <div class="as-information-rows">
+                  <div class="as-information-row"><label for="epmAcademicYear">Academic Year</label><select class="form-select" id="epmAcademicYear" required><option value="">Select AY…</option><option>2026–2027</option><option>2025–2026</option><option>2027–2028</option></select></div>
+                  <div class="as-information-row"><label for="epmSemester">Semester</label><select class="form-select" id="epmSemester" required><option value="">Select semester…</option><option>1st Semester</option><option>2nd Semester</option><option>Summer</option></select></div>
+                  <div class="as-information-row"><label for="epmGwa">Previous GWA</label><input type="number" step="0.01" min="1" max="5" class="form-control" id="epmGwa" placeholder="e.g. 1.75" required></div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <!-- STEP 3: Grant & Disbursement Setup -->
+          <div class="wizard-pane" id="epmPane3" data-pane="3">
+            <div class="wizard-pane-title">Scholarship Details</div>
+            <div class="wizard-pane-sub">Choose the grant, supported classification, and where the stipend will be sent.</div>
+            <div class="row g-3">
+              <div class="col-md-6"><label class="form-label mb-0" for="epmScholarId">Scholar Number</label><input type="text" class="form-control" id="epmScholarId" value="" readonly disabled aria-readonly="true"></div>
+              <div class="col-md-6"><label class="form-label mb-0" for="epmScholarship">Scholarship</label><select class="form-select" id="epmScholarship" required><option value="">Select scholarship type…</option><optgroup label="DNSC Internal (no stipend)"><option value="DNSC Academic Scholarship">DNSC Academic Scholarship</option><option value="DNSC GIA Category A">DNSC Grant-in-Aid (GIA) – Category A</option><option value="DNSC GIA Category B">DNSC Grant-in-Aid (GIA) – Category B</option><option value="DNSC SA Category C">DNSC Student Assistant (SA) – Category C</option></optgroup><optgroup label="External scholarships (with stipend)"><option value="CHED TDP">CHED TDP</option><option value="DOST-SEI">DOST-SEI Scholarship</option><option value="CHED TES">CHED TES</option><option value="Bagong Pilipinas Scholarship Program">Bagong Pilipinas (BPMSP)</option><option value="CHED Merit Scholarship Program">CHED Merit (CMSP)</option><option value="GrabScholar">GrabScholar</option><option value="cebuana">Cebuana Lhuillier (CLFI)</option></optgroup></select></div>
+              <div class="col-md-6"><label class="form-label mb-0" for="epmClassification">Classification</label><select class="form-select" id="epmClassification" required><option value="">Select classification…</option><option value="half">Half</option><option value="full">Full</option><option value="na">N/A</option></select></div>
+              <div class="col-md-6"><label class="form-label mb-0" for="epmChannel">Payment Channel</label><select class="form-select" id="epmChannel" required></select><div class="form-text" id="epmChannelHelp"></div></div>
+              <div class="col-md-6"><label class="form-label mb-0" for="epmAccountNumber">Account Number</label><input type="text" class="form-control" id="epmAccountNumber" placeholder="Type card or account number" required><div class="form-text" id="epmAccountHelp"></div></div>
+              <div class="col-12"><label class="form-label mb-0" for="epmStipend">Calculated Stipend</label><input type="text" class="form-control" id="epmStipend" value="Select a grant program" readonly aria-describedby="epmStipendHelp"><div class="form-text" id="epmStipendHelp">Calculated from the selected grant and classification.</div></div>
+              <div class="col-12"><div class="as-scholarship-config" id="epmScholarshipConfig" aria-live="polite"><div class="as-config-empty">Select a grant program to view non-monetary benefits and requirements.</div></div></div>
+            </div>
+          </div>
+
+          <!-- STEP 4: Profile Review & Final Verification -->
+          <div class="wizard-pane" id="epmPane4" data-pane="4">
+            <div class="wizard-pane-title">Review &amp; Verify</div>
+            <div class="wizard-pane-sub">Confirm everything below is correct before saving these changes to the pending submission.</div>
+            <div id="epmReviewContent"></div>
+            <div class="remark-note mt-2">
+              <i class="bi bi-info-circle-fill mt-1"></i>
+              <div>Required documents are loaded from the selected scholarship configuration. Upload and verify them from the Document Verification page once the scholar is approved.</div>
+            </div>
+            <div class="as-verify-box">
+              <input type="checkbox" id="epmVerifyCheck">
+              <label for="epmVerifyCheck">I have verified that all information provided above is accurate and complete.</label>
+            </div>
+          </div>
+
+          </form>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-scholarship" id="epmPrevBtn" onclick="navigateEditPending(-1)" style="visibility:hidden;"><i class="bi bi-arrow-left"></i> Previous Step</button>
+        <button type="button" class="btn btn-scholarship-green" id="epmNextBtn" onclick="navigateEditPending(1)">Next Step <i class="bi bi-arrow-right"></i></button>
+        <button type="button" class="btn btn-scholarship-green" id="epmSaveBtn" onclick="saveEditedPendingScholar()" style="display:none;" disabled><i class="bi bi-check2-circle"></i> Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     SCHOLAR PROFILE MODAL
+     ============================================================ -->
+<div class="modal fade" id="profileModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="profileModalTitle"><i class="bi bi-person-badge me-2" style="color:var(--sd-green-700);"></i>Scholar Profile</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row info-grid" id="profileInfoGrid"></div>
+        <div class="section-title" style="margin:0.9rem 0 0.6rem;">
+          <div class="st-left"><i class="bi bi-mortarboard"></i><span>Enter / Correct GWA</span></div>
+        </div>
+        <div class="d-flex flex-wrap align-items-end gap-2">
+          <div style="max-width:180px;">
+            <label class="form-label mb-1 small" for="profileGwaInput">GWA (1.00 – 5.00)</label>
+            <input type="number" step="0.01" min="1" max="5" class="form-control" id="profileGwaInput" placeholder="e.g. 1.75">
+          </div>
+          <button type="button" class="btn btn-sm btn-scholarship-green" id="profileGwaSaveBtn"><i class="bi bi-check2 me-1"></i>Save GWA</button>
+        </div>
+        <div class="small text-muted-custom mt-2" id="profileGwaHint"></div>
+        <div class="small mt-1" id="profileGwaError" style="color:var(--sd-red, #b3261e);" role="alert"></div>
+        <hr style="border-color: var(--sd-border);">
+        <div class="section-title" style="margin-bottom:0.6rem;">
+          <div class="st-left"><i class="bi bi-file-earmark-text"></i><span>Document Status</span></div>
+        </div>
+        <div id="profileDocStatus" class="mb-3"></div>
+        <div class="section-title" style="margin-bottom:0.6rem;">
+          <div class="st-left"><i class="bi bi-clock-history"></i><span>Disbursement History</span></div>
+        </div>
+        <div id="profileStipendHistory"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-scholarship" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     RELEASE CONFIRMATION MODAL
+     ============================================================ -->
+<div class="modal fade" id="releaseModal" tabindex="-1" aria-hidden="true" aria-labelledby="releaseModalLabel" aria-describedby="releaseModalSummary">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="releaseModalLabel"><i class="bi bi-cash-stack me-2" style="color:var(--sd-green-700);"></i>Disburse Stipend</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="releaseModalSummary">
+        <div class="row info-grid">
+          <div class="col-6">
+            <div class="info-item">
+              <div class="info-label">Scholar</div>
+              <div class="info-value" id="relScholarName">–</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="info-item">
+              <div class="info-label">Scholar ID</div>
+              <div class="info-value" id="relScholarId">–</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="info-item">
+              <div class="info-label">Amount</div>
+              <div class="info-value amount-value" id="relAmount">–</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Disbursement breakdown: destination account, payment period -->
+        <div class="small fw-semibold mt-3 mb-2" style="color:var(--sd-ink);">Disbursement Breakdown</div>
+        <div class="row info-grid">
+          <div class="col-6">
+            <div class="info-item">
+              <div class="info-label">Account Number</div>
+              <div class="info-value" id="relAccountNumber">–</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="info-item">
+              <div class="info-label">Payment Period</div>
+              <div class="info-value" id="relPeriod" style="font-size:0.95rem;">–</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="remark-note mt-2">
+          <i class="bi bi-info-circle-fill mt-1"></i>
+          <div>This will record the stipend as disbursed for this semester. This action reflects on the scholar's disbursement history.</div>
+        </div>
+
+        <!-- Accidental-execution safeguard: primary button stays disabled until checked -->
+        <div class="form-check mt-3" style="padding-left:1.75rem;">
+          <input class="form-check-input" type="checkbox" id="relAckCheck" onchange="document.getElementById('confirmReleaseBtn').disabled = !this.checked;">
+          <label class="form-check-label small" for="relAckCheck" id="relAckLabel">
+            I verify that this recipient record has been reviewed.
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-scholarship" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-academic-red" id="confirmReleaseBtn" disabled>Confirm Disbursement</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     DNSC SCHOLAR — MARKED AS COMPLETE MODAL
+     ============================================================ -->
+<div class="modal fade" id="completeModal" tabindex="-1" aria-hidden="true" aria-labelledby="completeModalLabel">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="completeModalLabel"><i class="bi bi-patch-check-fill me-2" style="color:var(--sd-green-700);"></i>Scholar Marked as Complete</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row info-grid">
+          <div class="col-12 col-sm-5">
+            <div class="info-item">
+              <div class="info-label">Scholar Name</div>
+              <div class="info-value" id="cmpScholarName">–</div>
+            </div>
+          </div>
+          <div class="col-6 col-sm-3">
+            <div class="info-item">
+              <div class="info-label">Scholar ID</div>
+              <div class="info-value" id="cmpScholarId">–</div>
+            </div>
+          </div>
+          <div class="col-6 col-sm-4">
+            <div class="info-item">
+              <div class="info-label">Campus</div>
+              <div class="info-value" id="cmpCampus" style="font-size:0.95rem;">–</div>
+            </div>
+          </div>
+        </div>
+        <div class="alert alert-success d-flex align-items-start gap-2 mt-3 mb-0" role="alert">
+          <i class="bi bi-check-circle-fill mt-1"></i>
+          <div><strong>This scholar has been marked as complete.</strong> The appropriate benefits may now be awarded in person at the school's office.</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-scholarship" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     BATCH STIPEND DISBURSEMENT — two-step confirmation modal
+     ============================================================ -->
+<div class="modal fade" id="batchReleaseModal" tabindex="-1" aria-hidden="true" aria-labelledby="batchReleaseModalLabel" aria-describedby="batchReleaseModalSummary">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="batchReleaseModalLabel"><i class="bi bi-cash-stack me-2" style="color:var(--sd-green-700);"></i>Disburse Selected Stipends</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="batchReleaseModalSummary">
+
+        <!-- Step 1: Review — explicit recipient count + aggregate amount -->
+        <div id="batchReleaseStep1">
+
+          <!-- Disbursement breakdown: recipients, total, payment period -->
+          <div class="small fw-semibold mb-2" style="color:var(--sd-ink);">Disbursement Breakdown</div>
+          <div class="row info-grid">
+            <div class="col-6">
+              <div class="info-item">
+                <div class="info-label">Recipients</div>
+                <div class="info-value" id="batchRelCount">–</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="info-item">
+                <div class="info-label">Total Payout</div>
+                <div class="info-value amount-value" id="batchRelTotal">–</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="info-item">
+                <div class="info-label">Payment Period</div>
+                <div class="info-value" id="batchRelPeriod" style="font-size:0.95rem;">–</div>
+              </div>
+            </div>
+          </div>
+          <div class="small text-muted-custom mt-2 mb-1">Scholars in this batch:</div>
+          <div id="batchRelList" style="max-height:180px; overflow-y:auto; border:1px solid var(--sd-border); border-radius:var(--radius-sm); padding:0.5rem 0.75rem;"></div>
+          <div class="remark-note mt-2">
+            <i class="bi bi-info-circle-fill mt-1"></i>
+            <div>Review the recipients and total above before continuing. You'll be asked to confirm once more on the next step.</div>
+          </div>
+        </div>
+
+        <!-- Step 2: Final confirmation — restates the totals, cannot be undone -->
+        <div id="batchReleaseStep2" class="d-none">
+          <div class="remark-note" style="color:var(--sd-green-700); background:var(--sd-surface); border:1px solid var(--sd-border);">
+            <i class="bi bi-exclamation-triangle-fill mt-1"></i>
+            <div>This action cannot be undone. Stipends will be recorded as disbursed immediately for all recipients below.</div>
+          </div>
+          <div class="row info-grid mt-2">
+            <div class="col-6">
+              <div class="info-item">
+                <div class="info-label">Recipients</div>
+                <div class="info-value" id="batchRelCountConfirm">–</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="info-item">
+                <div class="info-label">Total Payout</div>
+                <div class="info-value amount-value" id="batchRelTotalConfirm">–</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Accidental-execution safeguard: primary button stays disabled until checked -->
+          <div class="form-check mt-3" style="padding-left:1.75rem;">
+            <input class="form-check-input" type="checkbox" id="batchRelAckCheck" onchange="document.getElementById('batchRelConfirmBtn').disabled = !this.checked;">
+            <label class="form-check-label small" for="batchRelAckCheck" id="batchRelAckLabel">
+              I verify that all recipient records have been reviewed.
+            </label>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-scholarship" data-bs-dismiss="modal" id="batchRelCancelBtn">Cancel</button>
+        <button type="button" class="btn btn-outline-scholarship d-none" id="batchRelBackBtn" onclick="showBatchReleaseStep(1)">Back</button>
+        <button type="button" class="btn btn-academic-red" id="batchRelContinueBtn" onclick="showBatchReleaseStep(2)">Continue</button>
+        <button type="button" class="btn btn-academic-red d-none" id="batchRelConfirmBtn" disabled>Confirm &amp; Disburse All</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: CHART GROUP DRILLDOWN (bar / doughnut segment click)
+     ============================================================ -->
+<div class="modal fade" id="groupModal" tabindex="-1" aria-hidden="true" aria-labelledby="groupModalTitle">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="groupModalTitle"><i class="bi bi-people-fill me-2" style="color:var(--sd-green-700);"></i>Group</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted-custom mb-3" id="groupModalSubtext"></p>
+        <div class="table-app-wrap table-responsive-wrap">
+          <table class="table-app">
+            <thead>
+              <tr>
+                <th>Scholar</th>
+                <th>Student ID</th>
+                <th>Program</th>
+                <th>Scholarship</th>
+                <th>Year Level</th>
+              </tr>
+            </thead>
+            <tbody id="groupModalTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-scholarship" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-scholarship-green" id="groupModalViewAllBtn">View in Scholars Table</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     TOASTS
+     ============================================================ -->
+<div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1080;">
+  <div id="mainToast" class="toast toast-demo align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body d-flex align-items-start gap-2">
+        <i class="bi bi-check-circle-fill fs-5" id="toastIcon" style="color: var(--sd-green-700);"></i>
+        <div>
+          <div class="fw-semibold" id="toastTitle" style="color:var(--sd-ink);">Done</div>
+          <div class="small text-muted-custom" id="toastMessage"></div>
+        </div>
+      </div>
+      <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Bootstrap 5.3 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script src="{{ asset('js/bakr-officer-dashboard.js') }}"></script>
+</body>
+</html>

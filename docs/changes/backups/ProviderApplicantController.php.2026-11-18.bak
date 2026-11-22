@@ -1,0 +1,100 @@
+<?php
+
+namespace App\Http\Controllers\Provider;
+
+use App\Models\ProviderApplication;
+use App\Models\Scholar;
+use App\Models\ScholarshipMatch;
+use App\Services\PublicAnalyticsService;
+use App\Support\AcademicTerm;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+use Illuminate\View\View;
+
+/**
+ * Applicants: aggregate match counts for everyone, plus the individual students who chose
+ * to share their profile with this provider (ProviderApplication, with consent).
+ */
+class ProviderApplicantController extends ProviderController
+{
+    public function index(Request $request): View
+    {
+        $scope = $this->scope($request);
+        $status = $request->query('status', 'submitted');
+        $status = array_key_exists($status, ProviderApplication::STATUSES) ? $status : 'submitted';
+
+        $applications = $scope->applications()->with(['user', 'scholarship'])
+            ->where('status', $status)
+            ->latest()
+            ->paginate(20)->withQueryString();
+
+        return $this->page($scope, 'provider.applicants', [
+            'scholarships' => $scope->scholarships(),
+            'stats' => $scope->matchCounts(),
+            'minGroup' => PublicAnalyticsService::MIN_GROUP_SIZE,
+            'statusLabels' => ScholarshipMatch::STATUS_LABELS,
+            'applications' => $applications,
+            'status' => $status,
+            'statusCounts' => $scope->applications()->selectRaw('status, COUNT(*) as n')->groupBy('status')->pluck('n', 'status'),
+        ]);
+    }
+
+    /** Approve (creates the scholar record) or decline a shared application. */
+    public function decide(Request $request, int $application): RedirectResponse
+    {
+        $scope = $this->scope($request);
+        $app = $scope->application($application);
+        abort_unless($app->status === 'submitted', 409);
+
+        $data = $request->validate([
+            'decision' => ['required', Rule::in(['approved', 'rejected'])],
+            'decision_note' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        DB::transaction(function () use ($app, $data, $request, $scope) {
+            $app->update([
+                'status' => $data['decision'],
+                'decision_note' => $data['decision_note'] ?? null,
+                'decided_at' => now(),
+                'decided_by' => $request->user()->id,
+            ]);
+
+            if ($data['decision'] === 'approved') {
+                $snap = $app->snapshot ?? [];
+
+                // Already on the provider's roster (added by hand / Excel, same e-mail, no account yet)?
+                // The student consented by sharing, so attach their account to that row instead of adding a second one.
+                $rosterRow = Scholar::query()->where('scholarship_id', $app->scholarship_id)->whereNull('user_id')
+                    ->whereRaw('LOWER(email) = ?', [mb_strtolower($app->user->email)])->first();
+                if ($rosterRow && ! Scholar::where('user_id', $app->user_id)->where('scholarship_id', $app->scholarship_id)->exists()) {
+                    $rosterRow->update(['user_id' => $app->user_id, 'provider_application_id' => $app->id]);
+
+                    return;
+                }
+
+                // Only one published stipend option → fill it in; with types (e.g. CMSP Full / Half) the provider picks on the profile.
+                $options = $app->scholarship->grantOptions();
+                $only = count($options) === 1 ? reset($options) : null;
+
+                Scholar::firstOrCreate(
+                    ['user_id' => $app->user_id, 'scholarship_id' => $app->scholarship_id],
+                    [
+                        'provider_application_id' => $app->id,
+                        'program' => $snap['program_name'] ?? null,
+                        'year_level' => isset($snap['year_level']) ? (string) $snap['year_level'] : null,
+                        'status' => 'active',
+                        'grant_type' => $only['key'] ?? null,
+                        'stipend_amount' => $scope->has('disbursements') ? ($only['amount'] ?? null) : null,
+                        'started_term' => AcademicTerm::current(),
+                    ],
+                );
+            }
+        });
+
+        return back()->with('status', $data['decision'] === 'approved'
+            ? $app->user->name.' is now a scholar.'.($app->scholarship->hasGrantTypes() ? ' Choose their grant type on their scholar page.' : '')
+            : 'The application was marked as not accepted.');
+    }
+}

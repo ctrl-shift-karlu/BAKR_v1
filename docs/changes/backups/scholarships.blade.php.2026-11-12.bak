@@ -1,0 +1,2137 @@
+@extends('layouts.app')
+
+@section('title', 'Scholarships | BAKR')
+@section('description', 'Browse the 11 scholarship programs tracked by BAKR for DNSC students: DNSC, government, and private scholarships with qualifications, benefits, and requirements.')
+@section('page', 'scholarships')
+
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('css/bakr-pages.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/bakr-scholarships.css') }}">
+@endpush
+
+@section('content')
+<header class="bk-page-hero" style="--page-hero-image: url('{{ asset('images/img/opt/dnsc_gate.jpg') }}')">
+    <div class="container">
+        <ol class="bk-crumbs" aria-label="Breadcrumb">
+            <li><a href="{{ url('/') }}">Home</a></li>
+            <li aria-current="page">Scholarships</li>
+        </ol>
+        <h1>Browse the <em>scholarship shelf</em></h1>
+        <p>Browse the 11 scholarship programs tracked by BAKR. Choose a sector, then open View Details to see the full qualifications, benefits, requirements, and application information.</p>
+    </div>
+</header>
+
+<div class="directory-wrap">
+   <div class="container">
+    <div class="library-layout">
+     <aside class="library-sidebar">
+      <div class="shelf-card">
+       <div class="shelf-heading">
+        <div class="shelf-icon">
+         <i aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M4 12h16M8 6.5v2.5M12 6.5v2.5M8 15v3M14 15v3"/></svg></i>
+        </div>
+        <div>
+         <h2>
+          Scholarship Shelf
+         </h2>
+         <p>
+          Choose a sector to browse
+         </p>
+        </div>
+       </div>
+       <div class="shelf-vertical-divider" aria-hidden="true"></div>
+       <div class="nav sector-tabs" id="sectorTabs" role="tablist">
+        <button class="nav-link active" data-bs-target="#dnsc-panel" data-bs-toggle="pill" id="dnsc-tab" role="tab" type="button">
+         <i aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M9 7h.01M12 7h.01M15 7h.01M9 11h.01M12 11h.01M15 11h.01M9 15h.01M12 15h.01M15 15h.01M10.5 21v-3h3v3"/></svg></i>
+         <span>
+          <strong>
+           DNSC Scholarships
+          </strong>
+          <small>
+           4 institutional programs
+          </small>
+         </span>
+        </button>
+        <button class="nav-link" data-bs-target="#government-panel" data-bs-toggle="pill" id="government-tab" role="tab" type="button">
+         <i aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 9.5 12 4l9 5.5z"/><path d="M5 12v6M9.5 12v6M14.5 12v6M19 12v6M3 21h18"/></svg></i>
+         <span>
+          <strong>
+           Government
+          </strong>
+          <small>
+           5 external programs
+          </small>
+         </span>
+        </button>
+        <button class="nav-link" data-bs-target="#private-panel" data-bs-toggle="pill" id="private-tab" role="tab" type="button">
+         <i aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17.5 14.2c2.3.3 3.9 2.2 3.9 4.8"/></svg></i>
+         <span>
+          <strong>
+           Non-Government
+          </strong>
+          <small>
+           2 private / foundation
+          </small>
+         </span>
+        </button>
+       </div>
+      </div>
+     </aside>
+     <section class="library-results">
+      <div class="directory-tools" role="search" aria-label="Search scholarships">
+       <label class="visually-hidden" for="scholarshipSearch">Search scholarships</label>
+       <div class="directory-search">
+        <span class="directory-search-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.8-4.8"/></svg></span>
+        <input id="scholarshipSearch" type="search" class="form-control" placeholder="Search scholarships, benefits, or requirements..." autocomplete="off" enterkeyhint="search">
+        <button type="button" class="directory-search-clear" id="clearScholarshipSearch" aria-label="Clear search" title="Clear search"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 5l14 14M19 5 5 19"/></svg></button>
+       </div>
+       <div class="directory-tool-meta d-flex flex-column flex-sm-row justify-content-sm-between gap-1 gap-sm-3"><span><svg class="me-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 5h18l-7 8v6l-4-2v-4z"/></svg> Filter by sector using the shelf options</span><span id="scholarshipSearchStatus" aria-live="polite">Showing all 11 scholarships</span></div>
+      </div>
+      <div class="tab-content" id="sectorTabContent">
+       <!-- DNSC -->
+       <div aria-labelledby="dnsc-tab" class="tab-pane fade show active" id="dnsc-panel" role="tabpanel">
+        <div class="directory-head">
+         <div>
+          <h2>
+           DNSC Scholarships
+          </h2>
+          <p>
+           Institutional programs for DNSC students and campus involvement.
+          </p>
+         </div>
+         <span class="count-bubble">
+          <i class="bi bi-bookmark-star-fill">
+          </i>
+          4 programs
+         </span>
+        </div>
+        <div class="row g-4">
+         <div class="col-md-6">
+          <article class="scholar-card">
+           <div class="card-paper">
+            <div class="logo-orbit">
+             <img alt="DNSC Logo" src="{{ asset('images/logo/dnss_logo.jpg') }}"/>
+            </div>
+           </div>
+           <div class="card-body-custom">
+            <span class="sector-tag internal">
+             <i class="bi bi-building">
+             </i>
+             DNSC INTERNAL
+            </span>
+            <h3>
+             DNSC Academic Scholarship
+            </h3>
+            <p>
+             Scholarship assistance for DNSC students who demonstrate strong academic performance and meet institutional requirements.
+            </p>
+            <div class="card-actions">
+             <button class="btn btn-details" data-bs-target="#dnscAcademicModal" data-bs-toggle="modal">
+
+              View details
+             </button>
+            <a class="btn btn-scholarship-green btn-apply" aria-label="Apply now for DNSC Academic Scholarship, opens in a new tab" href="https://www.facebook.com/DNSCScholarshipAndFinancialGrants" target="_blank" rel="noopener">Apply now <i class="bi bi-box-arrow-up-right ms-1"></i></a>
+             </div>
+           </div>
+          </article>
+         </div>
+         <div class="col-md-6">
+          <article class="scholar-card">
+           <div class="card-paper">
+            <div class="logo-orbit">
+             <img alt="DNSC Logo" src="{{ asset('images/logo/dnss_logo.jpg') }}"/>
+            </div>
+           </div>
+           <div class="card-body-custom">
+            <span class="sector-tag internal">
+             <i class="bi bi-building">
+             </i>
+             DNSC INTERNAL
+            </span>
+            <h3>
+             DNSC Grant-in-Aid (GIA) – Category A
+            </h3>
+            <p>
+             Financial assistance for students with exceptional skills in music, dance, arts, and sports.
+            </p>
+            <div class="card-actions">
+             <button class="btn btn-details" data-bs-target="#giaCategoryAModal" data-bs-toggle="modal">
+              View details
+             </button>
+            <a class="btn btn-scholarship-green btn-apply" aria-label="Apply now for DNSC Grant-in-Aid (GIA) – Category A, opens in a new tab" href="https://www.facebook.com/DNSCScholarshipAndFinancialGrants" target="_blank" rel="noopener">Apply now <i class="bi bi-box-arrow-up-right ms-1"></i></a>
+             </div>
+           </div>
+          </article>
+         </div>
+         <div class="col-md-6">
+          <article class="scholar-card">
+           <div class="card-paper">
+            <div class="logo-orbit">
+             <img alt="DNSC Logo" src="{{ asset('images/logo/dnss_logo.jpg') }}"/>
+            </div>
+           </div>
+           <div class="card-body-custom">
+            <span class="sector-tag internal">
+             <i class="bi bi-building">
+             </i>
+             DNSC INTERNAL
+            </span>
+            <h3>
+             DNSC Grant-in-Aid (GIA) – Category B
+            </h3>
+            <p>
+             Financial assistance for qualified Student Supreme Council officers and Student Publication Editorial Board members.
+            </p>
+            <div class="card-actions">
+             <button class="btn btn-details" data-bs-target="#giaCategoryBModal" data-bs-toggle="modal">
+              View details
+             </button>
+            <a class="btn btn-scholarship-green btn-apply" aria-label="Apply now for DNSC Grant-in-Aid (GIA) – Category B, opens in a new tab" href="https://www.facebook.com/DNSCScholarshipAndFinancialGrants" target="_blank" rel="noopener">Apply now <i class="bi bi-box-arrow-up-right ms-1"></i></a>
+             </div>
+           </div>
+          </article>
+         </div>
+         <div class="col-md-6">
+          <article class="scholar-card">
+           <div class="card-paper">
+            <div class="logo-orbit">
+             <img alt="DNSC Logo" src="{{ asset('images/logo/dnss_logo.jpg') }}"/>
+            </div>
+           </div>
+           <div class="card-body-custom">
+            <span class="sector-tag internal">
+             <i class="bi bi-building">
+             </i>
+             DNSC INTERNAL
+            </span>
+            <h3>
+             DNSC Student Assistant (SA) – Category C
+            </h3>
+            <p>
+             Assistance for financially disadvantaged students willing to perform approved institutional support services.
+            </p>
+            <div class="card-actions">
+             <button class="btn btn-details" data-bs-target="#studentAssistantModal" data-bs-toggle="modal">
+              View details
+             </button>
+            <a class="btn btn-scholarship-green btn-apply" aria-label="Apply now for DNSC Student Assistant (SA) – Category C, opens in a new tab" href="https://www.facebook.com/DNSCScholarshipAndFinancialGrants" target="_blank" rel="noopener">Apply now <i class="bi bi-box-arrow-up-right ms-1"></i></a>
+             </div>
+           </div>
+          </article>
+         </div>
+        </div>
+       </div>
+       <!-- GOVERNMENT -->
+       <div aria-labelledby="government-tab" class="tab-pane fade" id="government-panel" role="tabpanel">
+        <div class="directory-head">
+         <div>
+          <h2>
+           Government Scholarships
+          </h2>
+          <p>
+           National programs and subsidies listed in the BAKR directory.
+          </p>
+         </div>
+         <span class="count-bubble">
+          <i class="bi bi-bank2">
+          </i>
+          5 programs
+         </span>
+        </div>
+        <div class="row g-4">
+         <div class="col-md-6">
+          <article class="scholar-card">
+           <div class="card-paper">
+            <div class="logo-orbit">
+             <img alt="CHED Logo" src="{{ asset('images/logo/CHED-Logo.png') }}"/>
+            </div>
+           </div>
+           <div class="card-body-custom">
+            <span class="sector-tag government">
+             <i class="bi bi-bank">
+             </i>
+             GOVERNMENT / EXTERNAL
+            </span>
+            <h3>
+             CHED Tulong Dunong Program (TDP)
+            </h3>
+            <p>
+             Financial assistance under UniFAST for qualified Filipino undergraduate students who need support for tertiary education.
+            </p>
+            <div class="card-actions">
+             <button class="btn btn-details" data-bs-target="#chedTdpModal" data-bs-toggle="modal">
+              View details
+             </button>
+            <a class="btn btn-scholarship-green btn-apply" aria-label="Apply now for CHED Tulong Dunong Program (TDP), opens in a new tab" href="https://www.chedscholar.org/ched-tulong-dunong-program/" target="_blank" rel="noopener">Apply now <i class="bi bi-box-arrow-up-right ms-1"></i></a>
+             </div>
+           </div>
+          </article>
+         </div>
+         <div class="col-md-6">
+          <article class="scholar-card">
+           <div class="card-paper">
+            <div class="logo-orbit">
+             <img alt="CHED Logo" src="{{ asset('images/logo/CHED-Logo.png') }}"/>
+            </div>
+           </div>
+           <div class="card-body-custom">
+            <span class="sector-tag government">
+             <i class="bi bi-bank">
+             </i>
+             GOVERNMENT / EXTERNAL
+            </span>
+            <h3>
+             CHED Tertiary Education Subsidy (TES)
+            </h3>
+            <p>
+             Government financial assistance for qualified students enrolled in eligible higher education institutions.
+            </p>
+            <div class="card-actions">
+             <button class="btn btn-details" data-bs-target="#chedTesModal" data-bs-toggle="modal">
+              View details
+             </button>
+            <a class="btn btn-scholarship-green btn-apply" aria-label="Apply now for CHED Tertiary Education Subsidy (TES), opens in a new tab" href="https://unifast.gov.ph/tes.html" target="_blank" rel="noopener">Apply now <i class="bi bi-box-arrow-up-right ms-1"></i></a>
+             </div>
+           </div>
+          </article>
+         </div>
+         <div class="col-md-6">
+          <article class="scholar-card">
+           <div class="card-paper">
+            <div class="logo-orbit">
+             <img alt="DOST-SEI Logo" src="{{ asset('images/logo/DOST-Logo.png') }}"/>
+            </div>
+           </div>
+           <div class="card-body-custom">
+            <span class="sector-tag government">
+             <i class="bi bi-bank">
+             </i>
+             GOVERNMENT / EXTERNAL
+            </span>
+            <h3>
+             DOST-SEI Undergraduate Scholarship
+            </h3>
+            <p>
+             Scholarship for qualified Filipino students pursuing priority Science and Technology degree programs.
+            </p>
+            <div class="card-actions">
+             <button class="btn btn-details" data-bs-target="#dostSeiModal" data-bs-toggle="modal">
+              View details
+             </button>
+            <a class="btn btn-scholarship-green btn-apply" aria-label="Apply now for DOST-SEI Undergraduate Scholarship, opens in a new tab" href="https://science-scholarships.ph/" target="_blank" rel="noopener">Apply now <i class="bi bi-box-arrow-up-right ms-1"></i></a>
+             </div>
+           </div>
+          </article>
+         </div>
+         <div class="col-md-6">
+          <article class="scholar-card">
+           <div class="card-paper">
+            <div class="logo-orbit">
+             <img alt="CHED Merit Scholarship Logo" src="{{ asset('images/logo/CHED-Logo.png') }}"/>
+            </div>
+           </div>
+           <div class="card-body-custom">
+            <span class="sector-tag government">
+             <i class="bi bi-bank">
+             </i>
+             GOVERNMENT / EXTERNAL
+            </span>
+            <h3>
+             CHED Merit Scholarship Program
+            </h3>
+            <p>
+             Competitive scholarship for academically talented and deserving students enrolled in identified priority programs.
+            </p>
+            <div class="card-actions">
+             <button class="btn btn-details" data-bs-target="#chedMeritModal" data-bs-toggle="modal">
+              View details
+             </button>
+            <a class="btn btn-scholarship-green btn-apply" aria-label="Apply now for CHED Merit Scholarship Program, opens in a new tab" href="https://legacy.ched.gov.ph/merit-scholarship/" target="_blank" rel="noopener">Apply now <i class="bi bi-box-arrow-up-right ms-1"></i></a>
+             </div>
+           </div>
+          </article>
+         </div>
+         <div class="col-md-6">
+          <article class="scholar-card">
+           <div class="card-paper">
+            <div class="logo-orbit">
+             <img alt="Bagong Pilipinas Merit Scholarship Logo" src="{{ asset('images/logo/CHED-Logo.png') }}"/>
+            </div>
+           </div>
+           <div class="card-body-custom">
+            <span class="sector-tag government">
+             <i class="bi bi-bank">
+             </i>
+             GOVERNMENT / EXTERNAL
+            </span>
+            <h3>
+             Bagong Pilipinas Merit Scholarship Program
+            </h3>
+            <p>
+             Merit-based government scholarship for academically talented Filipino students pursuing identified priority programs.
+            </p>
+            <div class="card-actions">
+             <button class="btn btn-details" data-bs-target="#bagongPilipinasModal" data-bs-toggle="modal">
+              View details
+             </button>
+            <a class="btn btn-scholarship-green btn-apply" aria-label="Apply now for Bagong Pilipinas Merit Scholarship Program, opens in a new tab" href="https://bpms.ched.gov.ph/" target="_blank" rel="noopener">Apply now <i class="bi bi-box-arrow-up-right ms-1"></i></a>
+             </div>
+           </div>
+          </article>
+         </div>
+        </div>
+       </div>
+       <!-- PRIVATE -->
+       <div aria-labelledby="private-tab" class="tab-pane fade" id="private-panel" role="tabpanel">
+        <div class="directory-head">
+         <div>
+          <h2>
+           Non-Government &amp; Foundation
+          </h2>
+          <p>
+           Private and foundation scholarship opportunities included in your current project scope.
+          </p>
+         </div>
+         <span class="count-bubble">
+          <i class="bi bi-heart-fill">
+          </i>
+          2 programs
+         </span>
+        </div>
+        <div class="row g-4">
+         <div class="col-md-6">
+          <article class="scholar-card">
+           <div class="card-paper">
+            <div class="logo-orbit">
+             <img alt="GrabScholar Logo" src="{{ asset('images/logo/GRAB-Logo.svg') }}"/>
+            </div>
+           </div>
+           <div class="card-body-custom">
+            <span class="sector-tag private">
+             <i class="bi bi-people-fill">
+             </i>
+             PRIVATE / NGO / FOUNDATION
+            </span>
+            <h3>
+             GrabScholar College Scholarship
+            </h3>
+            <p>
+             Merit-based scholarship opportunity for eligible incoming first-year students pursuing qualified programs.
+            </p>
+            <div class="card-actions">
+             <button class="btn btn-details" data-bs-target="#grabModal" data-bs-toggle="modal">
+              View details
+             </button>
+            <a class="btn btn-scholarship-green btn-apply" aria-label="Apply now for GrabScholar College Scholarship, opens in a new tab" href="https://www.grab.com/ph/community/grabscholar-college-scholarship/" target="_blank" rel="noopener">Apply now <i class="bi bi-box-arrow-up-right ms-1"></i></a>
+             </div>
+           </div>
+          </article>
+         </div>
+         <div class="col-md-6">
+          <article class="scholar-card">
+           <div class="card-paper">
+            <div class="logo-orbit">
+             <img alt="Cebuana Lhuillier Foundation Logo" src="{{ asset('images/logo/CEBUANA-Logo.jpg') }}"/>
+            </div>
+           </div>
+           <div class="card-body-custom">
+            <span class="sector-tag private">
+             <i class="bi bi-people-fill">
+             </i>
+             PRIVATE / NGO / FOUNDATION
+            </span>
+            <h3>
+             Cebuana Lhuillier Foundation National Scholarship Program
+            </h3>
+            <p>
+             Scholarship assistance for economically challenged Filipino students enrolled in qualified public universities and colleges.
+            </p>
+            <div class="card-actions">
+             <button class="btn btn-details" data-bs-target="#cebuanaModal" data-bs-toggle="modal">
+              View details
+             </button>
+            <a class="btn btn-scholarship-green btn-apply" aria-label="Apply now for Cebuana Lhuillier Foundation National Scholarship Program, opens in a new tab" href="https://cebuanafoundation.org/qualification.php" target="_blank" rel="noopener">Apply now <i class="bi bi-box-arrow-up-right ms-1"></i></a>
+             </div>
+           </div>
+          </article>
+         </div>
+        </div>
+       </div>
+      </div>
+     </section>
+    </div>
+   </div>
+  </div>
+  <!-- ==========================================================
+     MODALS — exact scholarship details are retained from the
+     supplied scholarship page; only presentation is redesigned.
+     ========================================================== -->
+  <!-- 1 DNSC ACADEMIC -->
+  <!-- EDITABLE SCHOLARSHIP DETAILS — CARD 1 -->
+  <div aria-hidden="true" class="modal fade" id="dnscAcademicModal" aria-labelledby="dnscAcademicModalTitle" tabindex="-1">
+   <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content scholarship-modal sector-internal">
+     <div class="modal-header">
+      <div class="modal-brand-line">
+       <img alt="DNSC Logo" class="modal-logo" src="{{ asset('images/logo/dnss_logo.jpg') }}"/>
+       <div>
+        <span class="modal-category">
+         DNSC INTERNAL
+        </span>
+        <h3 id="dnscAcademicModalTitle">
+         DNSC Academic Scholarship
+        </h3>
+        <p>
+         Scholarship information from the supplied directory.
+        </p>
+       </div>
+      </div>
+      <button aria-label="Close" class="btn-close btn-close-white" data-bs-dismiss="modal" type="button">
+      </button>
+     </div>
+     <div class="modal-body">
+      <div class="row g-3">
+       <div class="col-lg-6">
+        <div class="modal-section overview">
+         <div class="modal-section-title">
+          <i class="bi bi-book">
+          </i>
+          Overview
+         </div>
+         <p>
+          Scholarship assistance for DNSC students who meet the institution's academic excellence requirements.
+         </p>
+        </div>
+       </div>
+       <div class="col-lg-6">
+        <div class="modal-section qualify">
+         <div class="modal-section-title">
+          <i class="bi bi-person-check">
+          </i>
+          Eligibility / Matching Factors
+         </div>
+         <div class="feature-pills">
+          <span class="feature-pill">
+           DNSC student
+          </span>
+          <span class="feature-pill">
+           Academic performance / GPA
+          </span>
+          <span class="feature-pill">
+           Year level
+          </span>
+          <span class="feature-pill">
+           Enrollment status
+          </span>
+         </div>
+        </div>
+       </div>
+       <div class="col-lg-7">
+        <div class="modal-section requirements">
+         <div class="modal-section-title">
+          <i class="bi bi-check2-square">
+          </i>
+          Required Documents
+         </div>
+         <ul>
+          <li>
+           Latest Certificate of Registration (COR)
+          </li>
+          <li>
+           Latest grades / academic record
+          </li>
+          <li>
+           Student identification / school ID
+          </li>
+          <li>
+           Other documents required by the DNSC Scholarship and Grants Unit
+          </li>
+         </ul>
+        </div>
+       </div>
+       <div class="col-lg-5">
+        <div class="modal-section benefits">
+         <div class="modal-section-title">
+          <i class="bi bi-gift">
+          </i>
+          Application
+         </div>
+         <p>
+          Through the DNSC Scholarship and Grants Unit.
+         </p>
+         <div class="benefit-tile">
+          <strong>
+           DNSC
+          </strong>
+          <span>
+           Institutional scholarship processing
+          </span>
+         </div>
+        </div>
+       </div>
+      </div>
+      <div class="application-strip">
+       <div>
+        <small>
+         Application / Inquiry
+        </small>
+        <strong>
+         Through the DNSC Scholarship and Grants Unit.
+        </strong>
+       </div>
+       <a class="btn btn-light btn-sm fw-bold" href="https://www.facebook.com/DNSCScholarshipAndFinancialGrants" target="_blank">
+        Inquire
+        <i class="bi bi-box-arrow-up-right ms-1">
+        </i>
+       </a>
+      </div>
+     </div>
+     <div class="modal-footer">
+      <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">
+       Close card
+      </button>
+     </div>
+    </div>
+   </div>
+  </div>
+  <!-- 2 GIA A -->
+  <!-- EDITABLE SCHOLARSHIP DETAILS — CARD 2 -->
+  <div aria-hidden="true" class="modal fade" id="giaCategoryAModal" aria-labelledby="giaCategoryAModalTitle" tabindex="-1">
+   <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content scholarship-modal sector-internal">
+     <div class="modal-header">
+      <div class="modal-brand-line">
+       <img alt="DNSC Logo" class="modal-logo" src="{{ asset('images/logo/dnss_logo.jpg') }}"/>
+       <div>
+        <span class="modal-category">
+         DNSC INTERNAL
+        </span>
+        <h3 id="giaCategoryAModalTitle">
+         DNSC Grant-in-Aid (GIA) – Category A
+        </h3>
+        <p>
+         Skill and achievement-based institutional assistance.
+        </p>
+       </div>
+      </div>
+      <button class="btn-close btn-close-white" data-bs-dismiss="modal" type="button">
+      </button>
+     </div>
+     <div class="modal-body">
+      <div class="row g-3">
+       <div class="col-lg-6">
+        <div class="modal-section overview">
+         <div class="modal-section-title">
+          <i class="bi bi-palette">
+          </i>
+          Overview
+         </div>
+         <p>
+          Financial assistance for students with exceptional skills in music, dance, arts, and sports.
+         </p>
+        </div>
+       </div>
+       <div class="col-lg-6">
+        <div class="modal-section qualify">
+         <div class="modal-section-title">
+          <i class="bi bi-stars">
+          </i>
+          Eligibility / Matching Factors
+         </div>
+         <div class="feature-pills">
+          <span class="feature-pill">
+           DNSC student
+          </span>
+          <span class="feature-pill">
+           Talent / skill category
+          </span>
+          <span class="feature-pill">
+           Awards / achievements
+          </span>
+          <span class="feature-pill">
+           Year level
+          </span>
+          <span class="feature-pill">
+           Enrollment status
+          </span>
+         </div>
+        </div>
+       </div>
+       <div class="col-lg-7">
+        <div class="modal-section requirements">
+         <div class="modal-section-title">
+          <i class="bi bi-check2-square">
+          </i>
+          Required Documents
+         </div>
+         <ul>
+          <li>
+           Latest Certificate of Registration (COR)
+          </li>
+          <li>
+           Latest grades / academic record
+          </li>
+          <li>
+           Student identification / school ID
+          </li>
+          <li>
+           Proof of talent, awards, or achievements
+          </li>
+          <li>
+           Other documents required by the DNSC Scholarship and Grants Unit
+          </li>
+         </ul>
+        </div>
+       </div>
+       <div class="col-lg-5">
+        <div class="modal-section benefits">
+         <div class="modal-section-title">
+          <i class="bi bi-send">
+          </i>
+          Application
+         </div>
+         <p>
+          Through the DNSC Scholarship and Grants Unit.
+         </p>
+         <div class="benefit-tile">
+          <strong>
+           GIA A
+          </strong>
+          <span>
+           Music, dance, arts, and sports
+          </span>
+         </div>
+        </div>
+       </div>
+      </div>
+      <div class="application-strip">
+       <div>
+        <small>
+         Application / Inquiry
+        </small>
+        <strong>
+         Through the DNSC Scholarship and Grants Unit.
+        </strong>
+       </div>
+       <a class="btn btn-light btn-sm fw-bold" href="https://www.facebook.com/DNSCScholarshipAndFinancialGrants" target="_blank">
+        Inquire
+        <i class="bi bi-box-arrow-up-right ms-1">
+        </i>
+       </a>
+      </div>
+     </div>
+     <div class="modal-footer">
+      <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">
+       Close card
+      </button>
+     </div>
+    </div>
+   </div>
+  </div>
+  <!-- 3 GIA B -->
+  <!-- EDITABLE SCHOLARSHIP DETAILS — CARD 3 -->
+  <div aria-hidden="true" class="modal fade" id="giaCategoryBModal" aria-labelledby="giaCategoryBModalTitle" tabindex="-1">
+   <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content scholarship-modal sector-internal">
+     <div class="modal-header">
+      <div class="modal-brand-line">
+       <img alt="DNSC Logo" class="modal-logo" src="{{ asset('images/logo/dnss_logo.jpg') }}"/>
+       <div>
+        <span class="modal-category">
+         DNSC INTERNAL
+        </span>
+        <h3 id="giaCategoryBModalTitle">
+         DNSC Grant-in-Aid (GIA) – Category B
+        </h3>
+        <p>
+         Student leadership and publication involvement.
+        </p>
+       </div>
+      </div>
+      <button class="btn-close btn-close-white" data-bs-dismiss="modal" type="button">
+      </button>
+     </div>
+     <div class="modal-body">
+      <div class="row g-3">
+       <div class="col-lg-6">
+        <div class="modal-section overview">
+         <div class="modal-section-title">
+          <i class="bi bi-megaphone">
+          </i>
+          Overview
+         </div>
+         <p>
+          Financial assistance intended for qualified Student Supreme Council officers and Student Publication Editorial Board members.
+         </p>
+        </div>
+       </div>
+       <div class="col-lg-6">
+        <div class="modal-section qualify">
+         <div class="modal-section-title">
+          <i class="bi bi-person-badge">
+          </i>
+          Eligibility / Matching Factors
+         </div>
+         <div class="feature-pills">
+          <span class="feature-pill">
+           DNSC student
+          </span>
+          <span class="feature-pill">
+           Student leadership position
+          </span>
+          <span class="feature-pill">
+           Student publication membership
+          </span>
+          <span class="feature-pill">
+           Year level
+          </span>
+         </div>
+        </div>
+       </div>
+       <div class="col-lg-7">
+        <div class="modal-section requirements">
+         <div class="modal-section-title">
+          <i class="bi bi-check2-square">
+          </i>
+          Required Documents
+         </div>
+         <ul>
+          <li>
+           Latest Certificate of Registration (COR)
+          </li>
+          <li>
+           Latest grades / academic record
+          </li>
+          <li>
+           Student identification / school ID
+          </li>
+          <li>
+           Proof of student leadership position or appointment
+          </li>
+          <li>
+           Proof of Student Publication membership, if applicable
+          </li>
+          <li>
+           Other documents required by the DNSC Scholarship and Grants Unit
+          </li>
+         </ul>
+        </div>
+       </div>
+       <div class="col-lg-5">
+        <div class="modal-section benefits">
+         <div class="modal-section-title">
+          <i class="bi bi-send">
+          </i>
+          Application
+         </div>
+         <p>
+          Through the DNSC Scholarship and Grants Unit.
+         </p>
+         <div class="benefit-tile">
+          <strong>
+           GIA B
+          </strong>
+          <span>
+           Leadership and publication involvement
+          </span>
+         </div>
+        </div>
+       </div>
+      </div>
+      <div class="application-strip">
+       <div>
+        <small>
+         Application / Inquiry
+        </small>
+        <strong>
+         Through the DNSC Scholarship and Grants Unit.
+        </strong>
+       </div>
+       <a class="btn btn-light btn-sm fw-bold" href="https://www.facebook.com/DNSCScholarshipAndFinancialGrants" target="_blank">
+        Inquire
+        <i class="bi bi-box-arrow-up-right ms-1">
+        </i>
+       </a>
+      </div>
+     </div>
+     <div class="modal-footer">
+      <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">
+       Close card
+      </button>
+     </div>
+    </div>
+   </div>
+  </div>
+  <!-- 4 SA C -->
+  <!-- EDITABLE SCHOLARSHIP DETAILS — CARD 4 -->
+  <div aria-hidden="true" class="modal fade" id="studentAssistantModal" aria-labelledby="studentAssistantModalTitle" tabindex="-1">
+   <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content scholarship-modal sector-internal">
+     <div class="modal-header">
+      <div class="modal-brand-line">
+       <img alt="DNSC Logo" class="modal-logo" src="{{ asset('images/logo/dnss_logo.jpg') }}"/>
+       <div>
+        <span class="modal-category">
+         DNSC INTERNAL
+        </span>
+        <h3 id="studentAssistantModalTitle">
+         DNSC Student Assistant (SA) – Category C
+        </h3>
+        <p>
+         Financial-need plus approved support service.
+        </p>
+       </div>
+      </div>
+      <button class="btn-close btn-close-white" data-bs-dismiss="modal" type="button">
+      </button>
+     </div>
+     <div class="modal-body">
+      <div class="row g-3">
+       <div class="col-lg-6">
+        <div class="modal-section overview">
+         <div class="modal-section-title">
+          <i class="bi bi-person-workspace">
+          </i>
+          Overview
+         </div>
+         <p>
+          Assistance for students from financially disadvantaged families who are willing to perform approved institutional support services.
+         </p>
+        </div>
+       </div>
+       <div class="col-lg-6">
+        <div class="modal-section qualify">
+         <div class="modal-section-title">
+          <i class="bi bi-person-check">
+          </i>
+          Eligibility / Matching Factors
+         </div>
+         <div class="feature-pills">
+          <span class="feature-pill">
+           DNSC student
+          </span>
+          <span class="feature-pill">
+           Financial need
+          </span>
+          <span class="feature-pill">
+           Family income
+          </span>
+          <span class="feature-pill">
+           Willingness to work as student assistant
+          </span>
+          <span class="feature-pill">
+           Year level
+          </span>
+         </div>
+        </div>
+       </div>
+       <div class="col-lg-7">
+        <div class="modal-section requirements">
+         <div class="modal-section-title">
+          <i class="bi bi-check2-square">
+          </i>
+          Required Documents
+         </div>
+         <ul>
+          <li>
+           Latest Certificate of Registration (COR)
+          </li>
+          <li>
+           Latest grades / academic record
+          </li>
+          <li>
+           Student identification / school ID
+          </li>
+          <li>
+           Proof of family income / financial need
+          </li>
+          <li>
+           Other documents required by the DNSC Scholarship and Grants Unit
+          </li>
+         </ul>
+        </div>
+       </div>
+       <div class="col-lg-5">
+        <div class="modal-section benefits">
+         <div class="modal-section-title">
+          <i class="bi bi-send">
+          </i>
+          Application
+         </div>
+         <p>
+          Through the DNSC Scholarship and Grants Unit.
+         </p>
+         <div class="benefit-tile">
+          <strong>
+           SA C
+          </strong>
+          <span>
+           Institutional support service
+          </span>
+         </div>
+        </div>
+       </div>
+      </div>
+      <div class="application-strip">
+       <div>
+        <small>
+         Application / Inquiry
+        </small>
+        <strong>
+         Through the DNSC Scholarship and Grants Unit.
+        </strong>
+       </div>
+       <a class="btn btn-light btn-sm fw-bold" href="https://www.facebook.com/DNSCScholarshipAndFinancialGrants" target="_blank">
+        Inquire
+        <i class="bi bi-box-arrow-up-right ms-1">
+        </i>
+       </a>
+      </div>
+     </div>
+     <div class="modal-footer">
+      <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">
+       Close card
+      </button>
+     </div>
+    </div>
+   </div>
+  </div>
+  <!-- 5 TDP -->
+  <!-- EDITABLE SCHOLARSHIP DETAILS — CARD 5 -->
+  <div aria-hidden="true" class="modal fade" id="chedTdpModal" aria-labelledby="chedTdpModalTitle" tabindex="-1">
+   <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content scholarship-modal sector-government">
+     <div class="modal-header">
+      <div class="modal-brand-line">
+       <img alt="CHED Logo" class="modal-logo" src="{{ asset('images/logo/CHED-Logo.png') }}"/>
+       <div>
+        <span class="modal-category">
+         GOVERNMENT / EXTERNAL
+        </span>
+        <h3 id="chedTdpModalTitle">
+         CHED Tulong Dunong Program (TDP)
+        </h3>
+        <p>
+         UniFAST financial assistance.
+        </p>
+       </div>
+      </div>
+      <button class="btn-close btn-close-white" data-bs-dismiss="modal" type="button">
+      </button>
+     </div>
+     <div class="modal-body">
+      <div class="row g-3">
+       <div class="col-lg-6">
+        <div class="modal-section overview">
+         <div class="modal-section-title">
+          <i class="bi bi-info-circle">
+          </i>
+          Overview
+         </div>
+         <p>
+          Financial assistance under UniFAST for qualified Filipino undergraduate students who need support for their tertiary education.
+         </p>
+        </div>
+       </div>
+       <div class="col-lg-6">
+        <div class="modal-section qualify">
+         <div class="modal-section-title">
+          <i class="bi bi-person-check">
+          </i>
+          Eligibility / Matching Factors
+         </div>
+         <div class="feature-pills">
+          <span class="feature-pill">
+           Filipino citizen
+          </span>
+          <span class="feature-pill">
+           Enrolled in any first undergraduate degree program in SUCs, LUCs or private higher education institutions
+          </span>
+          <span class="feature-pill">
+           Combined household gross income ≤ P400,000.00
+          </span>
+          <span class="feature-pill">
+           Not a beneficiary of the TES, CHED Scholarship Programs (CSPs) and other national government-funded student financial assistance programs (StuFAPs)
+          </span>
+         </div>
+        </div>
+       </div>
+       <div class="col-lg-7">
+        <div class="modal-section benefits">
+         <div class="modal-section-title">
+          <i class="bi bi-cash-stack">
+          </i>
+          Benefit
+         </div>
+         <div class="row g-2">
+          <div class="col-12">
+           <div class="benefit-tile">
+            <strong>
+             ₱7,500
+            </strong>
+            <span>
+             Per regular semester
+            </span>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="col-lg-5">
+        <div class="modal-section requirements">
+         <div class="modal-section-title">
+          <i class="bi bi-check2-square">
+          </i>
+          Required Documents
+         </div>
+         <ul>
+          <li>
+           Certificate of Registration / Enrollment
+          </li>
+          <li>
+           Certificate of Residency (for private No SUC/LUC Category)
+          </li>
+          <li>
+           TDP-TES Application Form
+          </li>
+          <li>
+           Other documents required by CHED-UniFAST or DNSC
+          </li>
+         </ul>
+        </div>
+       </div>
+      </div>
+      <div class="application-strip">
+       <div>
+        <small>
+         Application
+        </small>
+        <strong>
+         Usually coordinated through the participating HEI/DNSC and CHED-UniFAST.
+        </strong>
+       </div>
+       <a class="btn btn-light btn-sm fw-bold" href="https://www.chedscholar.org/ched-tulong-dunong-program/" target="_blank">
+        Official info
+        <i class="bi bi-box-arrow-up-right ms-1">
+        </i>
+       </a>
+      </div>
+     </div>
+     <div class="modal-footer">
+      <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">
+       Close card
+      </button>
+     </div>
+    </div>
+   </div>
+  </div>
+  <!-- 6 TES -->
+  <!-- EDITABLE SCHOLARSHIP DETAILS — CARD 6 -->
+  <div aria-hidden="true" class="modal fade" id="chedTesModal" aria-labelledby="chedTesModalTitle" tabindex="-1">
+   <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content scholarship-modal sector-government">
+     <div class="modal-header">
+      <div class="modal-brand-line">
+       <img alt="CHED Logo" class="modal-logo" src="{{ asset('images/logo/CHED-Logo.png') }}"/>
+       <div>
+        <span class="modal-category">
+         GOVERNMENT / EXTERNAL
+        </span>
+        <h3 id="chedTesModalTitle">
+         CHED Tertiary Education Subsidy (TES)
+        </h3>
+        <p>
+         Government financial assistance for eligible higher education students.
+        </p>
+       </div>
+      </div>
+      <button class="btn-close btn-close-white" data-bs-dismiss="modal" type="button">
+      </button>
+     </div>
+     <div class="modal-body">
+      <div class="row g-3">
+       <div class="col-lg-6">
+        <div class="modal-section overview">
+         <div class="modal-section-title">
+          <i class="bi bi-bank">
+          </i>
+          Overview
+         </div>
+         <p>
+          Government financial assistance for qualified students enrolled in eligible higher education institutions.
+         </p>
+        </div>
+       </div>
+       <div class="col-lg-6">
+        <div class="modal-section qualify">
+         <div class="modal-section-title">
+          <i class="bi bi-list-check">
+          </i>
+          Eligibility / Matching Factors
+         </div>
+         <div class="feature-pills">
+          <span class="feature-pill">
+           Certificate of Registration / Enrollment
+          </span>
+          <span class="feature-pill">
+           Certificate of Residency (for private No SUC/LUC Category)
+          </span>
+          <span class="feature-pill">
+           PWD ID (if applicable)
+          </span>
+          <span class="feature-pill">
+           TDP-TES Application Form
+          </span>
+         </div>
+        </div>
+       </div>
+       <div class="col-lg-7">
+        <div class="modal-section requirements">
+         <div class="modal-section-title">
+          <i class="bi bi-check2-square">
+          </i>
+          Required Documents
+         </div>
+         <ul>
+          <li>
+           Certificate of Registration / Enrollment
+          </li>
+          <li>
+           Valid student identification
+          </li>
+          <li>
+           Proof of financial circumstances, if required
+          </li>
+          <li>
+           Latest academic record, if required
+          </li>
+          <li>
+           Other documents required by CHED-UniFAST or the participating HEI
+          </li>
+         </ul>
+        </div>
+       </div>
+       <div class="col-lg-5">
+        <div class="modal-section benefits">
+         <div class="modal-section-title">
+          <i class="bi bi-send">
+          </i>
+          Application
+         </div>
+         <p>
+          Through the HEI / CHED-UniFAST process.
+         </p>
+         <div class="benefit-tile">
+          <strong>
+           TES
+          </strong>
+          <span>
+           Higher education subsidy
+          </span>
+         </div>
+        </div>
+       </div>
+      </div>
+      <div class="application-strip">
+       <div>
+        <small>
+         Application
+        </small>
+        <strong>
+         Through the HEI / CHED-UniFAST process.
+        </strong>
+       </div>
+       <a class="btn btn-light btn-sm fw-bold" href="https://unifast.gov.ph/tes.html" target="_blank">
+        Official info
+        <i class="bi bi-box-arrow-up-right ms-1">
+        </i>
+       </a>
+      </div>
+     </div>
+     <div class="modal-footer">
+      <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">
+       Close card
+      </button>
+     </div>
+    </div>
+   </div>
+  </div>
+  <!-- 7 DOST -->
+  <!-- EDITABLE SCHOLARSHIP DETAILS — CARD 7 -->
+  <div aria-hidden="true" class="modal fade" id="dostSeiModal" aria-labelledby="dostSeiModalTitle" tabindex="-1">
+   <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content scholarship-modal sector-government">
+     <div class="modal-header">
+      <div class="modal-brand-line">
+       <img alt="DOST-SEI Logo" class="modal-logo" src="{{ asset('images/logo/DOST-Logo.png') }}"/>
+       <div>
+        <span class="modal-category">
+         GOVERNMENT / EXTERNAL
+        </span>
+        <h3 id="dostSeiModalTitle">
+         DOST-SEI Undergraduate Scholarship
+        </h3>
+        <p>
+         Priority Science and Technology degree programs.
+        </p>
+       </div>
+      </div>
+      <button class="btn-close btn-close-white" data-bs-dismiss="modal" type="button">
+      </button>
+     </div>
+     <div class="modal-body">
+      <div class="row g-3">
+       <div class="col-lg-6">
+        <div class="modal-section overview">
+         <div class="modal-section-title">
+          <i class="bi bi-flask">
+          </i>
+          Overview
+         </div>
+         <p>
+          Scholarship for qualified Filipino students pursuing priority Science and Technology degree programs.
+         </p>
+        </div>
+       </div>
+       <div class="col-lg-6">
+        <div class="modal-section qualify">
+         <div class="modal-section-title">
+          <i class="bi bi-person-check">
+          </i>
+          Eligibility / Matching Factors
+         </div>
+         <div class="feature-pills">
+          <span class="feature-pill">
+           Filipino citizen
+          </span>
+          <span class="feature-pill">
+           Academic performance
+          </span>
+          <span class="feature-pill">
+           Course / program
+          </span>
+          <span class="feature-pill">
+           Priority Science and Technology field
+          </span>
+          <span class="feature-pill">
+           Financial circumstances, depending on scholarship category
+          </span>
+         </div>
+        </div>
+       </div>
+       <div class="col-lg-7">
+        <div class="modal-section benefits">
+         <div class="modal-section-title">
+          <i class="bi bi-gift">
+          </i>
+          Benefits
+         </div>
+         <div class="row g-2">
+          <div class="col-6">
+           <div class="benefit-tile">
+            <strong>
+             Tuition
+            </strong>
+            <span>
+             Tuition / school fees
+            </span>
+           </div>
+          </div>
+          <div class="col-6">
+           <div class="benefit-tile">
+            <strong>
+             Allowance
+            </strong>
+            <span>
+             Monthly living allowance
+            </span>
+           </div>
+          </div>
+          <div class="col-6">
+           <div class="benefit-tile">
+            <strong>
+             Stipend
+            </strong>
+            <span>
+             ₱8, 000
+            </span>
+           </div>
+          </div>
+          <div class="col-6">
+           <div class="benefit-tile">
+            <strong>
+             Materials
+            </strong>
+            <span>
+             Learning materials / connectivity allowance
+            </span>
+           </div>
+          </div>
+          <div class="col-6">
+           <div class="benefit-tile">
+            <strong>
+             Other
+            </strong>
+            <span>
+             Other applicable allowances
+            </span>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="col-lg-5">
+        <div class="modal-section requirements">
+         <div class="modal-section-title">
+          <i class="bi bi-file-earmark-text">
+          </i>
+          Required Documents
+         </div>
+         <ul>
+          <li>
+           Scholarship Form C - Certificate of Good Moral Character
+          </li>
+          <li>
+           2027 Scholarship Form D - Certificate of Good Health
+          </li>
+          <li>
+           2027 Scholarship Forms E1–E5 - Principal's Certification
+          </li>
+          <li>
+           2027 Scholarship Form F - Certificate of Residency
+          </li>
+          <li>
+           2027 Scholarship Form G - Parent's Certification
+          </li>
+          <li>
+           2027 Scholarship Form H - DOST-SEI Scholarship Examination/Award
+          </li>
+          <li>
+           2027 Scholarship Form I - Applicant's Certification of No Post-Secondary Units
+          </li>
+          <li>
+           2027 Scholarship Form J - Signed Declaration of Applicant and the Parent/Legal Guardian
+          </li>
+         </ul>
+        </div>
+       </div>
+      </div>
+      <div class="application-strip">
+       <div>
+        <small>
+         Application
+        </small>
+        <strong>
+         Through the DOST Science Scholarships application.
+        </strong>
+       </div>
+       <a class="btn btn-light btn-sm fw-bold" href="https://science-scholarships.ph/" target="_blank">
+        Official info
+        <i class="bi bi-box-arrow-up-right ms-1">
+        </i>
+       </a>
+      </div>
+     </div>
+     <div class="modal-footer">
+      <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">
+       Close card
+      </button>
+     </div>
+    </div>
+   </div>
+  </div>
+  <!-- 8 CHED MERIT -->
+  <!-- EDITABLE SCHOLARSHIP DETAILS — CARD 8 -->
+  <div aria-hidden="true" class="modal fade" id="chedMeritModal" aria-labelledby="chedMeritModalTitle" tabindex="-1">
+   <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content scholarship-modal sector-government">
+     <div class="modal-header">
+      <div class="modal-brand-line">
+       <img alt="CHED Merit Scholarship Logo" class="modal-logo" src="{{ asset('images/logo/CHED-Logo.png') }}"/>
+       <div>
+        <span class="modal-category">
+         GOVERNMENT / EXTERNAL
+        </span>
+        <h3 id="chedMeritModalTitle">
+         CHED Merit Scholarship Program
+        </h3>
+        <p>
+         Competitive academic scholarship.
+        </p>
+       </div>
+      </div>
+      <button class="btn-close btn-close-white" data-bs-dismiss="modal" type="button">
+      </button>
+     </div>
+     <div class="modal-body">
+      <div class="row g-3">
+       <div class="col-lg-6">
+        <div class="modal-section overview">
+         <div class="modal-section-title">
+          <i class="bi bi-award">
+          </i>
+          Overview
+         </div>
+         <p>
+          The CHED Merit Scholarship Program (CMSP) is a competitive scholarship initiative of the Commission on Higher Education (CHED) that aims to support academically talented and deserving Filipino students. This program is intended for incoming/current first-year college students who have demonstrated exceptional academic performance and potential for excellence in higher education. Specifically, the CMSP is open to student applicants who have achieved a minimum General Weighted Average (GWA) of 93% or its equivalent in their Grade 12 report card.
+         </p>
+        </div>
+       </div>
+       <div class="col-lg-6">
+        <div class="modal-section qualify">
+         <div class="modal-section-title">
+          <i class="bi bi-person-check">
+          </i>
+          Eligibility / Matching Factors
+         </div>
+         <div class="feature-pills">
+          <span class="feature-pill">
+           Incoming / current first-year student
+          </span>
+          <span class="feature-pill">
+           Minimum GWA of 93% or equivalent
+          </span>
+          <span class="feature-pill">
+           Family income ≤ ₱500,000
+          </span>
+          <span class="feature-pill">
+           Priority course
+          </span>
+          <span class="feature-pill">
+           Must not already be receiving another nationally government-funded scholarship/grant, including TES or TDP
+          </span>
+         </div>
+        </div>
+       </div>
+       <div class="col-lg-7">
+        <div class="modal-section benefits">
+         <div class="modal-section-title">
+          <i class="bi bi-gift">
+          </i>
+          Benefits
+         </div>
+         <div class="row g-2">
+          <div class="col-md-4">
+           <div class="benefit-tile">
+            <strong>
+             Tuition
+            </strong>
+            <span>
+             Tuition and other school fees, where applicable
+            </span>
+           </div>
+          </div>
+          <div class="col-md-4">
+           <div class="benefit-tile">
+            <strong>
+             Stipend
+            </strong>
+            <span>
+             Stipend
+            </span>
+           </div>
+          </div>
+          <div class="col-md-4">
+           <div class="benefit-tile">
+            <strong>
+             Books
+            </strong>
+            <span>
+             Book / connectivity allowance
+            </span>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="col-lg-5">
+        <div class="modal-section requirements">
+         <div class="modal-section-title">
+          <i class="bi bi-check2-square">
+          </i>
+          Required Documents
+         </div>
+         <ul>
+          <li>
+           CHED Merit Scholarship Application Form – Annex A
+          </li>
+          <li>
+           PSA/NSO Birth Certificate
+          </li>
+          <li>
+           Certified True Copy of Form 138 / SF9
+          </li>
+          <li>
+           Latest Income Tax Return (ITR), Certificate of Tax Exemption / Non-Filer
+          </li>
+          <li>
+           Certified true copy of latest contract or proof of income (Parent is an OFW/Seafarer)
+          </li>
+          <li>
+           Social Case Study Report (Low-income/social welfare situation)
+          </li>
+          <li>
+           PWD ID, if applicable
+          </li>
+          <li>
+           Solo Parent ID, if applicable
+          </li>
+          <li>
+           Senior Citizen ID, if applicable
+          </li>
+          <li>
+           Certification from DHSUD/CSWD/MSWD, if applicable
+          </li>
+          <li>
+           Notarized Certificate of Guardianship
+          </li>
+         </ul>
+        </div>
+       </div>
+      </div>
+      <div class="application-strip">
+       <div>
+        <small>
+         Application
+        </small>
+        <strong>
+         Through the respective CHED Regional Office.
+        </strong>
+       </div>
+       <a class="btn btn-light btn-sm fw-bold" href="https://legacy.ched.gov.ph/merit-scholarship/" target="_blank">
+        Official info
+        <i class="bi bi-box-arrow-up-right ms-1">
+        </i>
+       </a>
+      </div>
+     </div>
+     <div class="modal-footer">
+      <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">
+       Close card
+      </button>
+     </div>
+    </div>
+   </div>
+  </div>
+  <!-- 9 BAGONG PILIPINAS -->
+  <!-- EDITABLE SCHOLARSHIP DETAILS — CARD 9 -->
+  <div aria-hidden="true" class="modal fade" id="bagongPilipinasModal" aria-labelledby="bagongPilipinasModalTitle" tabindex="-1">
+   <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content scholarship-modal sector-government">
+     <div class="modal-header">
+      <div class="modal-brand-line">
+       <img alt="Bagong Pilipinas Merit Scholarship Logo" class="modal-logo" src="{{ asset('images/logo/CHED-Logo.png') }}"/>
+       <div>
+        <span class="modal-category">
+         GOVERNMENT / EXTERNAL
+        </span>
+        <h3 id="bagongPilipinasModalTitle">
+         Bagong Pilipinas Merit Scholarship Program
+        </h3>
+        <p>
+         Merit-based program for high-performing Senior High School students.
+        </p>
+       </div>
+      </div>
+      <button class="btn-close btn-close-white" data-bs-dismiss="modal" type="button">
+      </button>
+     </div>
+     <div class="modal-body">
+      <div class="row g-3">
+       <div class="col-lg-6">
+        <div class="modal-section overview">
+         <div class="modal-section-title">
+          <i class="bi bi-star-half">
+          </i>
+          Overview
+         </div>
+         <p>
+          The Bagong Pilipinas Merit Scholarship Program (BPMSP) is a merit-based scholarship for high-performing Senior High School students in the Philippines. It supports students who wish to continue their studies either in higher education through CHED-recognized degree programs offered by qualified colleges and universities, or in technical-vocational education through TESDA-identified priority diploma programs offered by registered training institutions—programs designed to address critical workforce needs, strengthen hard-to-fill occupations, and help drive national development under the goals of Bagong Pilipinas.
+         </p>
+        </div>
+       </div>
+       <div class="col-lg-6">
+        <div class="modal-section qualify">
+         <div class="modal-section-title">
+          <i class="bi bi-person-check">
+          </i>
+          Eligibility / Matching Factors
+         </div>
+         <div class="feature-pills">
+          <span class="feature-pill">
+           Filipino citizen
+          </span>
+          <span class="feature-pill">
+           Incoming first-year student
+          </span>
+          <span class="feature-pill">
+           Top 5 of graduating class OR minimum 95% Grade 12 GWA
+          </span>
+          <span class="feature-pill">
+           No previous tertiary units / degree
+          </span>
+          <span class="feature-pill">
+           Family income ≤ ₱2,000,000
+          </span>
+          <span class="feature-pill">
+           Priority program
+          </span>
+          <span class="feature-pill">
+           Eligible HEI
+          </span>
+         </div>
+        </div>
+       </div>
+       <div class="col-lg-5">
+        <div class="modal-section benefits">
+         <div class="modal-section-title">
+          <i class="bi bi-calendar-event">
+          </i>
+          Application Period
+         </div>
+         <p>
+          AY 2026–2027: April 30 – June 30, 2026, or until slots were filled.
+         </p>
+         <div class="benefit-tile">
+          <strong>
+           BPMSP
+          </strong>
+          <span>
+           Merit-based scholarship application
+          </span>
+         </div>
+        </div>
+       </div>
+       <div class="col-lg-7">
+        <div class="modal-section requirements">
+         <div class="modal-section-title">
+          <i class="bi bi-check2-square">
+          </i>
+          Required Documents
+         </div>
+         <ul>
+          <li>
+           BPMSP Application Form – Annex A
+          </li>
+          <li>
+           Copy of Birth Certificate issued by PSA
+          </li>
+          <li>
+           Certified True Copy of Form 138 / School Form 9 (SF9)
+          </li>
+          <li>
+           Proof of admission / enrollment
+          </li>
+          <li>
+           Proof of Income — ONE only: Latest ITR of parent/s or guardian; BIR Certificate of Tax Exemption / Non-Filer; DSWD/C-MSWS Certificate for 4Ps beneficiaries; OFW/Seafarer contract or proof of income
+          </li>
+          <li>
+           Parent/Legal Guardian Consent – Annex L
+          </li>
+          <li>
+           Special Documents
+          </li>
+         </ul>
+        </div>
+       </div>
+      </div>
+      <div class="application-strip">
+       <div>
+        <small>
+         Application
+        </small>
+        <strong>
+         Through the official BPMSP application portal.
+        </strong>
+       </div>
+       <a class="btn btn-light btn-sm fw-bold" href="https://bpms.ched.gov.ph/" target="_blank">
+        Official portal
+        <i class="bi bi-box-arrow-up-right ms-1">
+        </i>
+       </a>
+      </div>
+     </div>
+     <div class="modal-footer">
+      <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">
+       Close card
+      </button>
+     </div>
+    </div>
+   </div>
+  </div>
+  <!-- 10 GRAB -->
+  <!-- EDITABLE SCHOLARSHIP DETAILS — CARD 10 -->
+  <div aria-hidden="true" class="modal fade" id="grabModal" aria-labelledby="grabModalTitle" tabindex="-1">
+   <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content scholarship-modal sector-private">
+     <div class="modal-header">
+      <div class="modal-brand-line">
+       <img alt="GrabScholar Logo" class="modal-logo" src="{{ asset('images/logo/GRAB-Logo.svg') }}"/>
+       <div>
+        <span class="modal-category">
+         PRIVATE / NGO / FOUNDATION
+        </span>
+        <h3 id="grabModalTitle">
+         GrabScholar College Scholarship
+        </h3>
+        <p>
+         Full-ride merit-based scholarship for eligible incoming first-year students.
+        </p>
+       </div>
+      </div>
+      <button class="btn-close btn-close-white" data-bs-dismiss="modal" type="button">
+      </button>
+     </div>
+     <div class="modal-body">
+      <div class="row g-3">
+       <div class="col-lg-6">
+        <div class="modal-section overview">
+         <div class="modal-section-title">
+          <i class="bi bi-lightning-charge">
+          </i>
+          Overview
+         </div>
+         <p>
+          A full-ride merit-based scholarship for incoming first-year Filipino college students. For AY 2026–2030, it covers eligible Business, STEM (excluding medical courses), and Sustainability programs.
+         </p>
+        </div>
+       </div>
+       <div class="col-lg-6">
+        <div class="modal-section qualify">
+         <div class="modal-section-title">
+          <i class="bi bi-person-check">
+          </i>
+          Eligibility / Matching Factors
+         </div>
+         <div class="feature-pills">
+          <span class="feature-pill">
+           Filipino citizen
+          </span>
+          <span class="feature-pill">
+           Incoming first-year student
+          </span>
+          <span class="feature-pill">
+           Grade 12 GPA ≥ 90%
+          </span>
+          <span class="feature-pill">
+           No existing scholarship / educational assistance
+          </span>
+          <span class="feature-pill">
+           Business / STEM / Sustainability course
+          </span>
+          <span class="feature-pill">
+           No disciplinary sanction in senior high school
+          </span>
+         </div>
+        </div>
+       </div>
+       <div class="col-lg-7">
+        <div class="modal-section benefits">
+         <div class="modal-section-title">
+          <i class="bi bi-gift">
+          </i>
+          Benefits
+         </div>
+         <div class="row g-2">
+          <div class="col-md-6">
+           <div class="benefit-tile">
+            <strong>
+             100%
+            </strong>
+            <span>
+             Tuition and miscellaneous fees
+            </span>
+           </div>
+          </div>
+          <div class="col-md-6">
+           <div class="benefit-tile">
+            <strong>
+             ₱11,000/year
+            </strong>
+            <span>
+             School supplies allowance
+            </span>
+           </div>
+          </div>
+          <div class="col-md-6">
+           <div class="benefit-tile">
+            <strong>
+             ₱8,000/month
+            </strong>
+            <span>
+             Student allowance
+            </span>
+           </div>
+          </div>
+          <div class="col-md-6">
+           <div class="benefit-tile">
+            <strong>
+             More
+            </strong>
+            <span>
+             Learning, development, and internship opportunities
+            </span>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="col-lg-5">
+        <div class="modal-section requirements">
+         <div class="modal-section-title">
+          <i class="bi bi-check2-square">
+          </i>
+          Required Documents
+         </div>
+         <ul>
+          <li>
+           Birth Certificate
+          </li>
+          <li>
+           Grade 12 Report Card
+          </li>
+          <li>
+           College/University Acceptance Letter or similar proof of admission
+          </li>
+          <li>
+           Certificate of Good Moral Standing from Senior High School
+          </li>
+          <li>
+           Marriage Certificate, if applicable
+          </li>
+          <li>
+           Certificate of Legal Guardianship, if applicable
+          </li>
+          <li>
+           Birth Certificate of the Grab/Move It driver or merchant partner, if applicable
+          </li>
+          <li>
+           Grab Service Fee Statement or Tax Invoice from the Merchant Portal, if applicable
+          </li>
+         </ul>
+        </div>
+       </div>
+      </div>
+      <div class="application-strip">
+       <div>
+        <small>
+         Application Period
+        </small>
+        <strong>
+         June 22 – July 17, 2026
+        </strong>
+       </div>
+       <a class="btn btn-light btn-sm fw-bold" href="https://www.grab.com/ph/community/grabscholar-college-scholarship/" target="_blank">
+        Official info
+        <i class="bi bi-box-arrow-up-right ms-1">
+        </i>
+       </a>
+      </div>
+     </div>
+     <div class="modal-footer">
+      <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">
+       Close card
+      </button>
+     </div>
+    </div>
+   </div>
+  </div>
+  <!-- 11 CEBUANA -->
+  <!-- EDITABLE SCHOLARSHIP DETAILS — CARD 11 -->
+  <div aria-hidden="true" class="modal fade" id="cebuanaModal" aria-labelledby="cebuanaModalTitle" tabindex="-1">
+   <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content scholarship-modal sector-private">
+     <div class="modal-header">
+      <div class="modal-brand-line">
+       <img alt="Cebuana Lhuillier Foundation Logo" class="modal-logo" src="{{ asset('images/logo/CEBUANA-Logo.jpg') }}"/>
+       <div>
+        <span class="modal-category">
+         PRIVATE / NGO / FOUNDATION
+        </span>
+        <h3 id="cebuanaModalTitle">
+         Cebuana Lhuillier Foundation National Scholarship Program
+        </h3>
+        <p>
+         Scholarship grants for economically challenged students in qualified public universities / colleges.
+        </p>
+       </div>
+      </div>
+      <button class="btn-close btn-close-white" data-bs-dismiss="modal" type="button">
+      </button>
+     </div>
+     <div class="modal-body">
+      <div class="row g-3">
+       <div class="col-lg-6">
+        <div class="modal-section overview">
+         <div class="modal-section-title">
+          <i class="bi bi-heart">
+          </i>
+          Overview
+         </div>
+         <p>
+          The CLFI Nationwide Scholarship Program provides college scholarship grants to economically challenged Filipino students enrolled in qualified public universities / colleges and supported degree programs.
+         </p>
+        </div>
+       </div>
+       <div class="col-lg-6">
+        <div class="modal-section qualify">
+         <div class="modal-section-title">
+          <i class="bi bi-person-check">
+          </i>
+          Qualifications
+         </div>
+         <div class="feature-pills">
+          <span class="feature-pill">
+           Filipino citizen
+          </span>
+          <span class="feature-pill">
+           Applicant or qualified relative must be a Cebuana Lhuillier client
+          </span>
+          <span class="feature-pill">
+           Must have a Cebuana Lhuillier Microsavings account
+          </span>
+          <span class="feature-pill">
+           Incoming or currently enrolled college student
+          </span>
+          <span class="feature-pill">
+           Public university or college
+          </span>
+          <span class="feature-pill">
+           Annual family income ≤ ₱350,000
+          </span>
+          <span class="feature-pill">
+           GWA at least 85%
+          </span>
+          <span class="feature-pill">
+           No failing mark
+          </span>
+          <span class="feature-pill">
+           Supported course
+          </span>
+         </div>
+        </div>
+       </div>
+       <div class="col-lg-7">
+        <div class="modal-section benefits">
+         <div class="modal-section-title">
+          <i class="bi bi-gift">
+          </i>
+          Benefits
+         </div>
+         <div class="row g-2">
+          <div class="col-md-6">
+           <div class="benefit-tile">
+            <strong>
+             Up to ₱50,000
+            </strong>
+            <span>
+             Fixed stipend
+            </span>
+           </div>
+          </div>
+          <div class="col-md-6">
+           <div class="benefit-tile">
+            <strong>
+             Learning
+            </strong>
+            <span>
+             Monthly learning sessions and various trainings
+            </span>
+           </div>
+          </div>
+          <div class="col-md-6">
+           <div class="benefit-tile">
+            <strong>
+             Community
+            </strong>
+            <span>
+             Outreach programs and monthly learning sessions
+            </span>
+           </div>
+          </div>
+          <div class="col-md-6">
+           <div class="benefit-tile">
+            <strong>
+             Network
+            </strong>
+            <span>
+             Scholar alumni association and leadership boot camp
+            </span>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="col-lg-5">
+        <div class="modal-section requirements">
+         <div class="modal-section-title">
+          <i class="bi bi-check2-square">
+          </i>
+          Requirements
+         </div>
+         <ul>
+          <li>
+           Cebuana Lhuillier 24K Loyalty Card
+          </li>
+          <li>
+           Cebuana Lhuillier Microsavings account
+          </li>
+          <li>
+           Proof of total family income
+          </li>
+          <li>
+           GWA of at least 85% or equivalent from the last semester/school attended
+          </li>
+          <li>
+           Grades with no failing mark in any subject
+          </li>
+          <li>
+           Certificate of Good Moral Character signed by an official from the last school attended
+          </li>
+          <li>
+           Current enrollment or registration form for First Semester SY 2026-2027
+          </li>
+          <li>
+           University/college grading system in percentages
+          </li>
+          <li>
+           Grade 12 GWA certification from the registrar, if applicable
+          </li>
+         </ul>
+        </div>
+       </div>
+      </div>
+      <div class="application-strip">
+       <div>
+        <small>
+         Supported Courses
+        </small>
+        <strong>
+         Accountancy or Finance Management · Business · Hotel and Restaurant Management / Hospitality Management · Electrical Engineering · Civil Engineering · Mechanical Engineering · Industrial Engineering · Architecture · Psychology · Information Technology (IT)
+        </strong>
+       </div>
+       <a class="btn btn-light btn-sm fw-bold" href="https://cebuanafoundation.org/qualification.php" target="_blank">
+        Official info
+        <i class="bi bi-box-arrow-up-right ms-1">
+        </i>
+       </a>
+      </div>
+      <div class="status-note">
+       <i class="bi bi-info-circle me-1">
+       </i>
+       Application: Through the Cebuana Lhuillier Foundation Scholarship application.
+      </div>
+     </div>
+     <div class="modal-footer">
+      <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">
+       Close card
+      </button>
+     </div>
+    </div>
+   </div>
+  </div>
+@endsection
+
+@push('scripts')
+    <script src="{{ asset('js/bakr-scholarships.js') }}"></script>
+@endpush

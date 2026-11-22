@@ -1,0 +1,25 @@
+# BAKR sits inside XAMPP's web root (htdocs/BAKR), so without this file Apache would serve the whole
+# project: .env (database, mail and AI keys, APP_KEY), storage/logs, uploaded scholar documents, vendor/.
+# Only public/ is meant for the web. Everything else here answers 403 (security audit, 2026-11-22).
+#
+# public/.htaccess has its own RewriteEngine, so requests under /public/ use only its rules (Laravel's
+# front controller) and are not affected by the rules below.
+
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # The project folder itself (http://localhost/BAKR/) opens the site.
+    RewriteRule ^$ public/ [R=302,L]
+
+    # Anything outside public/ is refused.
+    RewriteRule ^(?!public(?:/|$)) - [F,L]
+</IfModule>
+
+# Without mod_rewrite the rules above do nothing: still never hand out dotfiles (.env, .git…), logs,
+# databases or backups. (This also applies inside public/, so it lists only types public/ never serves:
+# not .json, which public/manifest.json needs.)
+<FilesMatch "^\.|\.(env|log|sqlite|sql|bak)$|^(artisan|composer\.(json|lock))$">
+    Require all denied
+</FilesMatch>

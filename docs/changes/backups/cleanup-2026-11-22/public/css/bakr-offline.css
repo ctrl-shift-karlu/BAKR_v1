@@ -1,0 +1,65 @@
+/* Offline page (public/offline.html), shown by the service worker when there is no connection.
+   Self-contained: no CDN fonts or Bootstrap, because those are not available offline. */
+:root {
+  --off-bg: #fdfbf8;
+  --off-card: #ffffff;
+  --off-ink: #143a2b;
+  --off-ink-soft: #4f5b55;
+  --off-line: #e7e1d6;
+  --off-btn: #143a2b;
+  --off-btn-ink: #ffffff;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --off-bg: #0f1a15;
+    --off-card: #16241d;
+    --off-ink: #e9efe9;
+    --off-ink-soft: #b7c3bc;
+    --off-line: #2a3a32;
+    --off-btn: #c9a443;
+    --off-btn-ink: #143a2b;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: var(--off-bg);
+  color: var(--off-ink);
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.off-card {
+  width: 100%;
+  max-width: 26rem;
+  padding: 32px 24px;
+  text-align: center;
+  background: var(--off-card);
+  border: 1px solid var(--off-line);
+  border-radius: 18px;
+}
+
+.off-card h1 { margin: 12px 0 8px; font-size: 24px; }
+.off-card p { margin: 0 0 12px; color: var(--off-ink-soft); }
+.off-card .off-hint { font-size: 14px; }
+
+.off-btn {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 10px 22px;
+  border-radius: 999px;
+  background: var(--off-btn);
+  color: var(--off-btn-ink);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.off-btn:focus-visible { outline: 3px solid #c9a443; outline-offset: 3px; }

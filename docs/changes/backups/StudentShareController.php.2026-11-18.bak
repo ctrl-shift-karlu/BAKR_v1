@@ -1,0 +1,63 @@
+<?php
+
+namespace App\Http\Controllers\Student;
+
+use App\Http\Controllers\Controller;
+use App\Models\ProviderApplication;
+use App\Models\ScholarshipMatch;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+
+/**
+ * A student shares ONE match with that scholarship's provider, with explicit consent.
+ * What is shared: name and e-mail (account), plus program, campus and year level from the
+ * current answers. Nothing else from the questionnaire is shared. The student can withdraw
+ * until the provider approves.
+ */
+class StudentShareController extends Controller
+{
+    public const SHAREABLE = ['eligible', 'possible'];
+
+    public function store(Request $request, int $match): RedirectResponse
+    {
+        $request->validate(['consent' => ['accepted']], ['consent.accepted' => 'Tick the box to agree before sharing.']);
+
+        $m = ScholarshipMatch::whereKey($match)
+            ->whereHas('application', fn ($q) => $q->where('user_id', $request->user()->id)->where('is_current', true))
+            ->with(['application', 'scholarship'])
+            ->firstOrFail();
+        abort_unless(in_array($m->status, self::SHAREABLE, true), 422, 'Only likely or possible matches can be shared.');
+
+        $existing = ProviderApplication::where('user_id', $request->user()->id)->where('scholarship_id', $m->scholarship_id)->first();
+        if ($existing && $existing->status !== 'withdrawn') {
+            return back()->with('notice', 'You already shared this scholarship ('.$existing->statusLabel().').');
+        }
+
+        $answers = $m->application->answers ?? [];
+        ProviderApplication::updateOrCreate(
+            ['user_id' => $request->user()->id, 'scholarship_id' => $m->scholarship_id],
+            [
+                'status' => 'submitted',
+                'snapshot' => [
+                    'program_name' => $answers['program_name'] ?? null,
+                    'campus_name' => $answers['campus_name'] ?? null,
+                    'year_level' => $answers['year_level'] ?? null,
+                ],
+                'consented_at' => now(),
+                'decided_at' => null, 'decided_by' => null, 'decision_note' => null,
+            ],
+        );
+
+        return back()->with('status', 'Shared with '.$m->scholarship->provider.'. They can now see your name, e-mail, program, campus, year level and this match result.');
+    }
+
+    public function destroy(Request $request, int $share): RedirectResponse
+    {
+        $app = ProviderApplication::whereKey($share)->where('user_id', $request->user()->id)->firstOrFail();
+        abort_unless($app->status === 'submitted', 409);
+
+        $app->update(['status' => 'withdrawn', 'snapshot' => null]);
+
+        return back()->with('status', 'You stopped sharing this scholarship. The provider can no longer see your details.');
+    }
+}

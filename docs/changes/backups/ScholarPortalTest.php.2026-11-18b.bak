@@ -1,0 +1,325 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\Scholar;
+use App\Models\Scholarship;
+use App\Models\User;
+use App\Support\AcademicTerm;
+use Database\Seeders\ScholarshipSeeder;
+use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Storage;
+use Tests\TestCase;
+
+/**
+ * Scholar portal: a student account that holds a scholarship. Overview, My scholarship,
+ * Requirements, Explore (collapsible), Profile (change / forgot password, sign out). No matching.
+ */
+class ScholarPortalTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Storage::fake('local');
+        $this->seed(ScholarshipSeeder::class);
+    }
+
+    private function user(string $email = 'ana@example.test', string $password = 'AnaPass123'): User
+    {
+        $u = new User;
+        $u->forceFill(['name' => 'Ana Reyes', 'email' => $email, 'password' => Hash::make($password), 'role' => 'student', 'status' => 'active'])->save();
+
+        return $u;
+    }
+
+    private function scholarship(string $slug, array $renewals = []): Scholarship
+    {
+        $s = Scholarship::where('slug', $slug)->firstOrFail();
+        if ($renewals) {
+            $s->update(['renewal_requirements' => $renewals]);
+        }
+
+        return $s;
+    }
+
+    private function scholar(User $u, string $slug, array $attrs = []): Scholar
+    {
+        return Scholar::create($attrs + ['user_id' => $u->id, 'scholarship_id' => $this->scholarship($slug)->id, 'status' => 'active', 'started_term' => AcademicTerm::current()]);
+    }
+
+    public function test_a_scholar_signs_in_to_the_scholar_portal_without_matching(): void
+    {
+        $u = $this->user();
+        $this->scholar($u, 'ched-tdp', ['grant_type' => 'regular', 'stipend_amount' => 7500]);
+
+        $this->post('/studentLogin', ['email' => 'ana@example.test', 'password' => 'AnaPass123'])->assertRedirect(route('scholar.overview'));
+
+        $html = $this->get('/scholar')->assertOk()->getContent();
+        foreach (['Overview', 'My scholarship', 'Requirements', 'Explore', 'All scholarships', 'Help &amp; contact', 'Profile', 'Scholar Portal'] as $text) {
+            $this->assertStringContainsString($text, $html);
+        }
+        foreach (['My matches', 'My matching form', route('student.results'), route('student.application.show')] as $gone) {
+            $this->assertStringNotContainsString($gone, $html);
+        }
+        $this->assertStringContainsString('class="dash-nav-group"', $html);   // Explore is collapsible
+        $this->assertStringNotContainsString('class="is-danger" data-open-dialog="confirm-signout"', $html);   // no sidebar sign-out: it lives in Profile
+        $this->assertStringContainsString('id="confirm-signout"', $html);                                         // the shared red confirmation dialog
+        $this->assertStringContainsString('data-dash-burger', $html);                                               // mobile burger
+    }
+
+    public function test_matching_pages_send_a_scholar_to_the_overview(): void
+    {
+        $u = $this->user();
+        $this->scholar($u, 'ched-tdp');
+        $this->actingAs($u);
+
+        foreach (['/student/dashboard', '/student/results', '/student/application', '/student/profile', '/find-my-matches', '/student/scholarship'] as $page) {
+            $this->get($page)->assertRedirect();
+        }
+        $this->get('/student/dashboard')->assertRedirect(route('scholar.overview'));
+        $this->post('/student/application', [])->assertRedirect(route('scholar.overview'));
+        $this->get('/student/scholarship')->assertRedirect(route('scholar.scholarship'));
+
+        // Explore pages stay open to scholars, in the scholar layout.
+        $this->get('/student/scholarships')->assertOk()->assertSee('Scholar Portal');
+        $this->get('/student/help')->assertOk()->assertSee('Questions scholars ask')->assertDontSee('My matching form');
+    }
+
+    public function test_a_student_without_a_scholarship_keeps_matching_and_cannot_open_the_scholar_portal(): void
+    {
+        $this->actingAs($this->user());
+
+        foreach (['/scholar', '/scholar/scholarship', '/scholar/requirements', '/scholar/profile'] as $page) {
+            $this->get($page)->assertRedirect(route('student.dashboard'));
+        }
+        // A new student still starts with matching (dashboard → questionnaire), in the student layout.
+        $this->get('/student/dashboard')->assertRedirect(route('student.application.show'));
+        $this->get('/student/application')->assertOk()->assertSee('My matches')->assertSee('Student Portal')->assertDontSee('Scholar Portal');
+    }
+
+    public function test_overview_lists_what_needs_doing(): void
+    {
+        $u = $this->user();
+        $sc = $this->scholar($u, 'ched-tdp');
+        $term = AcademicTerm::current();
+        $sc->requirements()->create(['term' => $term, 'name' => 'Certificate of Registration', 'status' => 'missing']);
+        $sc->requirements()->create(['term' => $term, 'name' => 'Grades', 'status' => 'needs_revision', 'review_note' => 'Blurry scan']);
+        $sc->requirements()->create(['term' => $term, 'name' => 'ID', 'status' => 'approved']);
+        $this->actingAs($u);
+
+        $this->get('/scholar')->assertOk()
+            ->assertSee('Actions needed')
+            ->assertSee('Upload: Certificate of Registration')
+            ->assertSee('Revise and re-upload: Grades')
+            ->assertSee('Blurry scan')
+            ->assertSee('1/3');   // approved this term
+
+        $sc->requirements()->update(['status' => 'approved']);
+        $this->get('/scholar')->assertSee('all set');
+    }
+
+    public function test_my_scholarship_shows_info_benefits_documents_and_stipends(): void
+    {
+        $u = $this->user();
+        $this->scholarship('ched-tdp', ['Certificate of Registration (COR)', 'Grades for the previous semester']);
+        $sc = $this->scholar($u, 'ched-tdp', ['grant_type' => 'regular', 'stipend_amount' => 7500, 'student_number' => '2023-0001', 'program' => 'Bachelor of Science in Information Technology', 'year_level' => '2']);
+        $sc->disbursements()->create(['term' => AcademicTerm::currentSemester(), 'release_type' => 'semester', 'period_month' => '', 'amount' => 7500, 'status' => 'released', 'released_at' => now(), 'reference' => 'REF-1']);
+        $this->actingAs($u);
+
+        $this->get('/scholar/scholarship')->assertOk()
+            ->assertSee('Scholarship information')->assertSee('2023-0001')->assertSee('2nd year')
+            ->assertSee('Benefits')->assertSee('₱7,500 per semester')                 // from the published benefits
+            ->assertSee('Documents to keep your scholarship')->assertSee('Grades for the previous semester')
+            ->assertSee('Stipends')->assertSee('REF-1')->assertSee('Every semester');
+    }
+
+    public function test_my_scholarship_never_shows_another_persons_record(): void
+    {
+        $other = $this->scholar($this->user('other@example.test'), 'dost-sei', ['student_number' => 'SECRET-99']);
+        $u = $this->user();
+        $this->scholar($u, 'ched-tdp');
+        $this->actingAs($u);
+
+        $this->get('/scholar/scholarship?s='.$other->id)->assertOk()->assertDontSee('SECRET-99')->assertSee('CHED Tulong Dunong Program');
+    }
+
+    public function test_requirements_show_each_scholarships_own_documents_and_uploads_go_to_that_provider(): void
+    {
+        $u = $this->user();
+        $this->scholarship('ched-tdp', ['TDP grades form']);
+        $this->scholarship('dost-sei', ['DOST scholar report']);
+        $tdp = $this->scholar($u, 'ched-tdp');
+        $dost = $this->scholar($u, 'dost-sei');
+        $r = $dost->requirements()->create(['term' => AcademicTerm::current(), 'name' => 'DOST scholar report', 'status' => 'missing']);
+        $this->actingAs($u);
+
+        $html = $this->get('/scholar/requirements')->assertOk()->getContent();
+        $this->assertStringContainsString('id="sch-'.$tdp->id.'"', $html);
+        $this->assertStringContainsString('TDP grades form', $html);                   // TDP: its own list (checklist not opened yet)
+        $this->assertStringContainsString('has not opened the', $html);
+        $this->assertStringContainsString('Goes to DOST', $html);                       // DOST: its own provider
+        $this->assertStringContainsString('data-upload-url="'.route('student.requirements.upload', $r->id).'"', $html);   // upload dialog
+        $this->assertStringContainsString('action="'.route('student.requirements.upload', $r->id).'"', $html);            // no-JS fallback form
+        $this->assertStringContainsString('id="sc-upload"', $html);
+        $this->assertStringContainsString('js/bakr-scholar-requirements.js', $html);
+
+        $this->post(route('student.requirements.upload', $r->id), ['file' => UploadedFile::fake()->create('report.pdf', 50, 'application/pdf')])->assertRedirect();
+        $this->assertSame('submitted', $r->fresh()->status);
+        $this->assertSame($dost->id, $r->fresh()->scholar_id);   // received by DOST (their review queue reads scholar → scholarship)
+    }
+
+    public function test_the_upload_dialog_submits_and_the_provider_receives_it(): void
+    {
+        $u = $this->user();
+        $sc = $this->scholar($u, 'ched-tdp');
+        $r = $sc->requirements()->create(['term' => AcademicTerm::current(), 'name' => 'Grades', 'status' => 'needs_revision', 'review_note' => 'Blurry']);
+        $this->actingAs($u);
+
+        // The dialog posts with Accept: application/json and gets JSON back (then reloads the page).
+        $this->postJson(route('student.requirements.upload', $r->id), ['file' => UploadedFile::fake()->create('grades.pdf', 200, 'application/pdf')])
+            ->assertOk()->assertJson(['id' => $r->id, 'status' => 'submitted'])
+            ->assertJsonPath('message', fn ($m) => str_contains($m, 'CHED / UniFAST'));
+        $this->assertSame('submitted', $r->fresh()->status);
+        $this->assertNull($r->fresh()->review_note);   // the old note is cleared with the new file
+
+        // The success message waits for the reload, and the row is now "Waiting for review".
+        $this->get('/scholar/requirements')->assertSee('was sent to CHED / UniFAST')->assertSee('Waiting for review');
+
+        // The provider sees it in their review queue.
+        $provider = new User;
+        $provider->forceFill(['name' => 'CHED', 'email' => 'ched@provider.test', 'password' => Hash::make('x'), 'role' => 'provider', 'status' => 'active', 'provider_key' => 'ched'])->save();
+        $this->actingAs($provider)->get('/provider/requirements')->assertOk()->assertSee('grades.pdf');
+    }
+
+    public function test_the_upload_dialog_gets_readable_errors(): void
+    {
+        $u = $this->user();
+        $sc = $this->scholar($u, 'ched-tdp');
+        $r = $sc->requirements()->create(['term' => AcademicTerm::current(), 'name' => 'COR', 'status' => 'missing']);
+        $this->actingAs($u);
+
+        $this->postJson(route('student.requirements.upload', $r->id), ['file' => UploadedFile::fake()->create('cor.docx', 10)])
+            ->assertStatus(422)->assertJsonPath('errors.file.0', 'Upload a PDF, JPG or PNG file.');
+        $this->postJson(route('student.requirements.upload', $r->id), ['file' => UploadedFile::fake()->create('cor.pdf', 6000, 'application/pdf')])
+            ->assertStatus(422)->assertJsonPath('errors.file.0', 'The file must be 5 MB or smaller.');
+        $this->assertSame('missing', $r->fresh()->status);
+
+        $r->update(['status' => 'approved']);
+        $this->postJson(route('student.requirements.upload', $r->id), ['file' => UploadedFile::fake()->create('cor.pdf', 10, 'application/pdf')])->assertStatus(409);
+    }
+
+    public function test_without_javascript_the_form_posts_and_returns_to_the_document(): void
+    {
+        $u = $this->user();
+        $sc = $this->scholar($u, 'ched-tdp');
+        $r = $sc->requirements()->create(['term' => AcademicTerm::current(), 'name' => 'COR', 'status' => 'missing']);
+        $this->actingAs($u);
+
+        $this->from('/scholar/requirements')->post(route('student.requirements.upload', $r->id), ['file' => UploadedFile::fake()->create('cor.pdf', 50, 'application/pdf')])
+            ->assertRedirect(url('/scholar/requirements').'#req-'.$r->id);
+        $this->assertSame('submitted', $r->fresh()->status);
+    }
+
+    public function test_preview_shows_pdf_and_images_inline_and_safely(): void
+    {
+        $u = $this->user();
+        $sc = $this->scholar($u, 'ched-tdp');
+        $r = $sc->requirements()->create(['term' => AcademicTerm::current(), 'name' => 'COR', 'status' => 'missing']);
+        $this->actingAs($u)->postJson(route('student.requirements.upload', $r->id), ['file' => UploadedFile::fake()->create('cor.pdf', 20, 'application/pdf')]);
+        $r->refresh()->update(['mime' => 'application/pdf']);   // fake files have no real PDF bytes to sniff
+
+        $this->get('/scholar/requirements')->assertSee('data-preview-url="'.route('student.requirements.file', $r->id).'?inline=1"', false);
+
+        $inline = $this->get(route('student.requirements.file', $r->id).'?inline=1')->assertOk();
+        $this->assertSame('application/pdf', $inline->headers->get('Content-Type'));
+        $this->assertSame('nosniff', $inline->headers->get('X-Content-Type-Options'));
+        $this->assertStringStartsWith('inline', (string) $inline->headers->get('Content-Disposition'));
+
+        $this->get(route('student.requirements.file', $r->id))->assertDownload('cor.pdf');
+
+        // Someone else's file stays 404, inline or not.
+        $this->actingAs($this->user('other@example.test'))->get(route('student.requirements.file', $r->id).'?inline=1')->assertNotFound();
+    }
+
+    public function test_a_dnsc_scholar_sees_the_list_but_submits_directly(): void
+    {
+        $u = $this->user();
+        $this->scholarship('dnsc-academic', ['Grades with GWA']);
+        $this->scholar($u, 'dnsc-academic');
+        $this->actingAs($u);
+
+        $this->get('/scholar/requirements')->assertOk()->assertSee('Grades with GWA')->assertSee('collects these directly')->assertDontSee('name="file"', false);
+    }
+
+    public function test_profile_changes_the_password(): void
+    {
+        $u = $this->user();
+        $this->scholar($u, 'ched-tdp');
+        $this->actingAs($u)->get('/scholar/profile')->assertOk()
+            ->assertSee('Change password')->assertSee('Forgot your password?')
+            ->assertSee('id="confirm-signout"', false)->assertSee('Sign out of BAKR?');
+
+        $this->from('/scholar/profile')->put('/student/password', ['current_password' => 'wrong', 'password' => 'NewPass123', 'password_confirmation' => 'NewPass123'])
+            ->assertRedirect('/scholar/profile')->assertSessionHasErrors('current_password');
+        $this->from('/scholar/profile')->put('/student/password', ['current_password' => 'AnaPass123', 'password' => 'NewPass123', 'password_confirmation' => 'NewPass123'])
+            ->assertRedirect('/scholar/profile')->assertSessionHas('status');
+
+        $this->assertTrue(Hash::check('NewPass123', $u->fresh()->password));
+    }
+
+    public function test_profile_emails_a_working_reset_link(): void
+    {
+        Notification::fake();
+        $u = $this->user();
+        $u->forceFill(['must_change_password' => false])->save();
+        $this->scholar($u, 'ched-tdp');
+        $this->actingAs($u);
+
+        $this->from('/scholar/profile')->post('/scholar/profile/reset-link')->assertRedirect('/scholar/profile')->assertSessionHas('status', fn ($m) => str_contains($m, 'ana@example.test'));
+
+        $token = null;
+        Notification::assertSentTo($u, ResetPassword::class, function ($n) use (&$token) {
+            $token = $n->token;
+
+            return true;
+        });
+
+        // The e-mailed link works even while signed in, then signs the person out.
+        $this->get('/student/reset-password/'.$token.'?email=ana@example.test')->assertOk();
+        $this->post('/student/reset-password', ['token' => $token, 'email' => 'ana@example.test', 'password' => 'Reset1234', 'password_confirmation' => 'Reset1234'])
+            ->assertRedirect(route('student.login'));
+        $this->assertGuest();
+        $this->assertTrue(Hash::check('Reset1234', $u->fresh()->password));
+    }
+
+    public function test_a_reset_link_also_clears_a_temporary_password(): void
+    {
+        $u = $this->user();
+        $u->forceFill(['must_change_password' => true])->save();
+        $token = Password::broker()->createToken($u);
+
+        $this->post('/student/reset-password', ['token' => $token, 'email' => 'ana@example.test', 'password' => 'Reset1234', 'password_confirmation' => 'Reset1234']);
+
+        $this->assertFalse($u->fresh()->must_change_password);
+    }
+
+    public function test_sign_out_from_the_confirmation_dialog(): void
+    {
+        $u = $this->user();
+        $this->scholar($u, 'ched-tdp');
+        $html = $this->actingAs($u)->get('/scholar/profile')->getContent();
+
+        $this->assertMatchesRegularExpression('/<dialog[^>]*id="confirm-signout".*?action="'.preg_quote(route('student.logout'), '/').'"/s', $html);
+        $this->assertStringContainsString('data-open-dialog="confirm-signout"', $html);
+
+        $this->post('/student/logout')->assertRedirect('/');
+        $this->assertGuest();
+    }
+}

@@ -1,0 +1,128 @@
+/* BAKR — Liquid Glass concept for the student dashboard (MOCKUP ONLY, injected in the browser).
+   Apple-style material rules: heavier tinted glass for structure (navbar, sidebar menu),
+   lighter clear glass for content, a bright rim where light hits the top edge, a specular
+   sheen, and solid dark text on the light glass so it stays readable. */
+
+:root {
+  --lg-clear: rgba(255, 255, 255, .34);      /* content glass */
+  --lg-clear-strong: rgba(255, 255, 255, .52);
+  --lg-tint: rgba(18, 52, 38, .46);          /* structural glass (green) */
+  --lg-rim: rgba(255, 255, 255, .75);
+  --lg-blur: blur(26px) saturate(185%) brightness(1.06);
+  --lg-shadow: 0 1px 0 rgba(255,255,255,.75) inset,      /* light catching the top edge */
+               0 -1px 0 rgba(255,255,255,.18) inset,
+               0 0 0 1px rgba(255,255,255,.28) inset,     /* thin rim all round */
+               0 24px 48px -22px rgba(8, 30, 20, .55),    /* lift */
+               0 2px 6px rgba(8, 30, 20, .12);
+}
+
+/* ---------- The world behind the glass ---------- */
+body, #main, .sp-page, .sd-shell { background: transparent !important; }
+html { background: #143a2b !important; }
+/* campus photo, softly out of focus, with green and gold light pooled behind the glass */
+body::before {
+  content: ""; position: fixed; inset: -24px; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(700px 520px at 12% 18%, rgba(226, 190, 96, .55), transparent 62%),
+    radial-gradient(760px 600px at 92% 8%, rgba(61, 122, 88, .65), transparent 60%),
+    radial-gradient(900px 700px at 70% 100%, rgba(201, 164, 67, .40), transparent 65%),
+    linear-gradient(160deg, rgba(20, 58, 43, .55), rgba(20, 58, 43, .25)),
+    url("/images/img/dnsc_campus.jpg") center / cover;
+  filter: blur(5px) saturate(1.1);
+}
+.sd { background: transparent !important; }
+
+/* ---------- Shared glass recipe ---------- */
+.sd-me, .sd-nav, .sd-card, .sd-help, .sd-todo, .sd-head {
+  position: relative;
+  isolation: isolate;
+}
+.sd-me, .sd-card, .sd-todo {
+  background: linear-gradient(155deg, var(--lg-clear-strong), var(--lg-clear) 55%, rgba(255,255,255,.22)) !important;
+  -webkit-backdrop-filter: var(--lg-blur);
+          backdrop-filter: var(--lg-blur);
+  border: 1px solid rgba(255, 255, 255, .45) !important;
+  box-shadow: var(--lg-shadow) !important;
+}
+/* specular sheen: a soft highlight in the upper-left, like light across a curved lens */
+.sd-me::before, .sd-card::before, .sd-nav::before, .sd-todo::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: -1;
+  background:
+    radial-gradient(120% 60% at 15% -10%, rgba(255,255,255,.55), transparent 55%),
+    radial-gradient(80% 40% at 100% 110%, rgba(255,255,255,.18), transparent 60%);
+}
+/* rim light: gradient border that is brightest at the top */
+.sd-me::after, .sd-card::after, .sd-nav::after, .sd-todo::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; padding: 1px;
+  background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,255,255,.15) 45%, rgba(255,255,255,.4));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+}
+
+/* ---------- Structural glass: heavier, green-tinted ---------- */
+.bk-navbar, .bk-navbar.is-scrolled {
+  background: linear-gradient(180deg, rgba(20, 58, 43, .62), rgba(20, 58, 43, .44)) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(190%);
+          backdrop-filter: blur(30px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, .22) !important;
+  box-shadow: 0 1px 0 rgba(255,255,255,.35) inset, 0 18px 40px -20px rgba(5, 20, 14, .6) !important;
+}
+.sd-nav {
+  background: linear-gradient(160deg, rgba(20, 58, 43, .55), var(--lg-tint)) !important;
+  -webkit-backdrop-filter: var(--lg-blur);
+          backdrop-filter: var(--lg-blur);
+  border: 1px solid rgba(255, 255, 255, .25) !important;
+  box-shadow: var(--lg-shadow) !important;
+}
+.sd-nav a, .sd-nav button { color: rgba(253, 251, 248, .92) !important; font-weight: 600; }
+.sd-nav a i, .sd-nav button i { color: #f6dfa0 !important; }
+.sd-nav a:hover { background: rgba(255,255,255,.10) !important; }
+/* the selected item is a raised drop of clearer glass */
+.sd-nav a[aria-current="page"] {
+  background: linear-gradient(160deg, rgba(255,255,255,.42), rgba(255,255,255,.18)) !important;
+  color: #fff !important;
+  box-shadow: 0 1px 0 rgba(255,255,255,.8) inset, 0 8px 18px -8px rgba(0,0,0,.45) !important;
+  border: 1px solid rgba(255,255,255,.35) !important;
+}
+.sd-nav em { background: rgba(246, 223, 160, .9) !important; color: #143a2b !important; }
+
+/* ---------- Content glass details ---------- */
+.sd-me .sd-me-name, .sd-big strong { color: #0f2e22 !important; }
+.sd-prog, .sd-big span { color: #213b30 !important; }
+.sd-tiles a {
+  background: rgba(255,255,255,.38) !important;
+  border: 1px solid rgba(255,255,255,.6) !important;
+  box-shadow: 0 1px 0 rgba(255,255,255,.9) inset, 0 6px 14px -8px rgba(8,30,20,.35) !important;
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+}
+.sd-card-cover { border-radius: 16px !important; }
+.sd-card-body { background: transparent !important; }
+.sd-card-body, .sd-card-foot { color: #10291f !important; }
+.sd-card-foot b { color: #10291f !important; }
+/* small labels on glass: solid, slightly heavier text (vibrancy), never pale grey */
+.sd-card-body > span, .sd-card-body small, .sd-tiles span, .sd-prog small { color: #24453a !important; font-weight: 600; }
+.sd-card-foot a { color: #1f4d3a !important; }
+.sd-nav button { opacity: 1 !important; color: rgba(253, 251, 248, .92) !important; }
+.sd-head h2 { color: #fff !important; text-shadow: 0 1px 12px rgba(0,0,0,.35); }
+.sd-head a { color: #fdf3d6 !important; }
+
+/* Banner and AI panel: keep the photo, frame it with a glass bezel instead of the gold rings */
+.sd-banner, .sd-ai {
+  box-shadow: 0 0 0 6px rgba(255,255,255,.22), 0 0 0 7px rgba(255,255,255,.5), 0 30px 60px -28px rgba(5,20,14,.7) !important;
+  border: 0 !important;
+}
+.sd-banner .nx-btn, .sd-banner .sp-btn {
+  -webkit-backdrop-filter: blur(14px) saturate(180%); backdrop-filter: blur(14px) saturate(180%);
+}
+.sd-ai-glass {
+  background: linear-gradient(155deg, rgba(255,255,255,.62), rgba(255,255,255,.38)) !important;
+  -webkit-backdrop-filter: var(--lg-blur); backdrop-filter: var(--lg-blur);
+  border: 1px solid rgba(255,255,255,.6) !important;
+  box-shadow: var(--lg-shadow) !important;
+}
+
+/* Accessibility: fall back to frosted/solid surfaces when asked */
+@media (prefers-reduced-transparency: reduce) {
+  .sd-me, .sd-card, .sd-todo, .sd-ai-glass { background: #fbf8f1 !important; backdrop-filter: none !important; }
+  .sd-nav, .bk-navbar { background: #143a2b !important; backdrop-filter: none !important; }
+}

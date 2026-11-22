@@ -1,0 +1,53 @@
+﻿/* BAKR — loading feedback, shared by every page (public/js/bakr-busy.js builds the markup).
+   1 "busy" card   a modal <dialog> with a spinner, shown while a form that can take a moment is being
+                   processed (signing in / out, saving the application, adding or importing scholars,
+                   sending an e-mail). It is a top-layer dialog, so it also sits above open modals.
+   2 top bar       a thin moving line along the top edge while the next page opens after a link click.
+   Self-contained (own fallbacks) so it works on the public site, the sign-in pages and every portal. */
+
+dialog.bk-busy {
+  border: 0; padding: 0; background: transparent; max-width: none; max-height: none; overflow: visible;
+  color: var(--ink, #2b2925);
+}
+dialog.bk-busy, dialog.bk-busy:focus, dialog.bk-busy:focus-visible { outline: 0; box-shadow: none; }
+dialog.bk-busy::backdrop { background: rgba(14, 42, 31, .55); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+dialog.bk-busy[open] { animation: bkBusyIn .18s ease-out; }
+.bk-busy-card {
+  width: min(19rem, calc(100vw - 2.5rem)); text-align: center; padding: 2rem 1.75rem 1.6rem;
+  background: var(--page-bg, #faf7f2); border-radius: 22px; box-shadow: 0 30px 70px rgba(0, 0, 0, .35);
+  position: relative; overflow: hidden;
+}
+.bk-busy-card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 5px; background: linear-gradient(90deg, #b8912f, #f6dfa0); }
+.bk-spinner {
+  display: block; width: 2.75rem; height: 2.75rem; margin: 0 auto 1rem; border-radius: 50%;
+  border: 4px solid #dfe9e2; border-top-color: #b8912f; border-right-color: #1f4d3a;
+  animation: bkSpin .9s linear infinite;
+}
+.bk-busy-title { margin: 0 0 .25rem; font: 700 var(--text-title, 1.125rem) / 1.3 var(--font-body, "Poppins", system-ui, sans-serif); color: var(--text-strong, #143a2b); }
+.bk-busy-sub { margin: 0; font: 400 var(--text-sm, .875rem) / 1.5 var(--font-body, "Poppins", system-ui, sans-serif); color: var(--ink-soft, #5b564f); }
+.bk-busy-sub:empty { display: none; }
+
+:root[data-theme="dark"] .bk-busy-card { background: #15221b; color: #e7e3da; }
+:root[data-theme="dark"] .bk-busy-title { color: #eef3ee; }
+:root[data-theme="dark"] .bk-busy-sub { color: #b7b1a6; }
+:root[data-theme="dark"] .bk-spinner { border-color: #2a3b32; border-top-color: #e6c56f; border-right-color: #3f8f68; }
+
+/* Page-change bar */
+.bk-topbar { position: fixed; inset: 0 0 auto 0; height: 3px; z-index: 13000; overflow: hidden; pointer-events: none; opacity: 0; transition: opacity .15s ease; }
+.bk-topbar.is-on { opacity: 1; }
+.bk-topbar::before {
+  content: ""; position: absolute; inset: 0 auto 0 0; width: 40%;
+  background: linear-gradient(90deg, transparent, #d4ad49, #f6dfa0, transparent);
+  animation: bkSlide 1.1s ease-in-out infinite;
+}
+
+@keyframes bkSpin { to { transform: rotate(360deg); } }
+@keyframes bkSlide { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+@keyframes bkBusyIn { from { opacity: 0; transform: scale(.96); } }
+
+@media (prefers-reduced-motion: reduce) {
+  dialog.bk-busy[open] { animation: none; }
+  .bk-spinner { animation-duration: 2.4s; }
+  .bk-topbar::before { animation: none; width: 100%; opacity: .7; }
+}
+
