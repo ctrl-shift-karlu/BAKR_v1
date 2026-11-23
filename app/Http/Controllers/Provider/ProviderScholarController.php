@@ -6,12 +6,16 @@ use App\Matching\ProgramCatalog;
 use App\Models\Scholar;
 use App\Models\ScholarMessage;
 use App\Services\Provider\RequirementChecklist;
+use App\Services\Provider\ScholarAccounts;
+use App\Services\Provider\ScholarEmailChange;
 use App\Services\Provider\ScholarRoster;
 use App\Services\ScholarNotifier;
 use App\Support\AcademicTerm;
+use App\Support\PersonName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -118,8 +122,16 @@ class ProviderScholarController extends ProviderController
                 'campus' => ['required', 'string', 'max:80', ScholarRoster::campusRule()],
                 'program' => ['required', 'string', 'max:150', ScholarRoster::programRule()],
             ],
-            'personal' => Arr::only(ScholarRoster::personalRules(), ['birthdate', 'gender']),
-            'contact' => Arr::only(ScholarRoster::personalRules(), ['mobile', 'address']),
+            // The name (first name + surname required, middle name + suffix optional) is editable (owner, 2026-11-23);
+            // birthday and gender are NOT once recorded. An older row that
+            // never had them may still get them, once (left out of the rules = ignored if sent).
+            'personal' => PersonName::rules()
+                + Arr::only(ScholarRoster::personalRules(), array_values(array_filter([
+                    $s->birthdate === null ? 'birthdate' : null,
+                    filled($s->gender) ? null : 'gender',
+                ]))),
+            // The sign-in e-mail is changed with its own confirmed flow (changeEmail()), never here.
+            'contact' => Arr::only(ScholarRoster::personalRules(), ['mobile', 'address_street', 'address_city', 'address_province']),
             'scholarship' => array_filter([
                 // "Scholar since" (owner, 2026-11-21): decides their first checklist and first stipend.
                 // (left out of the request = unchanged; sent empty = an error).
@@ -136,8 +148,9 @@ class ProviderScholarController extends ProviderController
             'year_level.required' => 'Choose the scholar\'s year level.',
             'campus.required' => 'Choose the campus the scholar studies at.',
             'program.required' => 'Choose the scholar\'s program.',
-        ], ['scholar_code' => 'Scholar ID', 'student_number' => 'student number', 'year_level' => 'year level', 'grant_type' => 'grant type',
-            'stipend_amount' => 'stipend', 'birthdate' => 'birthday', 'mobile' => 'mobile number', 'started_term' => 'Scholar since']);
+        ] + PersonName::messages("the scholar's"), PersonName::attributes() + ['scholar_code' => 'Scholar ID', 'student_number' => 'student number', 'year_level' => 'year level', 'grant_type' => 'grant type',
+            'stipend_amount' => 'stipend', 'birthdate' => 'birthday', 'mobile' => 'mobile number', 'started_term' => 'Scholar since',
+            'address_street' => 'street', 'address_city' => 'city / municipality', 'address_province' => 'province']);
 
         if ($section === 'school') {
             $data['scholar_code'] = Scholar::normalizeCode($data['scholar_code']);
@@ -154,7 +167,11 @@ class ProviderScholarController extends ProviderController
         }
         if ($section === 'contact') {
             $data['mobile'] = ScholarRoster::normalizeMobile($data['mobile']);
-            $data['address'] = trim(preg_replace('/\s+/u', ' ', $data['address']));
+            $data = ScholarRoster::addressFields($data) + $data;
+        }
+        if ($section === 'personal') {
+            $name = PersonName::parts($data);
+            $data = array_merge($data, Arr::only($name, PersonName::FIELDS), ['full_name' => $name['full']]);
         }
         if ($section === 'scholarship') {
             // A new grant type brings its published stipend, unless the provider also typed a different amount.
@@ -165,7 +182,14 @@ class ProviderScholarController extends ProviderController
             }
         }
 
-        $s->update($data);
+        DB::transaction(function () use ($s, $data, $section) {
+            $s->update($data);
+            // The name is also the scholar account's name (displayName() reads the account first).
+            if ($section === 'personal' && $s->user && $s->user->role === 'scholar') {
+                $s->user->fillName($data)->save();
+                $s->setRelation('user', $s->user);
+            }
+        });
         $this->tellAboutCorrection($s, $section);
         $note = $s->wasChanged('started_term') ? ' '.$this->followStart($s) : '';
 
@@ -210,6 +234,47 @@ class ProviderScholarController extends ProviderController
         ScholarNotifier::send($s, 'correction', "Your {$card} was updated",
             "{$s->scholarship->provider} updated your ".mb_strtolower($card).' after your correction request. Check that it is right on your Profile.',
             route('scholar.profile').'#'.$section);
+    }
+
+    /**
+     * Change the scholar's sign-in e-mail (owner, 2026-11-23), e.g. when they lost access to their Gmail.
+     * The new address only replaces the old one once the scholar opens the link e-mailed to it
+     * (ScholarEmailChange), so a typo or a dead address never locks them out.
+     */
+    public function changeEmail(Request $request, int $scholar, ScholarEmailChange $change): RedirectResponse
+    {
+        $s = $this->scope($request)->scholar($scholar)->load(['user', 'scholarship']);
+        $back = redirect()->to(route('provider.scholars.show', [$s->id, 'edit' => 'email']).'#contact');
+
+        $data = $request->validate(
+            ['new_email' => ['required', 'email:rfc', 'max:190']],
+            ['new_email.required' => 'Type the scholar\'s new e-mail.', 'new_email.email' => 'Type a valid e-mail address, for example name@gmail.com.'],
+            ['new_email' => 'new e-mail'],
+        );
+        if ($problem = $change->problem($s, $data['new_email'])) {
+            return $back->withInput()->withErrors(['new_email' => $problem]);
+        }
+
+        $email = mb_strtolower(trim($data['new_email']));
+        if (! $change->request($s, $email)) {
+            return $back->withInput()->with('notice', ScholarAccounts::mailIsTestMode()
+                ? 'E-mail is in test mode (MAIL_MAILER=log): the confirmation link was only written to the server log, so nothing was changed.'
+                : "The confirmation e-mail to {$email} could not be sent. Check the address (or the mail settings) and try again. Nothing was changed.");
+        }
+
+        return $this->sent(redirect()->to(route('provider.scholars.show', $s->id).'#contact'), 'Confirmation link sent',
+            "We e-mailed a confirmation link to {$email}. The sign-in e-mail changes as soon as {$s->displayName()} opens it (within ".Scholar::EMAIL_CHANGE_HOURS.' hours). Until then they keep signing in with '.$s->contactEmail().'.');
+    }
+
+    /** Withdraw an e-mail change that is still waiting for the scholar: the e-mailed link stops working. */
+    public function cancelEmail(Request $request, int $scholar, ScholarEmailChange $change): RedirectResponse
+    {
+        $s = $this->scope($request)->scholar($scholar);
+        if ($s->pending_email) {
+            $change->cancel($s);
+        }
+
+        return redirect()->to(route('provider.scholars.show', $s->id).'#contact')->with('status', 'The e-mail change was withdrawn. The scholar keeps their current e-mail.');
     }
 
     /** The editable cards of a scholar's profile (?edit=<key>) and their titles. */

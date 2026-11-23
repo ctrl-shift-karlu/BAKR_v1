@@ -19,6 +19,7 @@ use App\Http\Controllers\Provider\ProviderRequirementController;
 use App\Http\Controllers\Provider\ProviderScholarController;
 use App\Http\Controllers\Provider\ProviderScholarRosterController;
 use App\Http\Controllers\Provider\ProviderScholarshipController;
+use App\Http\Controllers\Scholar\ScholarEmailConfirmController;
 use App\Http\Controllers\Scholar\ScholarPortalController;
 use App\Http\Controllers\Scholar\ScholarRequirementController;
 use App\Http\Controllers\ScholarshipCatalogController;
@@ -117,6 +118,11 @@ Route::middleware(['auth', 'role:student', 'password.changed'])
         Route::post('help', [StudentPortalController::class, 'message'])->middleware('throttle:5,10')->name('help.message');
     });
 
+// The link a provider's e-mail change sends to the NEW address (2026-11-23). Works signed in or not: opening it
+// proves the address works, and only then the sign-in e-mail changes (ScholarEmailChange).
+Route::get('scholar-email/confirm/{scholar}/{token}', ScholarEmailConfirmController::class)
+    ->middleware('throttle:10,1')->whereNumber('scholar')->where('token', '[A-Za-z0-9]{48}')->name('scholar.email.confirm');
+
 // ---- Scholar portal (role scholar, signed in at /scholarLogin): monitoring only, no matching ----
 Route::post('scholar/logout', [ScholarAuthController::class, 'logout'])->middleware('auth')->name('scholar.logout');
 
@@ -172,6 +178,9 @@ Route::middleware(['auth', 'role:provider'])
             ->middleware('throttle:6,1')->whereNumber('scholar')->name('scholars.login');
         Route::get('scholars/{scholar}', [ProviderScholarController::class, 'show'])->whereNumber('scholar')->name('scholars.show');
         Route::patch('scholars/{scholar}', [ProviderScholarController::class, 'update'])->whereNumber('scholar')->name('scholars.update');
+        // Change the sign-in e-mail (2026-11-23): only after the scholar confirms the link sent to the new address.
+        Route::post('scholars/{scholar}/email', [ProviderScholarController::class, 'changeEmail'])->middleware('throttle:6,1')->whereNumber('scholar')->name('scholars.email');
+        Route::delete('scholars/{scholar}/email', [ProviderScholarController::class, 'cancelEmail'])->whereNumber('scholar')->name('scholars.email.cancel');
         // Terminate / reinstate: only the scholarship's own provider (ProviderScope), behind a confirmation.
         Route::patch('scholars/{scholar}/status', [ProviderScholarController::class, 'status'])->whereNumber('scholar')->name('scholars.status');
 

@@ -337,50 +337,68 @@ body[data-page="contact"] .bk-navbar [data-nav="contact"] {
 .btn-modal-close:hover { background: var(--green-900); transform: translateY(-1px); }
 .btn-modal-close:focus-visible { outline: 3px solid var(--gold-light); outline-offset: 2px; }
 
-/* Welcome pop-up */
+/* Welcome pop-up: frosted dark-green glass with a soft gold glow.
+   Solid fallback when blur is off (installed app, older browsers): see the @supports and html.is-app rules. */
+body:has(#welcomeModal.show) .modal-backdrop.show { opacity: .38; }
 .nx-welcome .modal-dialog {
-  width: min(460px, calc(100% - 28px)); max-width: 460px;
-  transform: translateY(28px) scale(.95); transition: transform .4s cubic-bezier(.22, 1, .36, 1), opacity .35s ease;
+  width: min(480px, calc(100% - 32px)); max-width: 480px;
+  transform: translateY(24px) scale(.96); transition: transform .4s cubic-bezier(.22, 1, .36, 1), opacity .35s ease;
 }
 .nx-welcome.show .modal-dialog { transform: none; }
-.nx-welcome .modal-content {
-  position: relative; padding: 0; text-align: center; overflow: hidden;
-  border: 1px solid rgba(184, 145, 47, .85); border-radius: 24px; background: var(--page-bg);
-  box-shadow: 0 28px 80px rgba(12, 35, 26, .32), 0 0 0 4px rgba(184, 145, 47, .1);
-}
-.nx-modal-band {
-  position: relative; height: 112px;
+.nx-welcome-card {
+  position: relative; isolation: isolate; overflow: hidden;
+  padding: clamp(30px, 6vw, 40px) clamp(20px, 5vw, 32px) clamp(24px, 5vw, 32px);
+  text-align: center; color: var(--vanilla);
+  border: 1px solid rgba(246, 223, 160, .34); border-radius: 26px;
   background:
-    radial-gradient(220px 140px at 50% -10%, rgba(230, 207, 156, .35), transparent 65%),
-    linear-gradient(165deg, var(--green-700) 0%, var(--green-900) 100%);
+    radial-gradient(320px 180px at 50% -12%, rgba(201, 164, 67, .30), transparent 70%),
+    linear-gradient(160deg, rgba(31, 77, 58, .70) 0%, rgba(20, 58, 43, .80) 100%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+  box-shadow:
+    0 30px 80px -20px rgba(8, 24, 18, .55),
+    0 0 60px -12px rgba(201, 164, 67, .45),
+    inset 0 1px 0 rgba(253, 251, 248, .14);
 }
-.nx-modal-band::after { content: ""; position: absolute; inset: 0; background: radial-gradient(rgba(253, 251, 248, .16) 1px, transparent 1px) 0 0 / 14px 14px; opacity: .5; pointer-events: none; }
-.nx-welcome .nx-modal-band {
-  height: 136px; border-bottom: 2px solid var(--gold);
-  background: linear-gradient(115deg, rgba(20, 58, 43, .88), rgba(20, 58, 43, .52)), url("../images/img/opt/dnsc-seal.jpg") center 48% / cover no-repeat;
+/* Solid card when blur is unavailable or switched off. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .nx-welcome-card {
+    background:
+      radial-gradient(320px 180px at 50% -12%, rgba(201, 164, 67, .26), transparent 70%),
+      linear-gradient(160deg, var(--green-700) 0%, var(--green-900) 100%);
+  }
 }
-.nx-modal-body-pad { padding: 0 clamp(22px, 5vw, 34px) 30px; }
-.nx-avatar {
-  position: relative; z-index: 1; display: grid; place-items: center;
-  width: 80px; height: 80px; margin: -44px auto 16px; border-radius: 50%;
-  border: 5px solid var(--vanilla); box-shadow: 0 14px 28px -14px rgba(20, 58, 43, .5); font-size: 1.9rem;
+html.is-app .nx-welcome-card {
+  background:
+    radial-gradient(320px 180px at 50% -12%, rgba(201, 164, 67, .26), transparent 70%),
+    linear-gradient(160deg, var(--green-700) 0%, var(--green-900) 100%);
 }
-.nx-welcome .nx-avatar {
-  padding: 0; overflow: hidden; border-radius: 0 20px 0 20px; outline: 2px solid var(--gold);
-  background: linear-gradient(135deg, var(--bk-badge-sage), var(--bk-badge-green));
+.nx-welcome-logo {
+  display: block; width: 72px; height: 72px; margin: 0 auto 18px; padding: 6px;
+  object-fit: contain; border-radius: 50%; background: var(--vanilla);
+  box-shadow: 0 0 0 3px rgba(201, 164, 67, .55), 0 12px 30px -10px rgba(201, 164, 67, .6);
 }
-.nx-welcome .nx-avatar img { width: 100%; height: 100%; object-fit: contain; }
-.nx-welcome-kicker { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0 0 9px; font: 700 var(--text-xs)/1.4 var(--font-body); letter-spacing: .16em; color: var(--gold-text); }
-.nx-welcome-kicker span { width: 17px; height: 1px; background: var(--gold); opacity: .8; }
-.nx-welcome h4 { margin: 0 0 10px; font: 600 clamp(1.45rem, 4vw, 1.7rem) var(--font-serif); letter-spacing: -.02em; color: var(--text-strong); }
-.nx-welcome p { max-width: 36ch; margin: 0 auto 26px; font-size: var(--text-sm); line-height: 1.7; color: #77736b; }
+.nx-welcome-title { margin: 0 0 10px; font: 600 clamp(1.45rem, 4.4vw, 1.75rem)/1.2 var(--font-serif); letter-spacing: -.02em; color: var(--vanilla); }
+.nx-welcome-text { max-width: 34ch; margin: 0 auto 24px; font-size: var(--text-sm); line-height: 1.7; color: rgba(253, 251, 248, .84); }
+.nx-welcome-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.nx-welcome-btn {
+  flex: 1 1 180px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap;
+  min-height: 46px; padding: 11px 18px; border-radius: 999px; text-decoration: none;
+  font: 600 var(--text-sm)/1.3 var(--font-display);
+  transition: background-color .18s ease, border-color .18s ease, transform .18s ease;
+}
+.nx-welcome-btn.is-primary { color: var(--green-900); background: var(--gold-fill); border: 1px solid var(--gold-fill); }
+.nx-welcome-btn.is-primary:hover { color: var(--green-900); background: var(--gold-light); border-color: var(--gold-light); }
+.nx-welcome-btn.is-ghost { color: var(--vanilla); background: rgba(253, 251, 248, .08); border: 1px solid rgba(246, 223, 160, .45); }
+.nx-welcome-btn.is-ghost:hover { color: var(--vanilla); background: rgba(253, 251, 248, .16); border-color: var(--gold-light); }
+.nx-welcome-btn:focus-visible { outline: 3px solid var(--gold-light); outline-offset: 2px; }
+@media (hover: hover) { .nx-welcome-btn:hover { transform: translateY(-1px); } }
 .nx-welcome-close {
   position: absolute; top: 14px; right: 14px; z-index: 3; width: 34px; height: 34px; padding: 9px;
-  border: 1px solid rgba(246, 223, 160, .7); border-radius: 50%; background-color: rgba(20, 58, 43, .5);
-  filter: invert(1) brightness(2.4); opacity: .9; transition: opacity .18s ease;
+  border: 1px solid rgba(246, 223, 160, .5); border-radius: 50%; background-color: rgba(253, 251, 248, .08);
+  filter: invert(1) brightness(2.4); opacity: .85; transition: opacity .18s ease;
 }
 .nx-welcome-close:hover { opacity: 1; }
-
 @media (max-width: 575.98px) {
   .modal-brand-line { flex-wrap: wrap; }
   .nx-modal .modal-header, .nx-modal .modal-body, .nx-modal .modal-footer { padding-inline: 20px; }

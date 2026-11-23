@@ -7,7 +7,9 @@ use App\Models\Scholar;
 use App\Models\Scholarship;
 use App\Models\User;
 use App\Support\AcademicTerm;
+use App\Support\PersonName;
 use App\Support\Spreadsheet;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -22,7 +24,8 @@ use Illuminate\Validation\Rule;
  * from student/matching accounts; an e-mail that already has a student account is converted.
  *
  * What the provider types: the scholar's own details (Scholar ID, name, student number, e-mail, campus,
- * program, year level, birthday, gender (Male / Female), mobile number, address; all required, owner
+ * program, year level, birthday, gender (Male / Female), mobile number, address as street, city / municipality and
+ * province (owner, 2026-11-23); all required, owner
  * 2026-11-20) and, only for scholarships with more than one published type, the grant type (e.g. CMSP
  * Full / Half). The Scholar ID is typed freely (no format) and is unique within the scholarship.
  * Everything that follows from the scholarship is filled in here:
@@ -41,7 +44,11 @@ class ScholarRoster
 {
     /** Spreadsheet header (lower-cased, punctuation collapsed) → field. Other columns are ignored. */
     public const HEADERS = [
-        'full name' => 'full_name', 'name' => 'full_name', 'scholar name' => 'full_name', 'student name' => 'full_name',
+        // The name in parts (owner, 2026-11-23): First name + Surname required, Middle name + Suffix optional.
+        'first name' => 'first_name', 'firstname' => 'first_name', 'given name' => 'first_name', 'given names' => 'first_name',
+        'middle name' => 'middle_name', 'middlename' => 'middle_name', 'middle initial' => 'middle_name', 'mi' => 'middle_name', 'm i' => 'middle_name',
+        'surname' => 'last_name', 'last name' => 'last_name', 'lastname' => 'last_name', 'family name' => 'last_name',
+        'suffix' => 'suffix', 'name suffix' => 'suffix', 'extension' => 'suffix', 'name extension' => 'suffix', 'ext' => 'suffix', 'extension name' => 'suffix',
         'student number' => 'student_number', 'student no' => 'student_number', 'student id' => 'student_number', 'id number' => 'student_number',
         'email' => 'email', 'e mail' => 'email', 'email address' => 'email',
         'program' => 'program', 'course' => 'program', 'degree program' => 'program',
@@ -50,18 +57,21 @@ class ScholarRoster
         'grant type' => 'grant_type', 'grant' => 'grant_type', 'scholarship type' => 'grant_type', 'type' => 'grant_type', 'full half' => 'grant_type', 'category' => 'grant_type',
         'scholar id' => 'scholar_code', 'scholar id number' => 'scholar_code', 'scholar id no' => 'scholar_code', 'scholar no' => 'scholar_code', 'scholar number' => 'scholar_code', 'scholar code' => 'scholar_code',
         'mobile' => 'mobile', 'mobile number' => 'mobile', 'mobile no' => 'mobile', 'cellphone' => 'mobile', 'cellphone number' => 'mobile', 'cell number' => 'mobile', 'phone' => 'mobile', 'phone number' => 'mobile', 'contact number' => 'mobile', 'contact no' => 'mobile',
-        'address' => 'address', 'home address' => 'address', 'permanent address' => 'address',
+        // Address in parts (owner, 2026-11-23). A single "Address" column is no longer enough.
+        'street' => 'address_street', 'street address' => 'address_street', 'house no street' => 'address_street', 'house no street barangay' => 'address_street', 'street barangay' => 'address_street', 'barangay street' => 'address_street', 'address street' => 'address_street', 'street purok barangay' => 'address_street',
+        'city' => 'address_city', 'municipality' => 'address_city', 'city municipality' => 'address_city', 'city or municipality' => 'address_city', 'town' => 'address_city', 'city town' => 'address_city', 'address city' => 'address_city',
+        'province' => 'address_province', 'address province' => 'address_province',
         'birthday' => 'birthdate', 'birthdate' => 'birthdate', 'birth date' => 'birthdate', 'date of birth' => 'birthdate', 'dob' => 'birthdate',
         'gender' => 'gender', 'sex' => 'gender',
     ];
 
     /** Columns of the downloadable template, in order ('Grant type' only when one of the provider's scholarships has types). */
-    public const TEMPLATE_COLUMNS = ['Scholar ID', 'Full name', 'Student number', 'Email', 'Mobile number', 'Address', 'Birthday', 'Gender', 'Campus', 'Program', 'Year level', 'Grant type'];
+    public const TEMPLATE_COLUMNS = ['Scholar ID', 'First name', 'Middle name', 'Surname', 'Suffix', 'Student number', 'Email', 'Mobile number', 'Street', 'City / Municipality', 'Province', 'Birthday', 'Gender', 'Campus', 'Program', 'Year level', 'Grant type'];
 
     /** Columns a file must have (Campus may be left out when only one campus offers the program; Grant type only for typed scholarships). */
     private const REQUIRED_COLUMNS = [
-        'scholar_code' => 'Scholar ID', 'full_name' => 'Full name', 'student_number' => 'Student number', 'email' => 'Email',
-        'mobile' => 'Mobile number', 'address' => 'Address', 'birthdate' => 'Birthday', 'gender' => 'Gender',
+        'scholar_code' => 'Scholar ID', 'first_name' => 'First name', 'last_name' => 'Surname', 'student_number' => 'Student number', 'email' => 'Email',
+        'mobile' => 'Mobile number', 'address_street' => 'Street', 'address_city' => 'City / Municipality', 'address_province' => 'Province', 'birthdate' => 'Birthday', 'gender' => 'Gender',
         'program' => 'Program', 'year_level' => 'Year level',
     ];
 
@@ -88,7 +98,6 @@ class ScholarRoster
         return [
             // Typed freely; unique within the chosen scholarship (scholarCodeError, checked afterwards).
             'scholar_code' => ['required', 'string', 'max:'.Scholar::SCHOLAR_CODE_MAX],
-            'full_name' => ['required', 'string', 'max:150'],
             'student_number' => ['required', 'string', 'max:30'],
             // The scholar's sign-in e-mail: their login details are sent here.
             'email' => ['required', 'email:rfc', 'max:190'],
@@ -98,17 +107,23 @@ class ScholarRoster
             'program' => ['required', 'string', 'max:150', self::programRule()],
             'year_level' => ['required', Rule::in(array_keys(Scholar::YEAR_LEVELS))],
             'grant_type' => ['nullable', 'string', 'max:60'],
-        ] + self::personalRules();
+        ] + PersonName::rules() + self::personalRules();
     }
 
-    /** Birthday, gender, mobile number, address: required (owner, 2026-11-20) on the Add form, in files and on the scholar's profile. */
+    /**
+     * Birthday, gender, mobile number, address: required (owner, 2026-11-20) on the Add form, in files and on the scholar's
+     * profile. The address is three fields since 2026-11-23: street (house no., street, purok / barangay), city or
+     * municipality, province; saved joined in `address` too (addressFields()).
+     */
     public static function personalRules(): array
     {
         return [
             'birthdate' => ['required', 'date_format:Y-m-d', 'after:1900-01-01', 'before:'.now()->subYears(10)->toDateString()],
             'gender' => ['required', Rule::in(array_keys(Scholar::GENDERS))],
             'mobile' => ['required', 'string', 'max:20', self::mobileRule()],
-            'address' => ['required', 'string', 'max:255'],
+            'address_street' => ['required', 'string', 'max:150'],
+            'address_city' => ['required', 'string', 'max:80'],
+            'address_province' => ['required', 'string', 'max:80'],
         ];
     }
 
@@ -124,8 +139,24 @@ class ScholarRoster
             'gender.required' => 'Choose Male or Female.',
             'gender.in' => 'Choose Male or Female.',
             'mobile.required' => 'Enter the scholar\'s mobile number.',
-            'address.required' => 'Enter the scholar\'s address.',
+            'address_street.required' => 'Enter the street: house no., street, purok or barangay.',
+            'address_city.required' => 'Enter the city or municipality.',
+            'address_province.required' => 'Enter the province.',
         ];
+    }
+
+    /**
+     * The address columns to save from validated input: the three parts (spaces collapsed) and, in `address`,
+     * the same joined in one line ("Purok 3, Gredu, Panabo City, Davao del Norte"), so every older reader still works.
+     *
+     * @return array{address_street: ?string, address_city: ?string, address_province: ?string, address: ?string}
+     */
+    public static function addressFields(array $data): array
+    {
+        $clean = fn ($v) => ($v = trim(preg_replace('/\s+/u', ' ', (string) $v))) === '' ? null : $v;
+        $parts = ['address_street' => $clean($data['address_street'] ?? null), 'address_city' => $clean($data['address_city'] ?? null), 'address_province' => $clean($data['address_province'] ?? null)];
+
+        return $parts + ['address' => Scholar::joinAddress(...array_values($parts))];
     }
 
     /** Validation rule: a Philippine mobile number (09XX XXX XXXX, +63 9XX XXX XXXX or 9XXXXXXXXX). */
@@ -208,14 +239,15 @@ class ScholarRoster
     /** Field names used in error messages ("student number" instead of "student_number"). */
     public function attributes(): array
     {
-        return ['full_name' => 'full name', 'student_number' => 'student number', 'year_level' => 'year level', 'grant_type' => 'grant type',
-            'scholar_code' => 'Scholar ID', 'birthdate' => 'birthday', 'mobile' => 'mobile number'];
+        return PersonName::attributes() + ['student_number' => 'student number', 'year_level' => 'year level', 'grant_type' => 'grant type',
+            'scholar_code' => 'Scholar ID', 'birthdate' => 'birthday', 'mobile' => 'mobile number',
+            'address_street' => 'street', 'address_city' => 'city / municipality', 'address_province' => 'province'];
     }
 
     /** Error messages for rules(). */
     public function messages(): array
     {
-        return ['campus.required' => 'Choose the campus the scholar studies at.'] + self::personalMessages();
+        return ['campus.required' => 'Choose the campus the scholar studies at.'] + self::personalMessages() + PersonName::messages("the scholar's");
     }
 
     /**
@@ -264,7 +296,7 @@ class ScholarRoster
         $data = $this->normalise($data);
 
         [$scholar, $password, $error, $converted] = DB::transaction(function () use ($scholarship, $data, $grantKey, $withStipend, $by) {
-            $account = $this->accounts->forEmail($data['email'], $data['full_name']);
+            $account = $this->accounts->forEmail($data['email'], Arr::only($data, PersonName::FIELDS));
             if ($account['error']) {
                 return [null, null, $account['error'], false];
             }
@@ -349,6 +381,9 @@ class ScholarRoster
             if (isset($data['gender'])) {
                 $data['gender'] = self::genderKey($data['gender']);
             }
+            if (isset($data['suffix'])) {
+                $data['suffix'] = PersonName::normalizeSuffix($data['suffix']);
+            }
 
             // The Campus column is optional in a file: a program only one campus offers tells us the campus.
             if (empty($data['campus']) && ! empty($data['program'])) {
@@ -420,7 +455,7 @@ class ScholarRoster
         $created = DB::transaction(function () use ($valid, $scholarship, $withStipend, $by, &$result) {
             $out = [];
             foreach ($valid as $data) {
-                $account = $this->accounts->forEmail($data['email'], $data['full_name']);
+                $account = $this->accounts->forEmail($data['email'], Arr::only($data, PersonName::FIELDS));
                 $scholar = Scholar::create($this->record($scholarship, $data, $data['_grant'], $withStipend, $by) + ['user_id' => $account['user']->id]);
                 $out[] = [$scholar, $account['password'], $account['converted']];
                 $result['added']++;
@@ -471,12 +506,16 @@ class ScholarRoster
             'scholarship_id' => $scholarship->id,
             'scholar_code' => $data['scholar_code'],
             'full_name' => $data['full_name'],
+            'first_name' => $data['first_name'],
+            'middle_name' => $data['middle_name'],
+            'last_name' => $data['last_name'],
+            'suffix' => $data['suffix'],
             'student_number' => $data['student_number'],
             'email' => $data['email'],
             'birthdate' => $data['birthdate'],
             'gender' => $data['gender'],
             'mobile' => $data['mobile'],
-            'address' => $data['address'],
+            ...self::addressFields($data),
             'campus' => $data['campus'],
             'program' => $data['program'],
             'year_level' => $data['year_level'],
@@ -493,13 +532,15 @@ class ScholarRoster
     private function normalise(array $data): array
     {
         $out = [];
-        foreach (['scholar_code', 'full_name', 'student_number', 'email', 'birthdate', 'gender', 'mobile', 'address', 'campus', 'program', 'year_level'] as $field) {
+        foreach (['scholar_code', 'first_name', 'middle_name', 'last_name', 'suffix', 'student_number', 'email', 'birthdate', 'gender', 'mobile', 'address_street', 'address_city', 'address_province', 'campus', 'program', 'year_level'] as $field) {
             $value = $data[$field] ?? null;
             $value = is_string($value) ? preg_replace('/\s+/u', ' ', trim($value)) : $value;
             $out[$field] = $value === '' ? null : $value;
         }
         $out['started_term'] = is_string($data['started_term'] ?? null) ? $data['started_term'] : null;   // checked in record()
         $out['scholar_code'] = Scholar::normalizeCode($out['scholar_code']);
+        $name = PersonName::parts($out);
+        $out = array_merge($out, Arr::only($name, PersonName::FIELDS), ['full_name' => $name['full']]);
         $out['email'] = $out['email'] ? Str::lower($out['email']) : null;
         $out['mobile'] = $out['mobile'] ? (self::normalizeMobile($out['mobile']) ?? $out['mobile']) : null;
         $out['program'] = ProgramCatalog::canonicalName($out['program']) ?? $out['program'];

@@ -3,7 +3,7 @@
      (ScholarRoster::personalRules()).
      $fields  which of: birthdate, gender, mobile, address (in this order on the page)
      $values  current values [field => value] (old input, or the saved scholar)
-     birthdate + gender and mobile are half-width; address is full width. --}}
+     birthdate + gender, mobile, city and province are half-width; the street is full width. --}}
 @php
     $values = $values ?? [];
     $oldest = '1900-01-02';
@@ -38,10 +38,22 @@
             </div>
             @break
         @case('address')
+            {{-- Address in parts (owner, 2026-11-23): street, city / municipality, province. --}}
             <div class="dash-field is-wide">
-                <label for="address">Address</label>
-                <input id="address" name="address" maxlength="255" required autocomplete="off" value="{{ $values['address'] ?? '' }}" placeholder="e.g. Purok 3, Barangay Gredu, Panabo City, Davao del Norte">
-                @error('address')<p class="dash-error">{{ $message }}</p>@enderror
+                <label for="address_street">Street</label>
+                <input id="address_street" name="address_street" maxlength="150" required autocomplete="off" value="{{ $values['address_street'] ?? '' }}" placeholder="e.g. Purok 3, Barangay Gredu" aria-describedby="address_street-help">
+                <small id="address_street-help">House no., street, purok or barangay.</small>
+                @error('address_street')<p class="dash-error">{{ $message }}</p>@enderror
+            </div>
+            <div class="dash-field">
+                <label for="address_city">City / Municipality</label>
+                <input id="address_city" name="address_city" maxlength="80" required autocomplete="off" value="{{ $values['address_city'] ?? '' }}" placeholder="e.g. Panabo City">
+                @error('address_city')<p class="dash-error">{{ $message }}</p>@enderror
+            </div>
+            <div class="dash-field">
+                <label for="address_province">Province</label>
+                <input id="address_province" name="address_province" maxlength="80" required autocomplete="off" value="{{ $values['address_province'] ?? '' }}" placeholder="e.g. Davao del Norte">
+                @error('address_province')<p class="dash-error">{{ $message }}</p>@enderror
             </div>
             @break
     @endswitch

@@ -4,10 +4,12 @@ namespace App\Models;
 
 use App\Matching\ProgramCatalog;
 use App\Support\AcademicTerm;
+use App\Support\PersonName;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
 /**
@@ -50,8 +52,8 @@ class Scholar extends Model
     public const GOOD_STANDING = ['active'];
 
     protected $fillable = [
-        'user_id', 'full_name', 'email', 'scholarship_id', 'scholar_code', 'student_number',
-        'birthdate', 'gender', 'mobile', 'address',
+        'user_id', 'full_name', 'first_name', 'middle_name', 'last_name', 'suffix', 'email', 'scholarship_id', 'scholar_code', 'student_number',
+        'birthdate', 'gender', 'mobile', 'address', 'address_street', 'address_city', 'address_province',
         'program', 'campus', 'year_level', 'status', 'grant_type', 'started_term', 'stipend_amount', 'added_by', 'credentials_sent_at',
     ];
 
@@ -67,7 +69,7 @@ class Scholar extends Model
     /** Column types: stipend as a 2-decimal amount, dates as Carbon objects. */
     protected function casts(): array
     {
-        return ['stipend_amount' => 'decimal:2', 'credentials_sent_at' => 'datetime', 'birthdate' => 'date'];
+        return ['stipend_amount' => 'decimal:2', 'credentials_sent_at' => 'datetime', 'birthdate' => 'date', 'pending_email_sent_at' => 'datetime'];
     }
 
     /** The scholar's BAKR login (null for older roster rows without an account). */
@@ -121,10 +123,41 @@ class Scholar extends Model
         return $this->user?->email ?? $this->email;
     }
 
-    /** Up to two initials for avatars. */
+    /**
+     * Sets the name parts (owner, 2026-11-23: first name, middle name, surname, suffix) and `full_name` composed from
+     * them. Does not save.
+     */
+    public function fillName(array $parts): static
+    {
+        $p = PersonName::parts($parts);
+
+        return $this->fill(Arr::only($p, PersonName::FIELDS) + ['full_name' => $p['full']]);
+    }
+
+    /**
+     * The name in parts, as shown on profiles and used to pre-fill the edit form: the account's parts (the account
+     * name is what displayName() shows), else this row's, else a best guess from the one-line name.
+     *
+     * @return array{first_name: ?string, middle_name: ?string, last_name: ?string, suffix: ?string}
+     */
+    public function nameParts(): array
+    {
+        foreach ([$this->user, $this] as $source) {
+            if ($source && filled($source->first_name)) {
+                return Arr::only($source->only(PersonName::FIELDS), PersonName::FIELDS);
+            }
+        }
+
+        return PersonName::split($this->displayName() === 'Unnamed scholar' ? null : $this->displayName());
+    }
+
+    /** Up to two initials for avatars: first name + surname (2026-11-23), else the first two words of the name. */
     public function initials(): string
     {
-        return collect(explode(' ', $this->displayName()))->filter()->take(2)->map(fn ($w) => mb_strtoupper(mb_substr($w, 0, 1)))->implode('');
+        $p = $this->nameParts();
+        $words = $p['first_name'] && $p['last_name'] ? [$p['first_name'], $p['last_name']] : explode(' ', $this->displayName());
+
+        return collect($words)->filter()->take(2)->map(fn ($w) => mb_strtoupper(mb_substr($w, 0, 1)))->implode('');
     }
 
     /**
@@ -230,6 +263,51 @@ class Scholar extends Model
     public function birthdateLabel(): ?string
     {
         return $this->birthdate?->format('M j, Y');
+    }
+
+    /** How long an e-mailed "confirm your new e-mail" link works (ScholarEmailChange). */
+    public const EMAIL_CHANGE_HOURS = 72;
+
+    /**
+     * The address in one line: street, city / municipality, province (owner, 2026-11-23). Older rows that only
+     * have the single `address` line show that; null when nothing is recorded.
+     */
+    public function addressLabel(): ?string
+    {
+        return self::joinAddress($this->address_street, $this->address_city, $this->address_province) ?? ($this->address ?: null);
+    }
+
+    /** True when street, city and province are all recorded (older rows may only have the one-line address). */
+    public function hasFullAddress(): bool
+    {
+        return filled($this->address_street) && filled($this->address_city) && filled($this->address_province);
+    }
+
+    /** "Purok 3, Gredu", "Panabo City", "Davao del Norte" → "Purok 3, Gredu, Panabo City, Davao del Norte" (null when all empty). */
+    public static function joinAddress(?string $street, ?string $city, ?string $province): ?string
+    {
+        $line = collect([$street, $city, $province])->map(fn ($p) => trim((string) $p))->filter()->implode(', ');
+
+        return $line === '' ? null : $line;
+    }
+
+    /** A new sign-in e-mail is waiting for the scholar to confirm it (and the link has not expired). */
+    public function hasPendingEmail(): bool
+    {
+        return filled($this->pending_email) && $this->pending_email_sent_at !== null
+            && $this->pending_email_sent_at->gt(now()->subHours(self::EMAIL_CHANGE_HOURS));
+    }
+
+    /** Is the mobile number usable for a call / text (stored as 09XXXXXXXXX)? */
+    public function hasCallableMobile(): bool
+    {
+        return (bool) preg_match('/^09\d{9}$/', (string) $this->mobile);
+    }
+
+    /** "+639171234567", for tel: / sms: links (null when no usable number is recorded). */
+    public function mobileDialString(): ?string
+    {
+        return $this->hasCallableMobile() ? '+63'.substr($this->mobile, 1) : null;
     }
 
     /** "0917 123 4567" (stored as 09171234567). */

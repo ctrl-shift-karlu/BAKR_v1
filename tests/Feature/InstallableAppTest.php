@@ -49,7 +49,17 @@ class InstallableAppTest extends TestCase
 
         // Pages come from the network; offline → offline.html. Only css/js/images are cached.
         $this->assertStringContainsString("request.mode === 'navigate'", $sw);
-        $this->assertStringContainsString('fetch(request).catch(() => caches.match(OFFLINE_URL))', $sw);
+        // Unreachable (no connection, Tailscale off, server down) or no answer within PAGE_TIMEOUT_MS → offline.html.
+        $this->assertStringContainsString('event.respondWith(pageOrUnreachable(request))', $sw);
+        $this->assertStringContainsString('Promise.race([fetch(request), timeout])', $sw);
+        $this->assertStringContainsString('caches.match(OFFLINE_URL)', $sw);
+        $this->assertStringNotContainsString('caches.put(request', substr($sw, strpos($sw, 'function pageOrUnreachable'), 900));   // pages never cached
+
+        // The page itself: plain words and one "Try again" button, nothing else.
+        $offline = file_get_contents(public_path('offline.html'));
+        $this->assertStringContainsString('BAKR is unreachable or down at the moment. Please try again later.', $offline);
+        $this->assertSame(1, substr_count($offline, '<a '));
+        $this->assertStringContainsString('>Try again</a>', $offline);
         $this->assertStringContainsString("request.method !== 'GET'", $sw);
         $this->assertFileExists(public_path('offline.html'));
         $this->assertFileExists(public_path('css/bakr-offline.css'));

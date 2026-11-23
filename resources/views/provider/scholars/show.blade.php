@@ -238,17 +238,30 @@
     </section>
     @endif
 
-    {{-- ---------- Personal information ---------- --}}
+    {{-- ---------- Personal information ----------
+         The name is editable (owner, 2026-11-23); birthday and gender are not once recorded (an older row that
+         never had them can still get them, once). --}}
     @if ($editing === 'personal')
     <section class="dash-card sp-card is-editing" id="personal" aria-labelledby="personal-title">
         <form method="POST" action="{{ route('provider.scholars.update', $s->id) }}" class="dash-form-grid" novalidate>
             @csrf @method('PATCH')
             <input type="hidden" name="section" value="personal">
             <h3 class="dash-card-title is-wide" id="personal-title"><i class="bi bi-person" aria-hidden="true"></i>Personal information <span class="dash-pill is-warn ms-editing-pill"><i class="bi bi-pencil" aria-hidden="true"></i> Editing</span></h3>
-            @include('provider.partials.personal-fields', ['fields' => ['birthdate', 'gender'], 'values' => [
-                'birthdate' => old('birthdate', $s->birthdate?->format('Y-m-d')), 'gender' => old('gender', $s->gender),
-            ]])
-            <div class="is-wide">@include('provider.partials.section-foot', ['cancel' => $readUrl.'#personal', 'note' => $saveNote])</div>
+            @php $nameNow = $s->nameParts(); @endphp
+            @include('provider.partials.name-fields', ['values' => collect(\App\Support\PersonName::FIELDS)->mapWithKeys(fn ($f) => [$f => old($f, $nameNow[$f] ?? null)])->all()])
+            @php $missingPersonal = array_values(array_filter([$s->birthdate === null ? 'birthdate' : null, filled($s->gender) ? null : 'gender'])); @endphp
+            @if ($missingPersonal)
+                @include('provider.partials.personal-fields', ['fields' => $missingPersonal, 'values' => [
+                    'birthdate' => old('birthdate'), 'gender' => old('gender'),
+                ]])
+            @endif
+            @if ($s->birthdate || filled($s->gender))
+            <dl class="sp-facts is-wide sp-locked">
+                @if ($s->birthdate)<div><dt>Birthday</dt><dd>{{ $s->birthdateLabel() }} <span class="sp-lock"><i class="bi bi-lock" aria-hidden="true"></i>Cannot be changed</span></dd></div>@endif
+                @if (filled($s->gender))<div><dt>Gender</dt><dd>{{ $s->genderLabel() }} <span class="sp-lock"><i class="bi bi-lock" aria-hidden="true"></i>Cannot be changed</span></dd></div>@endif
+            </dl>
+            @endif
+            <div class="is-wide">@include('provider.partials.section-foot', ['cancel' => $readUrl.'#personal', 'note' => 'Saves only this card. The name is also the scholar\'s account name.'])</div>
         </form>
     </section>
     @else
@@ -258,14 +271,25 @@
             <a class="dash-btn is-soft is-sm" href="{{ $editUrl('personal') }}"><i class="bi bi-pencil-square" aria-hidden="true"></i>Edit</a>
         </div>
         <dl class="sp-facts">
-            <div><dt>Full name</dt><dd>{{ $s->displayName() }}</dd></div>
+            @php $nameNow = $s->nameParts(); @endphp
+            <div><dt>First name</dt><dd>{!! $show($nameNow['first_name']) !!}</dd></div>
+            <div><dt>Middle name</dt><dd>{{ $nameNow['middle_name'] ?: '—' }}</dd></div>
+            <div><dt>Surname</dt><dd>{!! $show($nameNow['last_name']) !!}</dd></div>
+            <div><dt>Suffix</dt><dd>{{ $nameNow['suffix'] ?: '—' }}</dd></div>
             <div><dt>Birthday</dt><dd>{!! $show($s->birthdateLabel()) !!}</dd></div>
             <div><dt>Gender</dt><dd>{!! $show($s->genderLabel()) !!}</dd></div>
         </dl>
     </section>
     @endif
 
-    {{-- ---------- Contact information ---------- --}}
+    {{-- ---------- Contact information ----------
+         Mobile + address (street, city / municipality, province) are edited here. The sign-in e-mail has its own
+         form (?edit=email): it changes only after the scholar confirms the link sent to the new address. The mobile
+         number is the way to reach the scholar when e-mail does not work (Call / Text). --}}
+    @php
+        $editingEmail = request('edit') === 'email' || $errors->has('new_email');
+        $dial = $s->mobileDialString();
+    @endphp
     @if ($editing === 'contact')
     <section class="dash-card sp-card is-editing" id="contact" aria-labelledby="contact-title">
         <form method="POST" action="{{ route('provider.scholars.update', $s->id) }}" class="dash-form-grid" novalidate>
@@ -273,23 +297,65 @@
             <input type="hidden" name="section" value="contact">
             <h3 class="dash-card-title is-wide" id="contact-title"><i class="bi bi-envelope" aria-hidden="true"></i>Contact information <span class="dash-pill is-warn ms-editing-pill"><i class="bi bi-pencil" aria-hidden="true"></i> Editing</span></h3>
             @include('provider.partials.personal-fields', ['fields' => ['mobile', 'address'], 'values' => [
-                'mobile' => old('mobile', $s->mobileLabel()), 'address' => old('address', $s->address),
+                'mobile' => old('mobile', $s->mobileLabel()),
+                'address_street' => old('address_street', $s->address_street ?? ($s->hasFullAddress() ? null : $s->address)),
+                'address_city' => old('address_city', $s->address_city), 'address_province' => old('address_province', $s->address_province),
             ]])
-            <p class="pv-account-note is-wide"><i class="bi bi-envelope-check" aria-hidden="true"></i><span>The e-mail {{ $s->contactEmail() ?: '' }} is the scholar's sign-in, so it is not changed here.</span></p>
+            @if (! $s->hasFullAddress() && $s->address)
+                <p class="pv-account-note is-wide"><i class="bi bi-info-circle" aria-hidden="true"></i><span>The address was recorded in one line before ("{{ $s->address }}"). Split it into street, city / municipality and province.</span></p>
+            @endif
+            <p class="pv-account-note is-wide"><i class="bi bi-envelope-check" aria-hidden="true"></i><span>The e-mail {{ $s->contactEmail() ?: '' }} is the scholar's sign-in. Change it with "Change e-mail" on this card.</span></p>
             <div class="is-wide">@include('provider.partials.section-foot', ['cancel' => $readUrl.'#contact', 'note' => $saveNote])</div>
         </form>
     </section>
     @else
-    <section class="dash-card sp-card" id="contact" aria-labelledby="contact-title">
+    <section class="dash-card sp-card {{ $editingEmail ? 'is-editing' : '' }}" id="contact" aria-labelledby="contact-title">
         <div class="sp-card-head">
             <h3 class="dash-card-title" id="contact-title"><i class="bi bi-envelope" aria-hidden="true"></i>Contact information</h3>
             <a class="dash-btn is-soft is-sm" href="{{ $editUrl('contact') }}"><i class="bi bi-pencil-square" aria-hidden="true"></i>Edit</a>
         </div>
         <dl class="sp-facts">
             <div><dt>E-mail</dt><dd>{{ $s->contactEmail() ?: '—' }}</dd></div>
-            <div><dt>Mobile number</dt><dd>{!! $show($s->mobileLabel()) !!}</dd></div>
-            <div><dt>Address</dt><dd>{!! $show($s->address) !!}</dd></div>
+            <div><dt>Mobile number</dt><dd>{!! $show($s->mobileLabel()) !!}
+                @if ($dial)
+                    <span class="sp-dial">
+                        <a class="dash-btn is-soft is-sm" href="tel:{{ $dial }}"><i class="bi bi-telephone" aria-hidden="true"></i>Call</a>
+                        <a class="dash-btn is-soft is-sm" href="sms:{{ $dial }}"><i class="bi bi-chat-dots" aria-hidden="true"></i>Text</a>
+                    </span>
+                @endif
+            </dd></div>
+            <div><dt>Address</dt><dd>{!! $show($s->addressLabel()) !!}@if ($s->addressLabel() && ! $s->hasFullAddress()) <span class="pv-attn">Add street, city and province</span>@endif</dd></div>
         </dl>
+
+        @if ($s->hasPendingEmail())
+            <div class="sp-email-pending" role="status">
+                <p><i class="bi bi-hourglass-split" aria-hidden="true"></i><span>Waiting for the scholar to confirm <strong>{{ $s->pending_email }}</strong> (link sent {{ $s->pending_email_sent_at->format('M j, Y g:i A') }}). Until then they sign in with {{ $s->contactEmail() }}.@if ($dial) Call or text them so they open it.@endif</span></p>
+                <form method="POST" action="{{ route('provider.scholars.email.cancel', $s->id) }}">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="dash-btn is-soft is-sm"><i class="bi bi-x-lg" aria-hidden="true"></i>Withdraw change</button>
+                </form>
+            </div>
+        @endif
+
+        @if ($editingEmail)
+            <form method="POST" action="{{ route('provider.scholars.email', $s->id) }}" class="dash-form-grid sp-email-form" novalidate data-busy="Sending the confirmation link…" data-busy-sub="To the new e-mail address">
+                @csrf
+                <h4 class="is-wide sp-email-title"><i class="bi bi-envelope-at" aria-hidden="true"></i>Change sign-in e-mail <span class="dash-pill is-warn ms-editing-pill"><i class="bi bi-pencil" aria-hidden="true"></i> Editing</span></h4>
+                <div class="dash-field is-wide">
+                    <label for="new_email">New e-mail</label>
+                    <input id="new_email" name="new_email" type="email" maxlength="190" required autocomplete="off" spellcheck="false" value="{{ old('new_email') }}" placeholder="name@gmail.com" aria-describedby="new_email-help">
+                    <small id="new_email-help">We e-mail a confirmation link to the new address. The sign-in e-mail changes only when the scholar opens it (within {{ \App\Models\Scholar::EMAIL_CHANGE_HOURS }} hours), so you know the new address works. Until then they keep using {{ $s->contactEmail() }}.@if ($dial) Check the address with them by phone first.@endif</small>
+                    @error('new_email')<p class="dash-error">{{ $message }}</p>@enderror
+                    @if (\App\Services\Provider\ScholarAccounts::mailIsTestMode())<small class="pv-attn">E-mail is in test mode (MAIL_MAILER=log): nothing will be delivered.</small>@endif
+                </div>
+                <div class="is-wide">@include('provider.partials.section-foot', ['cancel' => $readUrl.'#contact', 'note' => 'Sends a confirmation link. Nothing changes until the scholar confirms.', 'saveLabel' => 'Send confirmation link'])</div>
+            </form>
+        @else
+            <div class="pv-resend sp-resend">
+                <a class="dash-btn is-soft is-sm" href="{{ route('provider.scholars.show', [$s->id, 'edit' => 'email']) }}#contact"><i class="bi bi-envelope-at" aria-hidden="true"></i>Change e-mail</a>
+                <small>For a scholar who lost access to their e-mail. The new address must be confirmed by the scholar.</small>
+            </div>
+        @endif
     </section>
     @endif
 </div>

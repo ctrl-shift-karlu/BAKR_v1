@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Middleware\EnsureDatabaseIsReachable;
 use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\ProviderFeature;
 use App\Http\Middleware\RoleMiddleware;
 use App\Http\Middleware\SecurityHeaders;
+use App\Support\DatabaseStatus;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -24,6 +26,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy on every page (security audit 2026-11-22).
         $middleware->web(append: [SecurityHeaders::class]);
+
+        // Database off (XAMPP's MySQL stopped): open the PDO connection first, inside try / catch, and show a friendly
+        // 503 page instead of the technical error (2026-11-23). Before the session, which is stored in the database.
+        $middleware->web(prepend: [EnsureDatabaseIsReachable::class]);
 
         // HTTPS tunnels (cloudflared / ngrok) and reverse proxies: trust their X-Forwarded-* headers so
         // asset() / route() build https:// links (the installable app needs HTTPS). Only this machine by
@@ -50,4 +56,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
+        // The database stopped answering later in the request (PDOException / QueryException from a lost or refused
+        // connection): the same friendly 503 page, never the SQL, the stack trace or the host / user. Other
+        // database errors keep the normal handling. Logged once by DatabaseStatus (code only), not twice.
+        $exceptions->render(fn (Throwable $e, Request $request) => DatabaseStatus::isUnavailable($e)
+            ? DatabaseStatus::response($request, $e)
+            : null);
+        $exceptions->dontReportWhen(fn (Throwable $e) => DatabaseStatus::isUnavailable($e));
     })->create();

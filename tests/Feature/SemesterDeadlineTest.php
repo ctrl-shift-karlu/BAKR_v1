@@ -174,9 +174,9 @@ class SemesterDeadlineTest extends TestCase
         $this->setDeadline('ched-tdp', AcademicTerm::previous(), '2026-06-30');
         $this->setDeadline('ched-tdp', $term, '2026-12-10');
 
-        $person = ['scholarship_id' => $this->sid('ched-tdp'), 'scholar_code' => 'TDP-9', 'full_name' => 'Ben Cruz', 'student_number' => '2024-0009',
+        $person = ['scholarship_id' => $this->sid('ched-tdp'), 'scholar_code' => 'TDP-9', 'first_name' => 'Ben', 'last_name' => 'Cruz', 'student_number' => '2024-0009',
             'email' => 'ben@example.test', 'campus' => 'Main (Panabo Campus)', 'program' => 'BS Information Technology', 'year_level' => '2',
-            'birthdate' => '2005-03-14', 'gender' => 'male', 'mobile' => '0917 123 4567', 'address' => 'Panabo City'];
+            'birthdate' => '2005-03-14', 'gender' => 'male', 'mobile' => '0917 123 4567', 'address_street' => 'Purok 3, Gredu', 'address_city' => 'Panabo City', 'address_province' => 'Davao del Norte'];
 
         // Started this semester: only this semester's checklist, due on its deadline.
         $this->post('/provider/scholars', $person + ['started_term' => $term])->assertSessionHasNoErrors();

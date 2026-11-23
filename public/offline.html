@@ -4,17 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#143a2b">
-    <title>You're offline | BAKR</title>
+    <meta name="robots" content="noindex">
+    <title>BAKR is unreachable | BAKR</title>
     <link rel="icon" type="image/png" href="images/logo/bakr-logo.png">
     <link rel="stylesheet" href="css/bakr-offline.css">
 </head>
 <body>
-<main class="off-card">
-    <img src="images/logo/bakr-logo.png" alt="" width="72" height="72">
-    <h1>You're offline</h1>
-    <p>BAKR needs an internet connection to show your matches, scholarship and documents. We don't keep your personal details on this device.</p>
-    <p class="off-hint">Check your Wi-Fi or mobile data, then try again.</p>
-    <a class="off-btn" href="./">Try again</a>
+<!-- Shown by the service worker (public/sw.js) when BAKR cannot be reached: no connection, the server's network
+     (Tailscale) is off, or the server is down. "Try again" reloads the page that was asked for (empty href). -->
+<main class="off-card" aria-labelledby="off-title">
+    <img src="images/logo/bakr-logo.png" alt="BAKR logo" width="72" height="72">
+    <h1 id="off-title">BAKR is unreachable</h1>
+    <p>BAKR is unreachable or down at the moment. Please try again later.</p>
+    <a class="off-btn" href="">Try again</a>
 </main>
 </body>
 </html>

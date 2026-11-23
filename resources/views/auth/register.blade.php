@@ -20,13 +20,33 @@
 @section('card')
 <form method="POST" action="{{ route('student.register') }}" novalidate data-busy="Creating your account…" data-busy-sub="Just a moment">
     @csrf
-    <div class="mb-3">
-        <label for="name" class="form-label">Full name</label>
-        <div class="input-group">
-            <span class="input-group-text"><i class="bi bi-person" aria-hidden="true"></i></span>
-            <input id="name" name="name" type="text" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" required autocomplete="name" autofocus>
+    {{-- Name in parts (owner, 2026-11-23): first name + surname required, middle name + suffix optional. --}}
+    <div class="row g-2 mb-1">
+        <div class="col-sm-6 mb-2">
+            <label for="first_name" class="form-label">First name</label>
+            <input id="first_name" name="first_name" type="text" class="form-control @error('first_name') is-invalid @enderror" value="{{ old('first_name') }}" maxlength="60" required autocomplete="given-name" autofocus>
+            @error('first_name')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
         </div>
-        @error('name')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+        <div class="col-sm-6 mb-2">
+            <label for="middle_name" class="form-label">Middle name <span class="sa-optional">(optional)</span></label>
+            <input id="middle_name" name="middle_name" type="text" class="form-control @error('middle_name') is-invalid @enderror" value="{{ old('middle_name') }}" maxlength="60" autocomplete="additional-name">
+            @error('middle_name')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+        </div>
+        <div class="col-8 mb-2">
+            <label for="last_name" class="form-label">Surname</label>
+            <input id="last_name" name="last_name" type="text" class="form-control @error('last_name') is-invalid @enderror" value="{{ old('last_name') }}" maxlength="60" required autocomplete="family-name">
+            @error('last_name')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+        </div>
+        <div class="col-4 mb-2">
+            <label for="suffix" class="form-label">Suffix <span class="sa-optional">(optional)</span></label>
+            <select id="suffix" name="suffix" class="form-select @error('suffix') is-invalid @enderror" autocomplete="honorific-suffix">
+                <option value="">None</option>
+                @foreach (\App\Support\PersonName::SUFFIXES as $key => $label)
+                    <option value="{{ $key }}" @selected(old('suffix') === $key)>{{ $label }}</option>
+                @endforeach
+            </select>
+            @error('suffix')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+        </div>
     </div>
     <div class="mb-3">
         <label for="email" class="form-label">Email</label>

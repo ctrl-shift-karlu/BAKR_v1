@@ -331,6 +331,14 @@
 .dash .sp-facts dd { flex: 1 1 0; min-width: 0; margin: 0; color: var(--dash-ink); overflow-wrap: anywhere; }
 .dash .sp-resend { margin: 12px 0 0; }
 .dash .sp-card .ms-section-foot { margin-top: 4px; }
+/* Contact card (2026-11-23): Call / Text the scholar, the locked birthday / gender, the confirmed e-mail change. */
+.dash .sp-dial { display: inline-flex; flex-wrap: wrap; gap: 6px; margin-left: 8px; vertical-align: middle; }
+.dash .sp-lock { display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; font-size: var(--text-xs); color: var(--dash-ink-soft); }
+.dash .sp-locked { margin-top: 2px; }
+.dash .sp-email-pending { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin: 12px 0 0; padding: 10px 12px; border: 1px solid var(--dash-line); border-left: 3px solid var(--viz-blue, #1c86a8); border-radius: var(--dash-radius-sm); font-size: var(--text-caption); color: var(--dash-ink); }
+.dash .sp-email-pending p { display: flex; gap: 8px; margin: 0; flex: 1 1 18rem; min-width: 0; overflow-wrap: anywhere; }
+.dash .sp-email-form { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--dash-line); }
+.dash .sp-email-title { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; font-size: var(--text-md); font-weight: 600; color: var(--dash-text-strong, var(--dash-ink)); }
 @media (max-width: 1199.98px) { .dash .sp-grid { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 575.98px) {
   .dash .sp-id { align-items: flex-start; }
@@ -410,3 +418,6 @@
 .dash .pv-row-actions form { margin: 0; }
 .dash .pv-row-actions .dash-btn { white-space: nowrap; }
 .dash .pv-list-hint { display: flex; gap: .45rem; align-items: baseline; margin: 0 0 .75rem; font-size: var(--text-caption); }
+
+/* "(optional)" next to a field label (name parts, 2026-11-23). */
+.dash .dash-field label .pv-optional { font-weight: 400; font-size: var(--text-xs); color: var(--dash-ink-soft); }

@@ -145,7 +145,8 @@ class ScholarPortalController extends Controller
                 'birthdate' => $first('birthdateLabel'),
                 'gender' => $first('genderLabel'),
                 'mobile' => $first('mobileLabel'),
-                'address' => $scholars->pluck('address')->filter()->first(),
+                // Street, city / municipality, province in one line (older rows: their one-line address).
+                'address' => $first('addressLabel'),
             ],
         ]);
     }

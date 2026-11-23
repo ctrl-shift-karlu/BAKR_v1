@@ -185,7 +185,7 @@
   .sp-input, .sd .sp-input, .sd select.sp-input, .dash .dash-input,
   .dash .dash-field :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea),
   .bk-msg-form :is(input[type="text"], input[type="email"], select, textarea),
-  .directory-search .form-control, .form-control,
+  .directory-search .form-control, .form-control, .form-select,
   .sa-auth-card .input-group-text, .sa-auth-card .input-group .sa-toggle
 ) {
   background: #101c16; color: var(--ink); border-color: #33463b;

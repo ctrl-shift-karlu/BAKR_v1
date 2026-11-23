@@ -27,7 +27,7 @@
     $nAll  = $nElig + $nPoss + $nInfo + $nNot;
     $w     = fn ($n) => $nAll ? round($n / $nAll * 100, 1) : 0;
     $answers = $current?->answers ?? [];
-    $initials = collect(preg_split('/\s+/', trim($me->name)))->filter()->take(2)->map(fn ($p) => mb_strtoupper(mb_substr($p, 0, 1)))->implode('');
+    $initials = $me->initials();   // first name + surname (2026-11-23)
     $banner = match (true) {
         request()->routeIs('student.results') => 'opt/students2.jpg',
         request()->routeIs('student.profile', 'student.profile.*') => 'opt/dnsc_gate.jpg',

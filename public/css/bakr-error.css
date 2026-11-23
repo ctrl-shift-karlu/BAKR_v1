@@ -1,0 +1,43 @@
+/* BAKR — "Server error" page (resources/views/errors/database.blade.php). Standalone: no Bootstrap,
+   no shared stylesheet, so it draws even when little else works. Light by default, dark with the device setting
+   or the saved choice (html[data-theme], set by bakr-theme.js). */
+:root {
+  --err-bg: #f4f1ea; --err-card: #fdfbf8; --err-ink: #2b2925; --err-ink-soft: #5b564f; --err-line: #e3ddd0;
+  --err-green: #143a2b; --err-gold: #c9a443; --err-gold-light: #f6dfa0; --err-accent: #1f4d3a;
+  --text-xs: 12px; --text-sm: 14px; --text-md: 16px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --err-bg: #0f1d17; --err-card: #16271f; --err-ink: #ece7dc; --err-ink-soft: #b9b2a5; --err-line: #2a3d33;
+    --err-accent: #f6dfa0; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --err-bg: #0f1d17; --err-card: #16271f; --err-ink: #ece7dc; --err-ink-soft: #b9b2a5; --err-line: #2a3d33;
+  --err-accent: #f6dfa0; color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; }
+body.bk-error {
+  min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: 24px 16px;
+  background: var(--err-bg); color: var(--err-ink);
+  font: 400 var(--text-md)/1.6 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+}
+.bk-error-card {
+  width: 100%; max-width: 480px; padding: clamp(24px, 6vw, 40px); text-align: center;
+  background: var(--err-card); border: 1px solid var(--err-line); border-top: 4px solid var(--err-gold); border-radius: 20px;
+  box-shadow: 0 24px 60px -28px rgba(12, 35, 26, .35);
+}
+.bk-error-logo { display: block; width: 64px; height: 64px; margin: 0 auto 12px; object-fit: contain; }
+.bk-error-icon { display: inline-grid; place-items: center; width: 44px; height: 44px; margin-bottom: 10px; border-radius: 50%; font-size: 20px; color: #b42318; background: rgba(180, 35, 24, .1); }
+.bk-error h1 { margin: 0 0 10px; font-size: clamp(1.3rem, 4.5vw, 1.6rem); line-height: 1.25; font-weight: 600; color: var(--err-accent); }
+.bk-error p { margin: 0 0 12px; font-size: var(--text-sm); color: var(--err-ink); }
+.bk-error-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 20px 0 14px; }
+.bk-error-btn {
+  flex: 0 1 220px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 18px;
+  border-radius: 999px; border: 1px solid var(--err-gold); background: var(--err-gold); color: var(--err-green);
+  font-size: var(--text-sm); font-weight: 600; text-decoration: none;
+}
+.bk-error-btn:hover { filter: brightness(1.05); }
+.bk-error-btn:focus-visible { outline: 3px solid var(--err-gold-light); outline-offset: 2px; }

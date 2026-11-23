@@ -49,8 +49,9 @@ body.sa-body {
 }
 
 .form-label { font-weight: 500; font-size: var(--text-sm); }
-.form-control { border-radius: 10px; border-color: #e3dfd8; font-size: var(--text-md); }
-.form-control:focus, .form-check-input:focus {
+.form-control, .form-select { border-radius: 10px; border-color: #e3dfd8; font-size: var(--text-md); }
+.sa-optional { font-weight: 400; font-size: var(--text-xs); color: var(--ink-soft, #6b665d); }
+.form-control:focus, .form-select:focus, .form-check-input:focus {
   border-color: var(--green-700);
   box-shadow: 0 0 0 .2rem rgba(31, 77, 58, .15);
 }

@@ -2,8 +2,8 @@
 
 {{-- Add new, official scholars to BAKR: one at a time, or from an Excel file.
      The provider types only the scholar's own details (scholars table: scholar_code = Scholar ID, typed
-     freely, full_name, student_number, email, campus, program, year_level, birthdate, gender (Male /
-     Female), mobile, address; all required) and, for scholarships with more than one published type, the
+     freely, first_name / middle_name / last_name / suffix (2026-11-23; full_name = the parts joined), student_number, email, campus, program, year_level, birthdate, gender (Male /
+     Female), mobile, address as street / city or municipality / province (2026-11-23); all required) and, for scholarships with more than one published type, the
      grant type (scholars.grant_type, e.g. CMSP Full / Half) and "Scholar since" (started_term, the semester
      they started; default the current one). Status (Active) and stipend (the type's published amount) are
      filled in by ScholarRoster.
@@ -100,11 +100,7 @@
 
             {{-- Personal information --}}
             <h3 class="pv-form-group is-wide"><i class="bi bi-person" aria-hidden="true"></i>Personal information</h3>
-            <div class="dash-field is-wide">
-                <label for="full_name">Full name</label>
-                <input id="full_name" name="full_name" maxlength="150" required autocomplete="off" value="{{ old('full_name') }}" placeholder="e.g. Juan A. Dela Cruz">
-                @error('full_name')<p class="dash-error">{{ $message }}</p>@enderror
-            </div>
+            @include('provider.partials.name-fields', ['values' => old()])
             @include('provider.partials.personal-fields', ['fields' => ['birthdate', 'gender'], 'values' => old()])
 
             {{-- Contact information --}}
@@ -217,8 +213,8 @@
         <details class="pv-columns">
             <summary>Columns BAKR reads</summary>
             <ul>
-                <li><b>Scholar ID</b>, <b>Full name</b>, <b>Student number</b>, <b>Email</b>, <b>Program</b>, <b>Year level</b> (all required). The Scholar ID is read exactly as typed. Year level as 1–4 or "2nd year". Program as its DNSC name, e.g. "Bachelor of Science in Information Technology" or "BS Information Technology". The e-mail becomes the scholar's sign-in.</li>
-                <li><b>Mobile number</b>, <b>Address</b>, <b>Birthday</b>, <b>Gender</b> (all required). Mobile as 0917 123 4567 or +63 917 123 4567. Birthday as an Excel date, 2005-03-14 or 03/14/2005 (month first). Gender as Male or Female (M / F also work).</li>
+                <li><b>Scholar ID</b>, <b>First name</b>, <b>Surname</b>, <b>Student number</b>, <b>Email</b>, <b>Program</b>, <b>Year level</b> (all required). <b>Middle name</b> and <b>Suffix</b> (Jr., Sr., II, III, IV, V) are optional columns. The Scholar ID is read exactly as typed. Year level as 1–4 or "2nd year". Program as its DNSC name, e.g. "Bachelor of Science in Information Technology" or "BS Information Technology". The e-mail becomes the scholar's sign-in.</li>
+                <li><b>Mobile number</b>, <b>Street</b>, <b>City / Municipality</b>, <b>Province</b>, <b>Birthday</b>, <b>Gender</b> (all required). Street = house no., street, purok or barangay. Mobile as 0917 123 4567 or +63 917 123 4567. Birthday as an Excel date, 2005-03-14 or 03/14/2005 (month first). Gender as Male or Female (M / F also work).</li>
                 <li><b>Campus</b>: the DNSC campus the scholar studies at, e.g. "Main (Panabo Campus)", "Samal" or "Carmen". Needed whenever more than one campus offers the program (for example Information Technology); if only one campus offers it, you may leave it empty.</li>
                 @if (in_array('Grant type', $columns, true))
                     <li><b>Grant type</b>: required for

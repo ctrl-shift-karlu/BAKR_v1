@@ -31,4 +31,7 @@
 
 @section('foot')
     <p>Remembered it? <a href="{{ route($loginRoute) }}">Back to login</a></p>
+    @if ($loginRoute === 'scholar.login')
+        <p>No longer have access to that e-mail? Call or text your scholarship provider: they can change your sign-in e-mail once you confirm the new one.</p>
+    @endif
 @endsection

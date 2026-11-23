@@ -2,7 +2,7 @@
 @section('title', 'Dashboard | BAKR')
 
 @section('hero_title')
-Hello, <em>{{ explode(' ', trim($user->name))[0] }}</em>
+Hello, <em>{{ $user->firstName() }}</em>
 @endsection
 @section('hero_sub')
 Here is how your matching form matches the scholarships BAKR tracks. Last saved {{ $application->submitted_at->format('M j, Y') }} (version {{ $application->version }}).

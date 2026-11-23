@@ -127,16 +127,16 @@ class ProviderRosterTest extends TestCase
     /** The scholar's own details, as the form sends them (birthday, gender, mobile and address are required since 2026-11-20). */
     private function person(array $over = []): array
     {
-        return $over + ['scholar_code' => 'SCID-2026-0001', 'full_name' => 'Maria Santos', 'student_number' => '2023-0001', 'email' => 'maria@example.test', 'campus' => 'Main (Panabo Campus)', 'program' => 'BS Information Technology', 'year_level' => '2',
-            'birthdate' => '2005-03-14', 'gender' => 'female', 'mobile' => '0917 123 4567', 'address' => 'Panabo City'];
+        return $over + ['scholar_code' => 'SCID-2026-0001', 'first_name' => 'Maria', 'last_name' => 'Santos', 'student_number' => '2023-0001', 'email' => 'maria@example.test', 'campus' => 'Main (Panabo Campus)', 'program' => 'BS Information Technology', 'year_level' => '2',
+            'birthdate' => '2005-03-14', 'gender' => 'female', 'mobile' => '0917 123 4567', 'address_street' => 'Purok 3, Gredu', 'address_city' => 'Panabo City', 'address_province' => 'Davao del Norte'];
     }
 
-    /** Adds the required personal columns (Mobile number, Address, Birthday, Gender) with valid values to a sheet. */
+    /** Adds the required personal columns (Mobile number, Street, City / Municipality, Province, Birthday, Gender) with valid values to a sheet. */
     private function withDetails(array $rows): array
     {
         $header = array_shift($rows);
 
-        return [[...$header, 'Mobile number', 'Address', 'Birthday', 'Gender'], ...array_map(fn ($r) => [...$r, '09171234567', 'Panabo City', '2005-03-14', 'F'], $rows)];
+        return [[...$header, 'Mobile number', 'Street', 'City / Municipality', 'Province', 'Birthday', 'Gender'], ...array_map(fn ($r) => [...$r, '09171234567', 'Purok 3, Gredu', 'Panabo City', 'Davao del Norte', '2005-03-14', 'F'], $rows)];
     }
 
     public function test_a_provider_adds_one_new_scholar_and_the_rest_is_filled_in(): void
@@ -144,7 +144,7 @@ class ProviderRosterTest extends TestCase
         $this->actingAs($provider = $this->provider('ched'));
 
         $this->post('/provider/scholars', $this->person([
-            'scholarship_id' => $this->sid('ched-tdp'), 'full_name' => '  Maria   Santos ', 'email' => 'Maria@Example.test',
+            'scholarship_id' => $this->sid('ched-tdp'), 'first_name' => '  Maria  ', 'last_name' => 'Santos', 'email' => 'Maria@Example.test',
             // Not on the form: ignored if someone sends them.
             'status' => 'graduated', 'stipend_amount' => '1',
         ]))->assertRedirect();
@@ -175,7 +175,7 @@ class ProviderRosterTest extends TestCase
         // "Scholar since" on both forms (owner, 2026-11-21), starting on the current semester.
         $this->assertSame(2, substr_count($html, 'name="started_term"'));
         $this->assertStringContainsString('<option value="'.AcademicTerm::current().'" selected', $html);
-        foreach (['name="full_name"', 'name="student_number"', 'name="email"', 'name="program"', 'name="year_level"', 'name="grant_type"'] as $input) {
+        foreach (['name="first_name"', 'name="middle_name"', 'name="last_name"', 'name="suffix"', 'name="student_number"', 'name="email"', 'name="program"', 'name="year_level"', 'name="grant_type"'] as $input) {
             $this->assertStringContainsString($input, $html);
         }
         $this->assertStringContainsString('Full scholarship (Full-SSP)', $html);   // CMSP Full / Half choice
@@ -230,8 +230,8 @@ class ProviderRosterTest extends TestCase
         $this->actingAs($this->provider('ched'));
         $sid = $this->sid('ched-tdp');
 
-        $this->post('/provider/scholars', ['scholarship_id' => $sid, 'full_name' => 'Maria Santos'])
-            ->assertSessionHasErrors(['scholar_code', 'student_number', 'campus', 'program', 'year_level', 'birthdate', 'gender', 'mobile', 'address']);
+        $this->post('/provider/scholars', ['scholarship_id' => $sid, 'first_name' => 'Maria', 'last_name' => 'Santos'])
+            ->assertSessionHasErrors(['scholar_code', 'student_number', 'campus', 'program', 'year_level', 'birthdate', 'gender', 'mobile', 'address_street', 'address_city', 'address_province']);
         $this->post('/provider/scholars', $this->person(['scholarship_id' => $sid, 'year_level' => '9']))->assertSessionHasErrors('year_level');
         $this->post('/provider/scholars', $this->person(['scholarship_id' => $sid, 'year_level' => '5']))->assertSessionHasErrors('year_level');   // no 5th year
         $this->post('/provider/scholars', $this->person(['scholarship_id' => $sid, 'program' => 'BS Nursing']))->assertSessionHasErrors('program');   // not a DNSC program
@@ -296,9 +296,9 @@ class ProviderRosterTest extends TestCase
         $this->actingAs($this->provider('ched'));
 
         $this->post('/provider/scholars/import', ['scholarship_id' => $this->sid('ched-tdp'), 'file' => $this->xlsxUpload($this->withDetails([
-            ['Scholar ID', 'Full name', 'Student number', 'Email', 'Program', 'Year level'],
-            ['SCID-2026-0001', 'Juan Dela Cruz', '2023-0001', 'juan@example.test', 'BS Information Technology', '1'],   // IT: Main, Samal, Asuncion
-            ['SCID-2026-0002', 'Ana Reyes', '2023-0002', 'ana@example.test', 'BS Criminology', '2'],                     // Carmen offers it (Main does not)
+            ['Scholar ID', 'First name', 'Surname', 'Student number', 'Email', 'Program', 'Year level'],
+            ['SCID-2026-0001', 'Juan', 'Dela Cruz', '2023-0001', 'juan@example.test', 'BS Information Technology', '1'],   // IT: Main, Samal, Asuncion
+            ['SCID-2026-0002', 'Ana', 'Reyes', '2023-0002', 'ana@example.test', 'BS Criminology', '2'],                     // Carmen offers it (Main does not)
         ]))])->assertSessionHas('import_report', fn ($r) => $r['added'] === 1 && str_contains($r['skipped'][0], 'more than one campus'));
 
         $this->assertSame('Carmen Campus', Scholar::where('full_name', 'Ana Reyes')->value('campus'));
@@ -310,7 +310,7 @@ class ProviderRosterTest extends TestCase
         $row = $this->person(['scholarship_id' => $this->sid('ched-tdp')]);
 
         $this->post('/provider/scholars', $row)->assertRedirect();
-        $this->post('/provider/scholars', ['full_name' => 'Someone Else'] + $row)->assertSessionHasErrors('student_number');
+        $this->post('/provider/scholars', ['first_name' => 'Someone', 'last_name' => 'Else'] + $row)->assertSessionHasErrors('student_number');
 
         $this->assertSame(1, Scholar::count());
     }
@@ -340,15 +340,15 @@ class ProviderRosterTest extends TestCase
         Scholar::create(['full_name' => 'Already There', 'student_number' => '2023-0009', 'scholarship_id' => $this->sid('ched-tdp'), 'status' => 'active']);
 
         $file = $this->xlsxUpload($this->withDetails([
-            ['Full name', 'E-mail', 'Student No', 'Course', 'Year', 'Status', 'Notes', 'Campus', 'Scholar ID'],
-            ['Juan Dela Cruz', 'juan@example.test', '2023-0001', 'BS Agroforestry', '1st year', 'Graduated', 'ignored', '', 'scid-2026-0001'],   // Talaingod is the only campus: inferred
-            ['Ana Reyes', 'ana@example.test', '2023-0002', 'Bachelor of Science in Social Work', 'Third Year', '', '', 'Main', 'SCID-2026-0002'],
-            ['', 'no-name@example.test', '2023-0003', 'BS Information Technology', '2', '', '', 'Samal', 'SCID-2026-0003'],          // no name
-            ['Bad Email', 'not-an-email', '2023-0004', 'BS Information Technology', '2', '', '', 'Samal', 'SCID-2026-0004'],        // invalid e-mail
-            ['Dup In File', 'dup@example.test', '2023-0001', 'BS Information Technology', '2', '', '', 'Samal', 'SCID-2026-0005'],                  // same number twice in the file
-            ['Old Scholar', 'old@example.test', '2023-0009', 'BS Information Technology', '2', '', '', 'Samal', 'SCID-2026-0006'],                  // already a scholar
-            ['No Program', 'np@example.test', '2023-0005', '', '2', '', '', 'Samal', 'SCID-2026-0007'],                       // program missing
-            ['Bad Year', 'by@example.test', '2023-0006', 'BS Information Technology', 'seventh', '', '', 'Samal', 'SCID-2026-0008'],               // unknown year level
+            ['First name', 'Surname', 'E-mail', 'Student No', 'Course', 'Year', 'Status', 'Notes', 'Campus', 'Scholar ID'],
+            ['Juan', 'Dela Cruz', 'juan@example.test', '2023-0001', 'BS Agroforestry', '1st year', 'Graduated', 'ignored', '', 'scid-2026-0001'],   // Talaingod is the only campus: inferred
+            ['Ana', 'Reyes', 'ana@example.test', '2023-0002', 'Bachelor of Science in Social Work', 'Third Year', '', '', 'Main', 'SCID-2026-0002'],
+            ['', '', 'no-name@example.test', '2023-0003', 'BS Information Technology', '2', '', '', 'Samal', 'SCID-2026-0003'],          // no name
+            ['Bad', 'Email', 'not-an-email', '2023-0004', 'BS Information Technology', '2', '', '', 'Samal', 'SCID-2026-0004'],        // invalid e-mail
+            ['Dup In', 'File', 'dup@example.test', '2023-0001', 'BS Information Technology', '2', '', '', 'Samal', 'SCID-2026-0005'],                  // same number twice in the file
+            ['Old', 'Scholar', 'old@example.test', '2023-0009', 'BS Information Technology', '2', '', '', 'Samal', 'SCID-2026-0006'],                  // already a scholar
+            ['No', 'Program', 'np@example.test', '2023-0005', '', '2', '', '', 'Samal', 'SCID-2026-0007'],                       // program missing
+            ['Bad', 'Year', 'by@example.test', '2023-0006', 'BS Information Technology', 'seventh', '', '', 'Samal', 'SCID-2026-0008'],               // unknown year level
         ]));
 
         $this->post('/provider/scholars/import', ['scholarship_id' => $this->sid('ched-tdp'), 'file' => $file])
@@ -377,14 +377,14 @@ class ProviderRosterTest extends TestCase
         $cmsp = $this->sid('ched-cmsp');
 
         $this->post('/provider/scholars/import', ['scholarship_id' => $cmsp, 'file' => $this->xlsxUpload($this->withDetails([
-            ['Scholar ID', 'Full name', 'Student number', 'Email', 'Campus', 'Program', 'Year level'], ['SCID-2026-0001', 'Juan Dela Cruz', '2023-0001', 'juan@example.test', 'Main', 'BS Information Technology', '1'],
+            ['Scholar ID', 'First name', 'Surname', 'Student number', 'Email', 'Campus', 'Program', 'Year level'], ['SCID-2026-0001', 'Juan', 'Dela Cruz', '2023-0001', 'juan@example.test', 'Main', 'BS Information Technology', '1'],
         ]))])->assertSessionHasErrors(['file' => 'CMSP has more than one grant type, so the file needs a "Grant type" column (Full scholarship (Full-SSP) or Half scholarship (Half-SSP)).']);
 
         $this->post('/provider/scholars/import', ['scholarship_id' => $cmsp, 'file' => $this->xlsxUpload($this->withDetails([
-            ['Scholar ID', 'Full name', 'Student number', 'Email', 'Campus', 'Program', 'Year level', 'Grant type'],
-            ['SCID-2026-0001', 'Juan Dela Cruz', '2023-0001', 'juan@example.test', 'Main', 'BS Information Technology', '1', 'Full'],
-            ['SCID-2026-0002', 'Ana Reyes', '2023-0002', 'ana@example.test', 'Main', 'BS Information Technology', '2', 'half scholarship (half-ssp)'],
-            ['SCID-2026-0003', 'No Type', '2023-0003', 'notype@example.test', 'Main', 'BS Information Technology', '2', ''],
+            ['Scholar ID', 'First name', 'Surname', 'Student number', 'Email', 'Campus', 'Program', 'Year level', 'Grant type'],
+            ['SCID-2026-0001', 'Juan', 'Dela Cruz', '2023-0001', 'juan@example.test', 'Main', 'BS Information Technology', '1', 'Full'],
+            ['SCID-2026-0002', 'Ana', 'Reyes', '2023-0002', 'ana@example.test', 'Main', 'BS Information Technology', '2', 'half scholarship (half-ssp)'],
+            ['SCID-2026-0003', 'No', 'Type', '2023-0003', 'notype@example.test', 'Main', 'BS Information Technology', '2', ''],
         ]))])->assertSessionHas('import_report', fn ($r) => $r['added'] === 2 && count($r['skipped']) === 1);
 
         $this->assertSame('40000.00', Scholar::where('full_name', 'Juan Dela Cruz')->value('stipend_amount'));
@@ -394,7 +394,7 @@ class ProviderRosterTest extends TestCase
     public function test_importing_the_same_file_twice_adds_nobody_twice(): void
     {
         $this->actingAs($this->provider('dost'));
-        $rows = $this->withDetails([['Scholar No', 'Name', 'Student ID', 'Email', 'Campus', 'Course', 'Year'], ['SCID-2026-0001', 'Juan Dela Cruz', '2023-0001', 'juan@example.test', 'Samal', 'BS Information Technology', '1'], ['SCID-2026-0002', 'Ana Reyes', '2023-0002', 'ana@example.test', 'Samal', 'BS Information Technology', '2']]);
+        $rows = $this->withDetails([['Scholar No', 'Given name', 'Last name', 'Student ID', 'Email', 'Campus', 'Course', 'Year'], ['SCID-2026-0001', 'Juan', 'Dela Cruz', '2023-0001', 'juan@example.test', 'Samal', 'BS Information Technology', '1'], ['SCID-2026-0002', 'Ana', 'Reyes', '2023-0002', 'ana@example.test', 'Samal', 'BS Information Technology', '2']]);
 
         $this->post('/provider/scholars/import', ['scholarship_id' => $this->sid('dost-sei'), 'file' => $this->xlsxUpload($rows)]);
         $this->post('/provider/scholars/import', ['scholarship_id' => $this->sid('dost-sei'), 'file' => $this->xlsxUpload($rows)]);
@@ -405,8 +405,8 @@ class ProviderRosterTest extends TestCase
     public function test_import_from_a_semicolon_csv_with_a_bom(): void
     {
         $this->actingAs($this->provider('grab'));
-        $csv = "\xEF\xBB\xBFFull name;Email;Student number;Program;Year level;Scholar ID;Contact number;Home address;Date of birth;Sex\n"
-            ."Juan Dela Cruz;juan@example.test;2023-0001;bachelor of science in entrepreneurship;1;SCID-2026-0001;0917 123 4567;Panabo City;03/14/2005;Male\n";
+        $csv = "\xEF\xBB\xBFFirst name;Middle name;Surname;Suffix;Email;Student number;Program;Year level;Scholar ID;Contact number;Street address;Municipality;Province;Date of birth;Sex\n"
+            ."Juan;Andres;Dela Cruz;jr;juan@example.test;2023-0001;bachelor of science in entrepreneurship;1;SCID-2026-0001;0917 123 4567;Purok 3, Gredu;Panabo City;Davao del Norte;03/14/2005;Male\n";
         $file = UploadedFile::fake()->createWithContent('roster.csv', $csv);
 
         $this->post('/provider/scholars/import', ['scholarship_id' => $this->sid('grabscholar'), 'file' => $file])->assertRedirect();
@@ -414,6 +414,11 @@ class ProviderRosterTest extends TestCase
         $s = Scholar::firstOrFail();
         $this->assertSame('juan@example.test', $s->email);
         $this->assertSame('8000.00', $s->stipend_amount);
+        $this->assertSame('Juan Andres Dela Cruz Jr.', $s->full_name);   // parts in separate columns; "jr" → "Jr."
+        $this->assertSame(['Juan', 'Andres', 'Dela Cruz', 'Jr.'], [$s->first_name, $s->middle_name, $s->last_name, $s->suffix]);
+        $this->assertSame('Juan Andres Dela Cruz Jr.', $s->user->name);
+        $this->assertSame('Purok 3, Gredu, Panabo City, Davao del Norte', $s->address);   // the three parts, joined
+        $this->assertSame('Davao del Norte', $s->address_province);
     }
 
     public function test_import_needs_the_required_columns_and_rejects_old_xls(): void
@@ -442,7 +447,7 @@ class ProviderRosterTest extends TestCase
             return Spreadsheet::read($path, 'xlsx')[0];
         };
 
-        $base = ['Scholar ID', 'Full name', 'Student number', 'Email', 'Mobile number', 'Address', 'Birthday', 'Gender', 'Campus', 'Program', 'Year level'];
+        $base = ['Scholar ID', 'First name', 'Middle name', 'Surname', 'Suffix', 'Student number', 'Email', 'Mobile number', 'Street', 'City / Municipality', 'Province', 'Birthday', 'Gender', 'Campus', 'Program', 'Year level'];
         $this->assertSame($base, $read('dnsc'));                        // no types
         $this->assertSame([...$base, 'Grant type'], $read('ched'));     // CMSP Full / Half
     }

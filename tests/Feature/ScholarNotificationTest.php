@@ -87,21 +87,23 @@ class ScholarNotificationTest extends TestCase
         $ana = $this->account('scholar', 'ana@example.test');
         $s = $this->scholar($ana);
         $ched = $this->account('provider', 'ched@provider.test', 'ched');
-        $personal = ['section' => 'personal', 'birthdate' => '2004-06-01', 'gender' => 'female'];
+        // A row without birthday / gender may get them once; after that only the name is editable (owner, 2026-11-23).
+        $personal = ['section' => 'personal', 'first_name' => 'Ana', 'last_name' => 'Reyes', 'birthdate' => '2004-06-01', 'gender' => 'female'];
 
         // No request: the provider's own edit sends nothing.
         $this->actingAs($ched)->patch(route('provider.scholars.update', $s->id), $personal)->assertSessionHasNoErrors();
         $this->assertSame(0, $ana->notifications()->count());
 
         // An open request about the Personal card, then the provider changes it.
-        ScholarMessage::create(['scholar_id' => $s->id, 'user_id' => $ana->id, 'topic' => 'personal', 'message' => 'My birthday should be June 2, 2004.']);
-        $this->patch(route('provider.scholars.update', $s->id), ['birthdate' => '2004-06-02'] + $personal)->assertSessionHasNoErrors();
+        ScholarMessage::create(['scholar_id' => $s->id, 'user_id' => $ana->id, 'topic' => 'personal', 'message' => 'My name should be Ana Marie Reyes.']);
+        $this->patch(route('provider.scholars.update', $s->id), ['first_name' => 'Ana', 'middle_name' => 'Marie', 'last_name' => 'Reyes'] + $personal)->assertSessionHasNoErrors();
         $n = $ana->notifications()->sole();
         $this->assertSame(['correction', 'Your Personal information was updated'], [$n->data['kind'], $n->data['title']]);
         $this->assertStringEndsWith('/scholar/profile#personal', $n->data['url']);
 
         // Saving the same values again (nothing changed) adds nothing; the request stays for the provider to close.
-        $this->patch(route('provider.scholars.update', $s->id), ['birthdate' => '2004-06-02'] + $personal);
+        $this->patch(route('provider.scholars.update', $s->id), ['first_name' => 'Ana', 'middle_name' => 'Marie', 'last_name' => 'Reyes'] + $personal);
+        $this->assertSame('2004-06-01', $s->fresh()->birthdate->toDateString());   // recorded once, then locked
         $this->assertSame(1, $ana->notifications()->count());
         $this->assertNull(ScholarMessage::sole()->handled_at);
     }

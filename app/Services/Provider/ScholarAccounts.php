@@ -39,12 +39,13 @@ class ScholarAccounts
     public const USABLE_ROLES = ['scholar', 'student'];
 
     /**
-     * Finds, converts or creates the scholar account for this e-mail.
+     * Finds, converts or creates the scholar account for this e-mail. $name = the name parts (first_name, middle_name,
+     * last_name, suffix; 2026-11-23) given to a NEW account; an existing account keeps its own name.
      *
      * @return array{user: ?User, password: ?string, error: ?string, converted: bool}
      *                                                                                password only for a new account
      */
-    public function forEmail(string $email, string $name): array
+    public function forEmail(string $email, array $name): array
     {
         $email = Str::lower(trim($email));
         $existing = User::query()->whereRaw('LOWER(email) = ?', [$email])->first();
@@ -63,7 +64,7 @@ class ScholarAccounts
 
         $password = $this->temporaryPassword();
         $user = new User;
-        $user->name = $name;
+        $user->fillName($name);   // first / middle name, surname, suffix + the one-line name
         $user->email = $email;
         $user->password = Hash::make($password);
         // Role, status and the forced change are set server-side only.

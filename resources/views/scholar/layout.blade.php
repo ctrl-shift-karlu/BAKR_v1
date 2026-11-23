@@ -19,7 +19,7 @@
 @section('content')
 @php
     $me = auth()->user();
-    $initials = collect(preg_split('/\s+/', trim($me->name)))->filter()->take(2)->map(fn ($p) => mb_strtoupper(mb_substr($p, 0, 1)))->implode('');
+    $initials = $me->initials();   // first name + surname (2026-11-23)
     $myScholars = \App\Models\Scholar::where('user_id', $me->id)->with('scholarship')->orderBy('id')->get();
     $term = \App\Support\AcademicTerm::current();
     // Sidebar badge: this semester's requirements still to upload or to fix.

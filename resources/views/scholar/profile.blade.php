@@ -53,7 +53,12 @@
         <h2 class="dash-card-title" id="pf-personal"><i class="bi bi-person" aria-hidden="true"></i>Personal information</h2>
         <p class="sc-card-sub">Who you are</p>
         <dl class="sc-facts">
-            <div><dt>Full name</dt><dd>{{ $user->name }}</dd></div>
+            {{-- Name in parts (2026-11-23); an account from before then shows a best guess until the provider saves it. --}}
+            @php $nameNow = $user->first_name ? $user->only(\App\Support\PersonName::FIELDS) : \App\Support\PersonName::split($user->name); @endphp
+            <div><dt>First name</dt><dd>{{ $nameNow['first_name'] ?: '—' }}</dd></div>
+            <div><dt>Middle name</dt><dd>{{ $nameNow['middle_name'] ?: '—' }}</dd></div>
+            <div><dt>Surname</dt><dd>{{ $nameNow['last_name'] ?: '—' }}</dd></div>
+            <div><dt>Suffix</dt><dd>{{ $nameNow['suffix'] ?: '—' }}</dd></div>
             <div><dt>Birthday</dt><dd>{{ $personal['birthdate'] ?? '—' }}</dd></div>
             <div><dt>Gender</dt><dd>{{ $personal['gender'] ?? '—' }}</dd></div>
             <div><dt>Account</dt><dd>Scholar account</dd></div>

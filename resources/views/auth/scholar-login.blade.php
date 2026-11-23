@@ -25,4 +25,6 @@
 @section('foot')
     <p>Not a scholar yet? Go to the <a href="{{ route('student.login') }}">Student login</a> to find scholarships.</p>
     <p>No scholar account? <a href="{{ route('contact') }}">Contact the BAKR team</a></p>
+    {{-- Lost e-mail (2026-11-23): the provider has the scholar's mobile number and can change the sign-in e-mail. --}}
+    <p>Lost access to your e-mail? Call or text your scholarship provider: they have your mobile number and can change your sign-in e-mail.</p>
 @endsection

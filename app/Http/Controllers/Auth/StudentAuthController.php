@@ -32,7 +32,7 @@ class StudentAuthController extends Controller
         $data = $request->validated();
 
         $user = new User;
-        $user->name = $data['name'];
+        $user->fillName($data);   // first / middle name, surname, suffix + the one-line name (2026-11-23)
         $user->email = $data['email'];
         $user->password = Hash::make($data['password']);
         // Role and status are set server-side only, never from the request.

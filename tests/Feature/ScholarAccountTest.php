@@ -51,9 +51,9 @@ class ScholarAccountTest extends TestCase
     {
         return $this->actingAs($this->provider())->post('/provider/scholars', $over + [
             'scholarship_id' => Scholarship::where('slug', 'ched-tdp')->value('id'),
-            'scholar_code' => 'SCID-2026-0001', 'full_name' => 'Maria Santos', 'student_number' => '2023-0001', 'email' => 'Maria@Example.test',
+            'scholar_code' => 'SCID-2026-0001', 'first_name' => 'Maria', 'last_name' => 'Santos', 'student_number' => '2023-0001', 'email' => 'Maria@Example.test',
             'campus' => 'Main (Panabo Campus)', 'program' => 'BS Information Technology', 'year_level' => '2',
-            'birthdate' => '2005-03-14', 'gender' => 'female', 'mobile' => '0917 123 4567', 'address' => 'Panabo City',
+            'birthdate' => '2005-03-14', 'gender' => 'female', 'mobile' => '0917 123 4567', 'address_street' => 'Purok 3, Gredu', 'address_city' => 'Panabo City', 'address_province' => 'Davao del Norte',
         ]);
     }
 
@@ -244,10 +244,10 @@ class ScholarAccountTest extends TestCase
     {
         $path = tempnam(sys_get_temp_dir(), 'roster');
         file_put_contents($path, Spreadsheet::xlsx([
-            ['Scholar ID', 'Full name', 'Student number', 'Email', 'Campus', 'Program', 'Year level', 'Mobile number', 'Address', 'Birthday', 'Gender'],
-            ['SCID-2026-0001', 'Juan Dela Cruz', '2023-0001', 'juan@example.test', 'Main', 'BS Information Technology', '1', '09171234567', 'Panabo City', '2005-03-14', 'M'],
-            ['SCID-2026-0002', 'Ana Reyes', '2023-0002', 'ana@example.test', 'Main', 'BS Information Technology', '2', '09171234568', 'Panabo City', '2005-03-14', 'F'],
-            ['SCID-2026-0003', 'Staff Email', '2023-0003', 'grab@provider.test', 'Main', 'BS Information Technology', '2', '09171234569', 'Panabo City', '2005-03-14', 'F'],   // a provider account: skipped
+            ['Scholar ID', 'First name', 'Surname', 'Student number', 'Email', 'Campus', 'Program', 'Year level', 'Mobile number', 'Street', 'City / Municipality', 'Province', 'Birthday', 'Gender'],
+            ['SCID-2026-0001', 'Juan', 'Dela Cruz', '2023-0001', 'juan@example.test', 'Main', 'BS Information Technology', '1', '09171234567', 'Purok 3, Gredu', 'Panabo City', 'Davao del Norte', '2005-03-14', 'M'],
+            ['SCID-2026-0002', 'Ana', 'Reyes', '2023-0002', 'ana@example.test', 'Main', 'BS Information Technology', '2', '09171234568', 'Purok 3, Gredu', 'Panabo City', 'Davao del Norte', '2005-03-14', 'F'],
+            ['SCID-2026-0003', 'Staff', 'Email', '2023-0003', 'grab@provider.test', 'Main', 'BS Information Technology', '2', '09171234569', 'Purok 3, Gredu', 'Panabo City', 'Davao del Norte', '2005-03-14', 'F'],   // a provider account: skipped
         ]));
         $file = new UploadedFile($path, 'roster.xlsx', null, null, true);
 

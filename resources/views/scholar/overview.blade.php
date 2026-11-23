@@ -7,7 +7,7 @@
 @php
     $hour = (int) now()->format('G');
     $greeting = $hour < 12 ? 'Good morning' : ($hour < 18 ? 'Good afternoon' : 'Good evening');
-    $first = explode(' ', trim(auth()->user()->name))[0];
+    $first = auth()->user()->firstName();
     $anyReqs = $scholars->contains(fn ($sc) => $sc->scholarship->offers('requirements'));
     $anyPay = $scholars->contains(fn ($sc) => $sc->scholarship->offers('disbursements'));
     $released = $scholars->flatMap->disbursements->where('status', 'released')->sortByDesc('released_at')->first();
